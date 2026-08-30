@@ -99,6 +99,7 @@
   .multrow input.lbl-in{flex:1;min-width:120px}
   .multrow input.price-in{width:70px;flex:none;text-align:center}
   .multrow input.dur-in{width:100%;margin-top:6px;font-size:12px;padding:6px 8px}
+  .multrow input[type="color"]{width:40px;height:40px;border:1px solid var(--line);border-radius:8px;padding:2px;cursor:pointer;background:var(--card)}
   .multrow .rm{border:none;background:#f7e9e6;color:var(--red);width:30px;height:30px;border-radius:8px;font-size:12px;cursor:pointer;flex-shrink:0}
   .muted{color:var(--muted);font-size:12px;margin-top:6px}
   .detail-card{padding:14px;border-radius:12px;border:1.5px solid var(--line);margin-bottom:12px}
@@ -111,8 +112,6 @@
   .dc-order-status{margin-top:8px;padding:8px;background:#f9f7f2;border-radius:8px;font-size:13px;color:var(--ink);font-style:italic}
   .db-stats{font-size:12px;color:var(--muted);text-align:center;margin-top:8px}
   .db-stats span{font-weight:700;color:var(--ink)}
-  
-  /* Наблюдатель */
   .watch-panel{padding:20px; max-width:600px; margin:20px auto; background:var(--card); border-radius:16px; border:1.5px solid var(--line)}
   .watch-panel h2{margin-bottom:16px; text-align:center}
   .wp-online{background:#eef4ec; padding:12px; border-radius:10px; margin-bottom:16px; text-align:center}
@@ -152,9 +151,9 @@
 <div id="watchUI" style="display:none">
   <div class="watch-panel">
     <h2>👁️ Панель наблюдателя</h2>
-    <div class="wp-online">Онлайн на сайте сейчас: <div class="num" id="wpOnlineNum">0</div></div>
+    <div class="wp-online">Онлайн на сайте: <div class="num" id="wpOnlineNum">0</div></div>
     <h3 style="font-size:14px;color:var(--muted);margin-bottom:8px">Лог действий</h3>
-    <div class="wp-logs" id="wpLogs"><div class="wp-log" style="color:var(--muted);text-align:center;padding:20px">Загрузка логов...</div></div>
+    <div class="wp-logs" id="wpLogs"><div class="wp-log" style="color:var(--muted);text-align:center;padding:20px">Загрузка...</div></div>
   </div>
 </div>
 
@@ -176,7 +175,7 @@
     <input type="number" id="cfgRate" min="0" step="50">
   </div>
   <div class="sec"><h3>Нагрузки (место занятия)</h3>
-    <div class="muted" style="margin-top:0;margin-bottom:8px">В поле "Время" укажите нужные интервалы в часах через запятую (напр: 0.5, 1, 2). Пустое поле = все от 30м до 3ч.</div>
+    <div class="muted" style="margin-top:0;margin-bottom:8px">В поле "Время" укажите нужные интервалы в часах через запятую (напр: 0.5, 1, 2). Пустое = все.</div>
     <div id="cfgLoads"></div>
     <div class="addrow"><input type="text" id="cfgLoadName" placeholder="Название нагрузки"><button id="cfgLoadAdd">＋</button></div>
   </div>
@@ -184,18 +183,22 @@
     <div id="cfgTempos"></div>
     <div class="addrow"><input type="text" id="cfgTempoName" placeholder="Название темпа"><button id="cfgTempoAdd">＋</button></div>
   </div>
-  <div class="sec"><h3>Лошади / Тренеры</h3><div class="chips" id="cfgHorses"></div>
+  <div class="sec"><h3>Лошади</h3><div class="chips" id="cfgHorses"></div>
     <div class="addrow"><input type="text" id="cfgHorseName" placeholder="Кличка"><button id="cfgHorseAdd">＋</button></div>
-    <div style="height:12px"></div><div class="chips" id="cfgTrainers"></div>
-    <div class="addrow"><input type="text" id="cfgTrainerName" placeholder="Имя"><button id="cfgTrainerAdd">＋</button></div>
   </div>
-  <div class="sec"><h3>Интеграции и Безопасность</h3>
-    <label>Пароль админа</label><input type="text" id="cfgPass" placeholder="Новый пароль" autocomplete="off">
-    <label>Логин Наблюдателя</label><input type="text" id="cfgWLogin" placeholder="Например: watcher">
+  <div class="sec"><h3>Тренеры</h3>
+    <div class="muted" style="margin-top:0;margin-bottom:8px">Выберите цвет метки для тренера.</div>
+    <div id="cfgTrainers"></div>
+    <div class="addrow">
+      <input type="text" id="cfgTrainerName" placeholder="Имя тренера">
+      <input type="color" id="cfgTrainerColor" value="#4a7c59" title="Цвет тренера">
+      <button id="cfgTrainerAdd">＋</button>
+    </div>
+  </div>
+  <div class="sec"><h3>Безопасность и Интеграции</h3>
     <label>Пароль Наблюдателя</label><input type="text" id="cfgWPass" placeholder="Пароль для панели логов">
-    <label>Telegram Bot Token (для авто-отправки)</label><input type="text" id="cfgTgToken" placeholder="123456:ABC-DEF...">
+    <label>Telegram Bot Token</label><input type="text" id="cfgTgToken" placeholder="123456:ABC-DEF...">
     <label>Telegram Chat ID</label><input type="text" id="cfgTgChat" placeholder="-100123456789">
-    <div class="muted">Чтобы получить Token и Chat ID: напишите боту @BotFather, создайте бота, затем добавьте его в группу и напишите боту @userinfobot в этой группе.</div>
   </div>
   <div class="err" id="cfgErr"></div>
   <div class="btnrow"><button class="btn cancel" id="cfgCancel">Отмена</button><button class="btn save" id="cfgSave">Сохранить</button></div>
@@ -260,14 +263,17 @@ const DEFAULT_CONFIG = {
   ],
   tempos: [{label:'Шаг'}, {label:'Рысь'}, {label:'Галоп'}],
   horses: ['Рокки','Изюм','Форсаж','Дон','Былина','Армани'],
-  trainers: ['Анна Соколова','Игорь Волков'],
+  trainers: [
+    {name:'Анна Соколова', color:'#e91e63'},
+    {name:'Игорь Волков', color:'#2196f3'}
+  ],
   adminPass: 'admin',
-  watcherLogin: 'watcher', watcherPass: 'watch',
+  watcherPass: 'admin123',
   tgToken: '', tgChat: ''
 };
 
 let db=null, config=JSON.parse(JSON.stringify(DEFAULT_CONFIG)), bookings=[], logs=[];
-let role=localStorage.getItem('hc_role')||'guest'; // guest, admin, watcher
+let role=localStorage.getItem('hc_role')||'guest';
 let dates=generateDates(), curDateOffset=0, curDur=1.5, curLoadIdx=0, curTempoIdx=0, curStatus='wait';
 let lastMskDateStr='', editingId=null, dbSizeBytes=0;
 
@@ -276,8 +282,13 @@ const minToStr=m=>String(Math.floor(m/60)).padStart(2,'0')+':'+String(m%60).padS
 const esc=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 function formatBytes(b){if(b<1024)return b+' Б';if(b<1048576)return (b/1024).toFixed(1)+' КБ';return (b/1048576).toFixed(2)+' МБ';}
 function getLoadDurs(loadObj){ if(!loadObj.durs) return ALL_DURS; return loadObj.durs.split(',').map(s=>parseFloat(s.trim())).filter(n=>!isNaN(n)).sort((a,b)=>a-b); }
-
 function getTimeSlots(){ const s=[]; for(let m=(config.startHour||8)*60; m<(config.endHour||21)*60; m+=(config.slotStep||30)) s.push(m); return s; }
+
+function getTrainerColor(trainerName) {
+  if(!trainerName) return 'transparent';
+  const t = config.trainers.find(x => x.name === trainerName);
+  return t ? t.color : 'transparent';
+}
 
 function getLoadPricePerHour(loadObj, dur){
   if(!loadObj || !loadObj.prices) return config.rate;
@@ -294,7 +305,6 @@ function refreshPrice(){
   document.getElementById('pHint').textContent = hint;
 }
 
-/* Telegram */
 function sendTg(text){
   if(!config.tgToken || !config.tgChat) return;
   fetch('https://api.telegram.org/bot'+config.tgToken+'/sendMessage', {
@@ -303,33 +313,27 @@ function sendTg(text){
   }).catch(()=>{});
 }
 
-/* Excel Export */
 function exportToExcel(){
   const rows = [['Дата','Время','Длительность(ч)','Лошадь','Тренер','Нагрузка','Темп','Цена(₽)','Статус','Комментарий']];
   bookings.filter(b=>(b.status||'wait')!=='cancel').forEach(b=>{
     rows.push([b.dateKey, minToStr(b.startMin), b.dur, b.horse, b.trainer, b.loadLabel, b.tempoLabel, b.price, STATUSES[b.status]?.label||'Ожидание', b.orderStatus||'']);
   });
   let csv = rows.map(r=>r.map(c=>String(c).replace(/"/g,'""').replace(/\n/g,' ')).join(';')).join('\n');
-  const bom = '\uFEFF'; 
-  const blob = new Blob([bom + csv], {type:'text/csv;charset=utf-8;'});
+  const blob = new Blob(['\uFEFF' + csv], {type:'text/csv;charset=utf-8;'});
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a'); a.href = url; a.download = 'bookings_'+getDateKey(moscowNow())+'.csv'; a.click();
   URL.revokeObjectURL(url);
 }
 
-/* Logging */
 function addLog(action, details){
-  const logEntry = { time: new Date().toISOString(), action: action, details: details };
-  if(db) db.ref('logs').push(logEntry);
+  if(db) db.ref('logs').push({ time: new Date().toISOString(), action, details });
 }
 
-/* Presence (Онлайн) */
 function setupPresence(){
   if(!db) return;
   const myId = Date.now() + '_' + Math.random().toString(36).substr(2,9);
-  const userRef = db.ref('presence/'+myId);
-  userRef.set(true);
-  userRef.onDisconnect().remove();
+  db.ref('presence/'+myId).set(true);
+  db.ref('presence/'+myId).onDisconnect().remove();
 }
 
 /* ================= Firebase ================= */
@@ -347,7 +351,14 @@ function initFirebase(){
         if(!Array.isArray(config.loads))config.loads=DEFAULT_CONFIG.loads;
         if(!Array.isArray(config.tempos))config.tempos=DEFAULT_CONFIG.tempos;
         if(!Array.isArray(config.horses))config.horses=[];
-        if(!Array.isArray(config.trainers))config.trainers=[];
+        
+        // Миграция тренеров (были строки - стали объекты)
+        if(!Array.isArray(config.trainers)) config.trainers = [];
+        config.trainers = config.trainers.map(t => {
+          if(typeof t === 'string') return {name: t, color: '#4a7c59'};
+          return t;
+        });
+
         config.loads.forEach(l=>{if(!l.prices)l.prices={};if(!l.durs)l.durs=ALL_DURS.join(', ');delete l.mult;delete l.price;});
         config.tempos.forEach(t=>{delete t.mult;delete t.price;});
       }
@@ -371,9 +382,8 @@ function initFirebase(){
 
     db.ref('presence').on('value', snap => {
       const v = snap.val();
-      const onlineCount = v ? Object.keys(v).length : 0;
       const el = document.getElementById('wpOnlineNum');
-      if(el) el.textContent = onlineCount;
+      if(el) el.textContent = v ? Object.keys(v).length : 0;
     });
 
   }catch(e){st.textContent='ошибка';st.className='status.err';db=null;refreshUI();}
@@ -390,8 +400,9 @@ function updateBooking(id,data){
   if(db) db.ref('bookings/'+id).update(data);
   else {const b=bookings.find(x=>x.id===id);if(b)Object.assign(b,data);refreshUI();}
   if(data.status) {
-    addLog('STATUS', (bookings.find(x=>x.id===id)||{}).horse+' -> '+data.status);
-    sendTg('🔄 <b>Смена статуса</b>\n'+data.status.toUpperCase()+'\n'+(bookings.find(x=>x.id===id)||{}).horse);
+    const b = bookings.find(x=>x.id===id)||{};
+    addLog('STATUS', b.horse+' -> '+data.status);
+    sendTg('🔄 <b>Смена статуса</b>\n'+data.status.toUpperCase()+'\n'+b.horse);
   }
 }
 function deleteBooking(id){
@@ -436,10 +447,16 @@ function renderSched(){
       } else {
         matched.forEach(b=>{
           const st=STATUSES[b.status]||STATUSES.wait, isPast=isToday&&(b.startMin+b.dur*60)<=nowMin;
+                          const trainerCol = getTrainerColor(b.trainer);
           const block=document.createElement('div');block.className='bblock s-'+st.cls+(isPast?' past':'');
-          block.innerHTML='<div class="btime">'+minToStr(b.startMin)+'-'+minToStr(b.startMin+b.dur*60)+'</div><div class="btrainer">'+esc(b.trainer||'—')+'</div><div class="bprice">'+fmt(b.price)+'</div>';
-          block.addEventListener('click',()=>openDetail(b.id));gc.appendChild(block);
-        });
+                          
+                          // Применяем цвет тренера к полоске слева или фону имени
+                          const colorStyle = trainerCol !== 'transparent' ? 'border-left-color:'+trainerCol+';' : '';
+                          block.style.cssText = colorStyle;
+
+                          block.innerHTML='<div class="btime">'+minToStr(b.startMin)+'-'+minToStr(b.startMin+b.dur*60)+'</div><div class="btrainer" style="color:'+trainerCol+'">'+esc(b.trainer||'—')+'</div><div class="bprice">'+fmt(b.price)+'</div>';
+                          block.addEventListener('click',()=>openDetail(b.id));gc.appendChild(block);
+                        });
       }
       grid.appendChild(gc);
     });
@@ -453,23 +470,14 @@ function renderWatchPanel(){
   box.innerHTML = '';
   logs.forEach(l => {
     const d = document.createElement('div'); d.className = 'wp-log';
-    const timeStr = new Date(l.time).toLocaleString('ru-RU');
-    const isDone = l.action === 'CREATE' || l.action === 'STATUS';
-    d.innerHTML = '<span class="time">'+timeStr+'</span><span class="act '+(isDone?'done':'')+'">'+l.action+': '+esc(l.details)+'</span>';
-    
-    if(role === 'watcher' && l.action === 'CREATE') {
-      // Ищем бронь по деталям (упрощенно)
-      const delBtn = document.createElement('button');
-      delBtn.className = 'dc-del'; delBtn.style.marginTop = '8px';
-      delBtn.textContent = 'Отменить/Удалить';
+    d.innerHTML = '<span class="time">'+new Date(l.time).toLocaleString('ru-RU')+'</span><span class="act '+(l.action==='CREATE'?'done':'')+'">'+l.action+': '+esc(l.details)+'</span>';
+    if(l.action === 'CREATE') {
+      const delBtn = document.createElement('button'); delBtn.className = 'dc-del'; delBtn.style.marginTop = '8px'; delBtn.textContent = 'Отменить/Удалить';
       delBtn.addEventListener('click', () => {
         if(confirm('Отменить эту запись?')) {
-          // Логика поиска и удаления по логу
-          const parts = l.details.split(' ');
-          const horse = parts[0];
-          const time = parts[1];
+          const parts = l.details.split(' '); const horse = parts[0]; const time = parts[1];
           const target = bookings.find(b => b.horse === horse && minToStr(b.startMin) === time && (b.status||'wait')!=='cancel');
-          if(target) { deleteBooking(target.id); }
+          if(target) deleteBooking(target.id);
         }
       });
       d.appendChild(delBtn);
@@ -487,19 +495,17 @@ function renderHeaderState(){
   document.getElementById('adminOutBtn').style.display = (isA || isW) ? 'inline-block' : 'none';
   document.getElementById('guestHint').style.display = (!isA && !isW) ? 'block' : 'none';
   document.getElementById('fab').style.display = isA ? 'block' : 'none';
+  
+  let expBtn = document.getElementById('expBtn');
   if(isA) {
-    let expBtn = document.getElementById('expBtn');
     if(!expBtn) {
       expBtn = document.createElement('button'); expBtn.id = 'expBtn'; expBtn.className = 'adminbtn blue';
-      expBtn.textContent = '📊 Скачать Excel'; expBtn.style.marginRight = '8px';
+      expBtn.textContent = '📊 Выгрузить Excel'; expBtn.style.marginRight = '8px';
       expBtn.addEventListener('click', exportToExcel);
       document.getElementById('adminOutBtn').before(expBtn);
     }
     expBtn.style.display = 'inline-block';
-  } else {
-    const expBtn = document.getElementById('expBtn');
-    if(expBtn) expBtn.style.display = 'none';
-  }
+  } else if(expBtn) expBtn.style.display = 'none';
 }
 
 function renderDbStats(){
@@ -513,10 +519,11 @@ function refreshUI(){renderHeaderState();if(role!=='watcher'){renderDays();rende
 function openDetail(id){
   const b=bookings.find(x=>x.id===id);if(!b)return;
   const m=document.getElementById('detailModal'), st=STATUSES[b.status]||STATUSES.wait;
+  const trainerCol = getTrainerColor(b.trainer);
   let h='<h2>'+esc(b.horse)+' · '+minToStr(b.startMin)+'</h2><div class="detail-card">';
   h+='<div class="dc-row"><span class="dc-label">Дата</span><span class="dc-val">'+b.dateKey+'</span></div>';
   h+='<div class="dc-row"><span class="dc-label">Время</span><span class="dc-val">'+minToStr(b.startMin)+' – '+minToStr(b.startMin+b.dur*60)+'</span></div>';
-  h+='<div class="dc-row"><span class="dc-label">Тренер</span><span class="dc-val">'+esc(b.trainer)+'</span></div>';
+  h+='<div class="dc-row"><span class="dc-label">Тренер</span><span class="dc-val" style="color:'+trainerCol+';font-weight:800">'+esc(b.trainer)+'</span></div>';
   h+='<div class="dc-row"><span class="dc-label">Нагрузка</span><span class="dc-val">'+esc(b.loadLabel)+'</span></div>';
   h+='<div class="dc-row"><span class="dc-label">Темп</span><span class="dc-val">'+esc(b.tempoLabel)+'</span></div>';
   h+='<div class="dc-price">'+fmt(b.price)+'</div>';
@@ -528,9 +535,7 @@ function openDetail(id){
     Object.keys(STATUSES).forEach(k=>{const s=STATUSES[k];h+='<div class="chip'+((b.status||'wait')===k?' sel':'')+'" data-s="'+k+'" id="ds_'+k+'">'+s.icon+' '+s.label+'</div>';});
     h+='</div><button class="btn save wide" id="detailEdit">✏️ Ред.</button><button class="dc-del" id="detailDel">🗑 Удалить</button>';
   }
-  if(role==='watcher'){
-    h+='<button class="dc-del" id="detailDel">Отменить бронь</button>';
-  }
+  if(role==='watcher'){ h+='<button class="dc-del" id="detailDel">Отменить бронь</button>'; }
   m.innerHTML=h;document.getElementById('detailOverlay').classList.add('open');
   const del=document.getElementById('detailDel');
   if(del) del.addEventListener('click',()=>{if(confirm('Отменить/Удалить?')){deleteBooking(id);document.getElementById('detailOverlay').classList.remove('open');}});
@@ -557,7 +562,7 @@ function _fillForm(off,startMin,horse,dur,trainer,loadIdx,tempoIdx,status,orderS
   const tSel=document.getElementById('fTime');tSel.innerHTML='';
   getTimeSlots().forEach(m=>{const o=document.createElement('option');o.value=m;o.textContent=minToStr(m);if(m===startMin)o.selected=true;tSel.appendChild(o);});
   document.getElementById('fHorse').innerHTML=config.horses.map(h=>'<option'+(h===horse?' selected':'')+'>'+esc(h)+'</option>').join('')||'<option>—</option>';
-  document.getElementById('trainerList').innerHTML=config.trainers.map(t=>'<option value="'+esc(t)+'">').join('');
+  document.getElementById('trainerList').innerHTML=config.trainers.map(t=>'<option value="'+esc(t.name)+'">').join('');
   
   const activeDurs = getLoadDurs(config.loads[loadIdx]);
   const durBox = document.getElementById('fDur'); durBox.innerHTML = '';
@@ -605,8 +610,8 @@ document.getElementById('loginGo').addEventListener('click',doLogin);
 document.getElementById('loginPass').addEventListener('keydown',e=>{if(e.key==='Enter')doLogin();});
 function doLogin(){
   const u=document.getElementById('loginUser').value.trim(), p=document.getElementById('loginPass').value;
-  if(u===config.watcherLogin && p===config.watcherPass){ role='watcher'; localStorage.setItem('hc_role','watcher'); document.getElementById('loginOverlay').classList.remove('open'); refreshUI(); }
-  else if(p===(config.adminPass||'admin')){ role='admin'; localStorage.setItem('hc_role','admin'); document.getElementById('loginOverlay').classList.remove('open'); refreshUI(); }
+  if(p===config.watcherPass){ role='watcher'; localStorage.setItem('hc_role','watcher'); document.getElementById('loginOverlay').classList.remove('open'); refreshUI(); }
+  else if(p===config.adminPass){ role='admin'; localStorage.setItem('hc_role','admin'); document.getElementById('loginOverlay').classList.remove('open'); refreshUI(); }
   else{const e=document.getElementById('loginErr');e.textContent='⚠ Неверный логин или пароль.';e.style.display='block';}
 }
 document.getElementById('loginCancel').addEventListener('click',()=>document.getElementById('loginOverlay').classList.remove('open'));
@@ -622,8 +627,6 @@ function closeCfg(){document.getElementById('cfgOverlay').classList.remove('open
 function renderCfg(){
   if(!cfgDraft)return;
   document.getElementById('cfgRate').value=cfgDraft.rate;
-  document.getElementById('cfgPass').value='';
-  document.getElementById('cfgWLogin').value=cfgDraft.watcherLogin||'';
   document.getElementById('cfgWPass').value=cfgDraft.watcherPass||'';
   document.getElementById('cfgTgToken').value=cfgDraft.tgToken||'';
   document.getElementById('cfgTgChat').value=cfgDraft.tgChat||'';
@@ -636,10 +639,8 @@ function renderCfg(){
     li.addEventListener('input',()=>cfgDraft.loads[i].label=li.value);
     const rm=document.createElement('button');rm.className='rm';rm.textContent='✕';rm.addEventListener('click',()=>{if(cfgDraft.loads.length<=1)return;cfgDraft.loads.splice(i,1);renderCfg();});
     topRow.appendChild(li);topRow.appendChild(rm);
-    
     const durIn=document.createElement('input');durIn.className='dur-in';durIn.type='text';durIn.value=it.durs||'';durIn.placeholder='Время (напр: 0.5, 1, 2)';
     durIn.addEventListener('input',()=>{cfgDraft.loads[i].durs=durIn.value; renderCfgPrices();});
-
     const priceRow=document.createElement('div');priceRow.id='priceRow_'+i;priceRow.style.display='flex';priceRow.style.gap='6px';priceRow.style.flexWrap='wrap';
     row.appendChild(topRow);row.appendChild(durIn);row.appendChild(priceRow);loadBox.appendChild(row);
   });
@@ -653,9 +654,16 @@ function renderCfg(){
     row.appendChild(li);row.appendChild(rm);tempoBox.appendChild(row);
   });
 
-  ['cfgHorses','cfgTrainers'].forEach(bId=>{
-    const k=bId==='cfgHorses'?'horses':'trainers',box=document.getElementById(bId);box.innerHTML='';
-    cfgDraft[k].forEach((item,i)=>{const c=document.createElement('span');c.className='namechip';c.innerHTML=esc(item)+' <button class="rm">✕</button>';c.querySelector('.rm').addEventListener('click',()=>{cfgDraft[k].splice(i,1);renderCfg();});box.appendChild(c);});
+  const horseBox=document.getElementById('cfgHorses');horseBox.innerHTML='';
+  cfgDraft.horses.forEach((item,i)=>{const c=document.createElement('span');c.className='namechip';c.innerHTML=esc(item)+' <button class="rm">✕</button>';c.querySelector('.rm').addEventListener('click',()=>{cfgDraft.horses.splice(i,1);renderCfg();});horseBox.appendChild(c);});
+
+  const trainerBox=document.getElementById('cfgTrainers');trainerBox.innerHTML='';
+  cfgDraft.trainers.forEach((item,i)=>{
+    const c=document.createElement('span');c.className='namechip';
+    c.style.borderLeftColor = item.color; c.style.borderLeftWidth = '4px';
+    c.innerHTML=esc(item.name)+' <button class="rm">✕</button>';
+    c.querySelector('.rm').addEventListener('click',()=>{cfgDraft.trainers.splice(i,1);renderCfg();});
+    trainerBox.appendChild(c);
   });
 }
 
@@ -663,8 +671,7 @@ function renderCfgPrices(){
   cfgDraft.loads.forEach((it,i)=>{
     const box=document.getElementById('priceRow_'+i); if(!box) return;
     box.innerHTML='';
-    const durs = getLoadDurs(it);
-    durs.forEach(dur=>{
+    getLoadDurs(it).forEach(dur=>{
       const wrap=document.createElement('div');wrap.style.display='flex';wrap.style.alignItems='center';wrap.style.gap='4px';
       const label = dur < 1 ? (dur*60)+'м' : dur+'ч';
       wrap.innerHTML='<span style="font-size:11px;color:var(--muted);width:28px">'+label+'</span>';
@@ -676,28 +683,50 @@ function renderCfgPrices(){
   });
 }
 
-function addSimple(iId,arr){const inp=document.getElementById(iId),v=inp.value.trim();if(!v)return;if(arr.some(x=>x.toLowerCase()===v.toLowerCase())){inp.value='';return;}arr.push(v);inp.value='';renderCfg();}
+function addSimple(iId,arr){const inp=document.getElementById(iId),v=inp.value.trim();if(!v)return;if(arr.some(x=>(x.name||x).toLowerCase()===v.toLowerCase())){inp.value='';return;}arr.push(v);inp.value='';renderCfg();}
 document.getElementById('cfgHorseAdd').addEventListener('click',()=>{if(cfgDraft)addSimple('cfgHorseName',cfgDraft.horses);});
-document.getElementById('cfgTrainerAdd').addEventListener('click',()=>{if(cfgDraft)addSimple('cfgTrainerName',cfgDraft.trainers);});
 document.getElementById('cfgLoadAdd').addEventListener('click',()=>{if(!cfgDraft)return;const n=document.getElementById('cfgLoadName').value.trim();if(!n)return;cfgDraft.loads.push({label:n,durs:'1, 1.5, 2',prices:{1:0,1.5:0,2:0}});document.getElementById('cfgLoadName').value='';renderCfg();});
 document.getElementById('cfgTempoAdd').addEventListener('click',()=>{if(!cfgDraft)return;const n=document.getElementById('cfgTempoName').value.trim();if(!n)return;cfgDraft.tempos.push({label:n});document.getElementById('cfgTempoName').value='';renderCfg();});
 
+document.getElementById('cfgTrainerAdd').addEventListener('click',()=>{
+  if(!cfgDraft)return;
+  const n=document.getElementById('cfgTrainerName').value.trim();
+  const c=document.getElementById('cfgTrainerColor').value;
+  if(!n)return;
+  if(cfgDraft.trainers.some(t=>t.name.toLowerCase()===n.toLowerCase())){document.getElementById('cfgTrainerName').value='';return;}
+  cfgDraft.trainers.push({name:n, color:c});
+  document.getElementById('cfgTrainerName').value='';
+  renderCfg();
+});
+
 document.getElementById('cfgSave').addEventListener('click',()=>{
-  if(!cfgDraft)return;const err=document.getElementById('cfgErr'),rate=parseFloat(document.getElementById('cfgRate').value);
-  if(isNaN(rate)||rate<0){err.textContent='⚠ Ставка error';err.style.display='block';return;}
+  if(!cfgDraft)return;
+  const err=document.getElementById('cfgErr');
+  const rate=parseFloat(document.getElementById('cfgRate').value);
+  if(isNaN(rate)||rate<0){err.textContent='⚠ Укажите ставку.';err.style.display='block';return;}
+  
   cfgDraft.rate=rate;
-  cfgDraft.loads=cfgDraft.loads.filter(l=>l.label&&l.label.trim()).map(l=>{const p={};getLoadDurs(l).forEach(k=>{p[k]=l.prices?l.prices[k]||0:0;});return{label:l.label.trim(),durs:l.durs,prices:p};});
+  cfgDraft.loads=cfgDraft.loads.filter(l=>l.label&&l.label.trim()).map(l=>{
+    const p={};getLoadDurs(l).forEach(k=>{p[k]=l.prices?l.prices[k]||0:0;});
+    return{label:l.label.trim(),durs:l.durs,prices:p};
+  });
   cfgDraft.tempos=cfgDraft.tempos.filter(t=>t.label&&t.label.trim()).map(t=>({label:t.label.trim()}));
-  if(!cfgDraft.loads.length||!cfgDraft.tempos.length){err.textContent='⚠ Добавьте варианты';err.style.display='block';return;}
+  
+  if(!cfgDraft.loads.length||!cfgDraft.tempos.length){err.textContent='⚠ Добавьте варианты.';err.style.display='block';return;}
+  
   cfgDraft.horses=cfgDraft.horses.map(h=>h.trim()).filter(Boolean);
-  cfgDraft.trainers=cfgDraft.trainers.map(t=>t.trim()).filter(Boolean);
-  const np=document.getElementById('cfgPass').value.trim();if(np)cfgDraft.adminPass=np;
-  cfgDraft.watcherLogin=document.getElementById('cfgWLogin').value.trim();
-  cfgDraft.watcherPass=document.getElementById('cfgWPass').value.trim();
+  cfgDraft.trainers=cfgDraft.trainers.map(t=>typeof t === 'string' ? {name:t.trim(), color:'#4a7c59'} : {name:t.name.trim(), color:t.color||'#4a7c59'}).filter(t=>t.name);
+  
+  cfgDraft.watcherPass=document.getElementById('cfgWPass').value.trim() || 'admin123';
   cfgDraft.tgToken=document.getElementById('cfgTgToken').value.trim();
   cfgDraft.tgChat=document.getElementById('cfgTgChat').value.trim();
-  config=JSON.parse(JSON.stringify(cfgDraft));curLoadIdx=0;curTempoIdx=0;saveConfig();closeCfg();
+  
+  config=JSON.parse(JSON.stringify(cfgDraft));
+  curLoadIdx=0;curTempoIdx=0;
+  saveConfig();
+  closeCfg();
 });
+
 document.getElementById('cfgCancel').addEventListener('click',closeCfg);
 
 /* ================= Кликеры ================= */

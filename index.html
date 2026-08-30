@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Конный клуб — бронирование</title>
+<title>Конный клуб — расписание</title>
 <style>
   :root{
     --bg:#f4f1ea; --card:#fff; --ink:#2d2a26; --muted:#8a8478;
@@ -34,6 +34,7 @@
   .dot-done{background:var(--green)}
   .dot-wait{background:var(--yellow)}
   .dot-cancel{background:var(--red)}
+  .dot-empty{background:var(--line)}
   .legend .tz{color:#b3ac9d;font-style:italic}
   .days{display:flex;gap:6px;overflow-x:auto;padding-bottom:6px;margin-bottom:12px;-webkit-overflow-scrolling:touch}
   .day-tab{flex:0 0 auto;padding:10px 16px;border-radius:12px;border:1.5px solid var(--line);
@@ -48,32 +49,48 @@
   .day-tab.active{background:var(--green);border-color:var(--green);color:#fff}
   .day-tab.active .cnt{background:rgba(255,255,255,.25);color:#fff}
   .day-tab.active .dnum{color:#fff}
-  .slot{display:flex;align-items:center;gap:10px;background:var(--card);
-    border:1.5px solid var(--line);border-radius:12px;padding:10px 12px;margin-bottom:6px;flex-wrap:wrap}
-  .slot .time{font-weight:700;min-width:52px;font-size:15px}
-  .slot .info{flex:1;min-width:140px;font-size:13px;line-height:1.45}
-  .slot .meta{color:var(--muted);font-size:12px}
-  .slot .price{font-weight:700;color:var(--green-dark);white-space:nowrap}
-  .slot .del{border:none;background:#f7e9e6;color:var(--red);width:34px;height:34px;
-    border-radius:10px;font-size:15px;cursor:pointer;flex-shrink:0}
-  .slot.done{border-left:5px solid var(--green);background:#f4faf5}
-  .slot.wait{border-left:5px solid var(--yellow);background:#fffdf5}
-  .slot.cancel{border-left:5px solid var(--red);background:#fdf4f2}
-  .slot.past{opacity:.55}
-  .badge{display:inline-block;margin-top:5px;font-size:11px;font-weight:700;
-    padding:2px 9px;border-radius:8px}
-  .b-done{background:#e2f3e5;color:#2e7d43}
-  .b-wait{background:#fbf0d2;color:#9a7b16}
-  .b-cancel{background:#fbe4e0;color:var(--red)}
-  .stbtns{display:flex;gap:4px;flex-shrink:0}
-  .st{width:32px;height:32px;border-radius:9px;border:1.5px solid var(--line);
-    background:#fbfaf7;cursor:pointer;font-size:14px;line-height:1;padding:0}
-  .st.st-done.on{background:var(--green);border-color:var(--green);color:#fff}
-  .st.st-wait.on{background:var(--yellow-dark);border-color:var(--yellow-dark);color:#fff}
-  .st.st-cancel.on{background:var(--red);border-color:var(--red);color:#fff}
-  .empty{color:#999;text-align:center;padding:30px 0;font-style:italic;
-    border:1.5px dashed var(--line);border-radius:12px}
   .guesthint{font-size:12px;color:var(--muted);text-align:center;margin-top:14px}
+
+  /* === ТАБЛИЦА РАСПИСАНИЯ === */
+  .grid-wrap{overflow-x:auto;margin-top:12px;border-radius:12px;border:1.5px solid var(--line);background:var(--card)}
+  .grid{display:grid;min-width:600px}
+  .gh{position:sticky;top:0;z-index:5;background:#f0ece3;font-size:12px;font-weight:700;
+    color:var(--muted);padding:10px 6px;text-align:center;border-bottom:1.5px solid var(--line);
+    display:flex;align-items:center;justify-content:center;min-height:42px}
+  .gh.corner{background:#e8e3d8;justify-content:flex-end;padding-right:10px;font-size:11px}
+  .gl{position:sticky;left:0;z-index:4;background:#f7f5f0;font-size:13px;font-weight:700;
+    padding:8px 10px;border-right:1.5px solid var(--line);border-bottom:1px solid var(--line);
+    display:flex;align-items:center;white-space:nowrap;min-height:52px}
+  .gc{padding:4px;border-bottom:1px solid #f0ece3;border-right:1px solid #f0ece3;
+    display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:52px;
+    transition:background .15s}
+  .gc:hover{background:#f9f7f2}
+  .gc.empty-slot{background:#fafaf7}
+
+  /* ячейка с бронью */
+  .gc .btime{font-size:10px;color:var(--muted);line-height:1.2}
+  .gc .btrainer{font-size:10px;color:var(--ink);font-weight:600;margin-top:1px;white-space:nowrap;
+    overflow:hidden;text-overflow:ellipsis;max-width:100%;text-align:center}
+  .gc .bprice{font-size:10px;color:var(--green-dark);font-weight:700;margin-top:1px}
+
+  /* цветные бейджи-блоки */
+  .gc .bblock{width:100%;padding:3px 4px;border-radius:6px;text-align:center;cursor:pointer;
+    margin-bottom:2px;border-left:3px solid transparent;transition:transform .1s}
+  .gc .bblock:active{transform:scale(.96)}
+  .gc .bblock.s-wait{background:#fdf6e0;border-left-color:var(--yellow)}
+  .gc .bblock.s-done{background:#e8f5ea;border-left-color:var(--green)}
+  .gc .bblock.s-cancel{background:#fdeae6;border-left-color:var(--red);opacity:.6}
+  .gc .bblock.past{opacity:.45}
+
+  /* пустая ячейка для клика (админ) */
+  .gc .add-placeholder{width:100%;height:100%;min-height:44px;display:flex;align-items:center;
+    justify-content:center;color:#ccc;font-size:18px;cursor:pointer;border-radius:6px;
+    transition:background .15s,color .15s}
+  .gc .add-placeholder:hover{background:#eef4ec;color:var(--green)}
+
+  .no-horses{color:#999;text-align:center;padding:40px 0;font-style:italic;
+    border:1.5px dashed var(--line);border-radius:12px}
+
   .fab{position:fixed;right:18px;bottom:18px;width:58px;height:58px;border-radius:50%;
     border:none;background:var(--green);color:#fff;font-size:30px;cursor:pointer;
     box-shadow:0 4px 14px rgba(0,0,0,.25);z-index:50;display:none}
@@ -104,7 +121,6 @@
   .btn{flex:1;padding:13px;border:none;border-radius:10px;font-size:15px;font-weight:700;cursor:pointer}
   .btn.save{background:var(--green);color:#fff}
   .btn.cancel{background:#efece4;color:var(--muted)}
-  .btn.wide{width:100%}
   .err{color:var(--red);font-size:13px;margin-top:10px;display:none}
   .sec{border:1.5px solid var(--line);border-radius:12px;padding:12px;margin-top:12px}
   .sec h3{font-size:13px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px}
@@ -123,6 +139,19 @@
   .multrow .rm{border:none;background:#f7e9e6;color:var(--red);width:34px;height:40px;
     border-radius:10px;font-size:14px;cursor:pointer;flex-shrink:0}
   .muted{color:var(--muted);font-size:12px;margin-top:6px}
+
+  /* детальная карточка в модалке */
+  .detail-card{padding:14px;border-radius:12px;border:1.5px solid var(--line);margin-bottom:12px}
+  .detail-card .dc-row{display:flex;justify-content:space-between;padding:4px 0;font-size:14px}
+  .detail-card .dc-row .dc-label{color:var(--muted);font-size:12px}
+  .detail-card .dc-row .dc-val{font-weight:600}
+  .detail-card .dc-price{font-size:22px;font-weight:800;color:var(--green-dark);text-align:right;margin-top:6px}
+  .detail-card .dc-status{display:inline-block;padding:3px 10px;border-radius:8px;font-size:12px;font-weight:700;margin-top:6px}
+  .dc-done{background:#e2f3e5;color:#2e7d43}
+  .dc-wait{background:#fbf0d2;color:#9a7b16}
+  .dc-cancel{background:#fbe4e0;color:var(--red)}
+  .dc-del{margin-top:10px;width:100%;padding:10px;border:1.5px solid var(--red);border-radius:10px;
+    background:#fdf4f2;color:var(--red);font-size:14px;font-weight:700;cursor:pointer}
 </style>
 </head>
 <body>
@@ -140,11 +169,14 @@
   <span><i class="dot dot-done"></i>Выполнено</span>
   <span><i class="dot dot-wait"></i>Ожидание</span>
   <span><i class="dot dot-cancel"></i>Отменена</span>
-  <span class="tz">· все времена — московские (МСК, UTC+3)</span>
+  <span><i class="dot dot-empty"></i>Свободно</span>
+  <span class="tz">· МСК (UTC+3)</span>
 </div>
 
 <div class="days" id="days"></div>
+
 <div id="sched"></div>
+
 <div class="guesthint" id="guestHint">Вход для администратора — кнопка «🔒 Войти» вверху</div>
 
 <button class="fab" id="fab" title="Забронировать">＋</button>
@@ -167,34 +199,30 @@
 <div class="overlay" id="cfgOverlay">
   <div class="modal">
     <h2>⚙️ Конфигуратор</h2>
-
     <div class="sec">
       <h3>Цены</h3>
       <label>Базовая ставка, ₽ за час</label>
       <input type="number" id="cfgRate" min="0" step="50">
-      <div class="muted">Итог: ставка × длительность + доп.услуга нагрузки + доп.услуга темпа</div>
+      <div class="muted">Итог: ставка × длительность + нагрузка + темп</div>
     </div>
-
     <div class="sec">
       <h3>Нагрузки (место занятия)</h3>
       <div id="cfgLoads"></div>
       <div class="addrow">
-        <input type="text" id="cfgLoadName" placeholder="Название (напр. Маршрут)">
+        <input type="text" id="cfgLoadName" placeholder="Название">
         <input type="number" id="cfgLoadPrice" placeholder="₽" step="50" min="0" style="max-width:90px">
         <button id="cfgLoadAdd">＋</button>
       </div>
     </div>
-
     <div class="sec">
       <h3>Темп</h3>
       <div id="cfgTempos"></div>
       <div class="addrow">
-        <input type="text" id="cfgTempoName" placeholder="Название (напр. Кентер)">
+        <input type="text" id="cfgTempoName" placeholder="Название">
         <input type="number" id="cfgTempoPrice" placeholder="₽" step="50" min="0" style="max-width:90px">
         <button id="cfgTempoAdd">＋</button>
       </div>
     </div>
-
     <div class="sec">
       <h3>Лошади</h3>
       <div class="chips" id="cfgHorses"></div>
@@ -203,7 +231,6 @@
         <button id="cfgHorseAdd">＋</button>
       </div>
     </div>
-
     <div class="sec">
       <h3>Тренеры</h3>
       <div class="chips" id="cfgTrainers"></div>
@@ -212,15 +239,12 @@
         <button id="cfgTrainerAdd">＋</button>
       </div>
     </div>
-
     <div class="sec">
       <h3>Безопасность</h3>
       <label>Новый пароль админа (оставьте пустым, чтобы не менять)</label>
       <input type="text" id="cfgPass" placeholder="Новый пароль" autocomplete="off">
     </div>
-
     <div class="err" id="cfgErr"></div>
-
     <div class="btnrow">
       <button class="btn cancel" id="cfgCancel">Отмена</button>
       <button class="btn save" id="cfgSave">Сохранить</button>
@@ -228,17 +252,19 @@
   </div>
 </div>
 
+<!-- ======== модалка: просмотр/редактирование брони ======== -->
+<div class="overlay" id="detailOverlay">
+  <div class="modal" id="detailModal"></div>
+</div>
+
 <!-- ======== модалка: новая бронь ======== -->
 <div class="overlay" id="overlay">
   <div class="modal">
-    <h2>Новая бронь</h2>
-
+    <h2 id="formTitle">Новая бронь</h2>
     <label>День недели</label>
     <select id="fDay"></select>
-
     <label>Время начала</label>
     <select id="fTime"></select>
-
     <label>Длительность</label>
     <div class="chips" id="fDur">
       <div class="chip" data-h="1">1 час</div>
@@ -246,37 +272,29 @@
       <div class="chip" data-h="2">2 часа</div>
       <div class="chip" data-h="3">3 часа</div>
     </div>
-
     <label>Лошадь</label>
     <select id="fHorse"></select>
-
     <label>Тренер</label>
     <input type="text" id="fTrainer" placeholder="Имя тренера" list="trainerList">
     <datalist id="trainerList"></datalist>
-
     <label>Нагрузка (место занятия)</label>
     <div class="chips" id="fLoad"></div>
-
     <label>Темп</label>
     <div class="chips" id="fTempo"></div>
-
     <label>Статус записи</label>
     <div class="chips" id="fStatus">
       <div class="chip" data-s="done">✓ Выполнено</div>
       <div class="chip sel" data-s="wait">⏳ Ожидание</div>
       <div class="chip" data-s="cancel">🚫 Отменена</div>
     </div>
-
     <div class="pricebox">
       <div>
         <div class="lbl">Стоимость занятия</div>
-        <div class="hint" id="pHint">База 800 ₽/час × длительность + нагрузка + темп</div>
+        <div class="hint" id="pHint"></div>
       </div>
-      <div class="sum" id="pSum">1 200 ₽</div>
+      <div class="sum" id="pSum">—</div>
     </div>
-
     <div class="err" id="fErr"></div>
-
     <div class="btnrow">
       <button class="btn cancel" id="fCancel">Отмена</button>
       <button class="btn save" id="fSave">Забронировать</button>
@@ -284,48 +302,14 @@
   </div>
 </div>
 
-<!-- Firebase SDK (compat-версии, загружаются синхронно) -->
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
 
 <script>
 'use strict';
 
-/* ============================================================
-   НАСТРОЙКА:
-   1. Зайдите на https://console.firebase.google.com → «Создать проект»
-   2. «Сборка» → «Realtime Database» → «Создать базу» → режим «тестовый доступ»
-   3. ⚙ «Настройки проекта» → «Ваши приложения» → «</> Web» —
-      скопируйте объект firebaseConfig и вставьте его НИЖЕ вместо null.
+const firebaseConfig = null;
 
-   В базе будут два узла:
-     /bookings — брони (у каждой есть поле status:
-                 wait — жёлтая, ожидание; done — зелёная, выполнено;
-                 cancel — красная, отменена)
-     /config   — ставки, доп.услуги, списки лошадей/тренеров, пароль админа
-
-   Пароль админа по умолчанию: admin  (смените его в конфигураторе
-   сразу после первого входа!)
-
-   Все времена в приложении — московские (МСК = UTC+3),
-   независимо от часового пояса устройства.
-
-   Пока конфиг не вставлен — приложение работает в демо-режиме
-   (данные только в памяти, синхронизации между устройствами нет).
-============================================================= */
-const firebaseConfig = null; /* ← замените null на объект конфига, например:
-{
-  apiKey: "AIza...",
-  authDomain: "my-club.firebaseapp.com",
-  databaseURL: "https://my-club-default-rtdb.firebaseio.com",
-  projectId: "my-club",
-  storageBucket: "my-club.appspot.com",
-  messagingSenderId: "123456789",
-  appId: "1:123456789:web:abcdef"
-};
-*/
-
-/* ================= время Москвы (МСК = UTC+3) ================= */
 function moscowNow(){
   const now = new Date();
   return new Date(now.getTime() + (now.getTimezoneOffset() + 180) * 60000);
@@ -340,32 +324,20 @@ function mskClockStr(){
          String(d.getMinutes()).padStart(2,'0') + ':' +
          String(d.getSeconds()).padStart(2,'0');
 }
-
-/* ================= вычисление дат текущей недели (по Москве) ================= */
 function getWeekDates(){
-  // Получаем «сегодня по Москве» как объект Date (локальный, но сдвинутый)
   const msk = moscowNow();
-  const mskYear = msk.getFullYear();
-  const mskMonth = msk.getMonth();
-  const mskDate = msk.getDate();
-  const mskDow = msk.getDay(); // 0=Вс … 6=Сб
-
-  // Смещение до понедельника: (0=Вс→-6, 1=Пн→0, 2=Вт→-1, … 6=Сб→-5)
+  const mskDow = msk.getDay();
   const toMon = mskDow === 0 ? -6 : 1 - mskDow;
-
   const dates = [];
   for(let i = 0; i < 7; i++){
-    // Создаём дату с нужным числом в рамках московского месяца/года
-    const d = new Date(mskYear, mskMonth, mskDate + toMon + i);
+    const d = new Date(msk.getFullYear(), msk.getMonth(), msk.getDate() + toMon + i);
     dates.push(d.getDate());
   }
   return dates;
 }
 
-/* ================= состояние ================= */
 const DAYS = ['Пн','Вт','Ср','Чт','Пт','Сб','Вс'];
 const DAYS_FULL = ['Понедельник','Вторник','Среда','Четверг','Пятница','Суббота','Воскресенье'];
-
 const STATUSES = {
   done:   {label:'Выполнено', cls:'done',   icon:'✓'},
   wait:   {label:'Ожидание',  cls:'wait',   icon:'⏳'},
@@ -378,7 +350,10 @@ const DEFAULT_CONFIG = {
   tempos: [{label:'Шаг', price:0}, {label:'Рысь', price:150}, {label:'Галоп', price:300}],
   horses: ['Рокки','Изюм','Форсаж','Дон','Былина','Армани','Падуб','Хаммер'],
   trainers: ['Анна Соколова','Игорь Волков','Мария Лебедева','Пётр Громов'],
-  adminPass: 'admin'
+  adminPass: 'admin',
+  startHour: 8,
+  endHour: 21,
+  slotStep: 30
 };
 
 let db = null;
@@ -388,24 +363,34 @@ let isAdmin = false;
 let curDay = mskDayIndex();
 let curDur = 1.5, curLoadIdx = 0, curTempoIdx = 0, curStatus = 'wait';
 let lastMskDay = mskDayIndex();
+let editingId = null; // если редактируем существующую бронь
 
 const fmt = n => Math.round(n).toLocaleString('ru-RU') + ' ₽';
 const minToStr = m => String(Math.floor(m/60)).padStart(2,'0') + ':' + String(m%60).padStart(2,'0');
 const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g,
   c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 
-/* ================= подключение к Firebase ================= */
+/* ===== Слоты времени ===== */
+function getTimeSlots(){
+  const slots = [];
+  const start = (config.startHour || 8) * 60;
+  const end = (config.endHour || 21) * 60;
+  const step = config.slotStep || 30;
+  for(let m = start; m < end; m += step) slots.push(m);
+  return slots;
+}
+
+/* ===== Firebase ===== */
 function initFirebase(){
   const st = document.getElementById('status');
   if(!firebaseConfig || typeof firebase === 'undefined'){
-    st.textContent = 'демо-режим (нет базы)';
+    st.textContent = 'демо-режим';
     refreshUI();
     return;
   }
   try{
     firebase.initializeApp(firebaseConfig);
     db = firebase.database();
-
     db.ref('config').on('value', snap => {
       const val = snap.val();
       if(val){
@@ -414,17 +399,12 @@ function initFirebase(){
         if(!Array.isArray(config.tempos)) config.tempos = DEFAULT_CONFIG.tempos;
         if(!Array.isArray(config.horses))   config.horses   = [];
         if(!Array.isArray(config.trainers)) config.trainers = [];
-        // Миграция: если старые данные с полем mult вместо price — перенести в price (× ставку за 1 час)
         config.loads.forEach(l => {
-          if(l.mult !== undefined && l.price === undefined){
-            l.price = Math.round(l.mult * config.rate);
-          }
+          if(l.mult !== undefined && l.price === undefined){ l.price = Math.round(l.mult * config.rate); }
           delete l.mult;
         });
         config.tempos.forEach(t => {
-          if(t.mult !== undefined && t.price === undefined){
-            t.price = Math.round(t.mult * config.rate);
-          }
+          if(t.mult !== undefined && t.price === undefined){ t.price = Math.round(t.mult * config.rate); }
           delete t.mult;
         });
       }
@@ -432,67 +412,44 @@ function initFirebase(){
       curTempoIdx = Math.min(curTempoIdx, config.tempos.length - 1);
       refreshUI();
     });
-
     db.ref('bookings').on('value', snap => {
       const val = snap.val();
       bookings = val ? Object.keys(val).map(k => Object.assign({id:k}, val[k])) : [];
       refreshUI();
-      st.textContent = '● онлайн — синхронизировано';
+      st.textContent = '● онлайн';
       st.className = 'status ok';
     }, err => {
-      st.textContent = 'ошибка базы: ' + err.code;
+      st.textContent = 'ошибка: ' + err.code;
       st.className = 'status err';
     });
   }catch(e){
-    st.textContent = 'ошибка конфига — демо-режим';
+    st.textContent = 'демо-режим';
     st.className = 'status err';
     db = null;
     refreshUI();
   }
 }
 
-function saveConfig(){
-  if(db){
-    db.ref('config').set(config);
-  }
-  refreshUI();
-}
-
+function saveConfig(){ if(db) db.ref('config').set(config); refreshUI(); }
 function saveBookingToCloud(item){
-  if(db){
-    db.ref('bookings').push(item);
-  }else{
-    item.id = 'local_' + Date.now();
-    bookings.push(item);
-    refreshUI();
-  }
+  if(db){ db.ref('bookings').push(item); }
+  else{ item.id = 'local_' + Date.now(); bookings.push(item); refreshUI(); }
 }
-
-function updateBookingStatus(id, status){
-  if(db){
-    db.ref('bookings/' + id).update({status: status});
-  }else{
-    const b = bookings.find(x => x.id === id);
-    if(b){ b.status = status; refreshUI(); }
-  }
+function updateBooking(id, data){
+  if(db){ db.ref('bookings/' + id).update(data); }
+  else{ const b = bookings.find(x => x.id === id); if(b) Object.assign(b, data); refreshUI(); }
 }
-
 function deleteBooking(id){
-  if(db){
-    db.ref('bookings/' + id).remove();
-  }else{
-    bookings = bookings.filter(b => b.id !== id);
-    refreshUI();
-  }
+  if(db){ db.ref('bookings/' + id).remove(); }
+  else{ bookings = bookings.filter(b => b.id !== id); refreshUI(); }
 }
 
-/* ================= расчёт цены ================= */
+/* ===== Расчёт цены ===== */
 function calcPrice(){
   const l = config.loads[curLoadIdx] || {price:0};
   const t = config.tempos[curTempoIdx] || {price:0};
   return config.rate * curDur + (l.price || 0) + (t.price || 0);
 }
-
 function refreshPrice(){
   document.getElementById('pSum').textContent = fmt(calcPrice());
   const l = config.loads[curLoadIdx], t = config.tempos[curTempoIdx];
@@ -503,18 +460,16 @@ function refreshPrice(){
   document.getElementById('pHint').textContent = parts.join(' · ');
 }
 
-/* ================= отрисовка ================= */
+/* ===== Отрисовка дней ===== */
 function renderDays(){
   const box = document.getElementById('days');
   box.innerHTML = '';
   const todayIdx = mskDayIndex();
   const dates = getWeekDates();
-
   DAYS.forEach((d, i) => {
-    const n = bookings.filter(b => b.day === i).length;
+    const n = bookings.filter(b => b.day === i && (b.status || 'wait') !== 'cancel').length;
     const t = document.createElement('div');
     t.className = 'day-tab' + (i === curDay ? ' active' : '') + (i === todayIdx ? ' today' : '');
-    if(i === todayIdx) t.title = 'Сегодня по Москве';
     t.innerHTML =
       '<span class="dname">' + d + '</span>' +
       '<span class="dnum">' + dates[i] + '</span>' +
@@ -524,142 +479,245 @@ function renderDays(){
   });
 }
 
+/* ===== ТАБЛИЦА РАСПИСАНИЯ ===== */
 function renderSched(){
   const box = document.getElementById('sched');
-  const list = bookings
-    .filter(b => b.day === curDay)
-    .sort((a, b) => a.startMin - b.startMin);
-
-  box.innerHTML = '';
-  if(!list.length){
-    const e = document.createElement('div');
-    e.className = 'empty';
-    e.textContent = isAdmin
-      ? 'На этот день броней нет — нажмите ＋, чтобы добавить'
-      : 'На этот день броней нет';
-    box.appendChild(e);
+  const horses = config.horses;
+  if(!horses.length){
+    box.innerHTML = '<div class="no-horses">Нет лошадей в конфигурации. Добавьте их в ⚙️ Конфигуратор.</div>';
     return;
   }
+  const slots = getTimeSlots();
+  const dayBookings = bookings.filter(b => b.day === curDay);
   const todayIdx = mskDayIndex();
   const nowMin = moscowNow().getHours() * 60 + moscowNow().getMinutes();
+  const step = config.slotStep || 30;
 
-  list.forEach(b => {
-    const st = STATUSES[b.status] || STATUSES.wait;
-    const row = document.createElement('div');
-    row.className = 'slot ' + st.cls;
-    if(b.day === todayIdx && (b.startMin + b.dur * 60) <= nowMin) row.classList.add('past');
+  // Строим сетку: 1-й столбец — время, далее по столбцу на лошадь
+  const cols = 1 + horses.length;
+  const grid = document.createElement('div');
+  grid.className = 'grid';
+  grid.style.gridTemplateColumns = '72px repeat(' + horses.length + ', 1fr)';
 
-    const priceStyle = st.cls === 'cancel'
-      ? ' style="text-decoration:line-through;opacity:.55"' : '';
+  // Заголовки
+  const corner = document.createElement('div');
+  corner.className = 'gh corner';
+  corner.textContent = 'Время';
+  grid.appendChild(corner);
 
-    row.innerHTML =
-      '<div class="time">' + minToStr(b.startMin) + '</div>' +
-      '<div class="info">' +
-        '<div><b>' + esc(b.horse) + '</b> <span class="meta">· ' + b.dur + ' ч · тренер: ' + esc(b.trainer || '—') + '</span></div>' +
-        '<div class="meta">' + esc(b.loadLabel || '') + ' · ' + esc(b.tempoLabel || '') + '</div>' +
-        '<span class="badge b-' + st.cls + '">' + st.label + '</span>' +
-      '</div>' +
-      '<div class="price"' + priceStyle + '>' + fmt(b.price) + '</div>';
-
-    if(isAdmin){
-      const sw = document.createElement('div');
-      sw.className = 'stbtns';
-      Object.keys(STATUSES).forEach(key => {
-        const s = STATUSES[key];
-        const btn = document.createElement('button');
-        btn.className = 'st st-' + s.cls + ((b.status || 'wait') === key ? ' on' : '');
-        btn.textContent = s.icon;
-        btn.title = 'Статус: ' + s.label;
-        btn.addEventListener('click', () => updateBookingStatus(b.id, key));
-        sw.appendChild(btn);
-      });
-      row.appendChild(sw);
-
-      const del = document.createElement('button');
-      del.className = 'del';
-      del.textContent = '✕';
-      del.title = 'Удалить бронь';
-      del.addEventListener('click', () => deleteBooking(b.id));
-      row.appendChild(del);
-    }
-    box.appendChild(row);
+  horses.forEach(h => {
+    const gh = document.createElement('div');
+    gh.className = 'gh';
+    gh.textContent = h;
+    grid.appendChild(gh);
   });
+
+  // Строки по слотам
+  slots.forEach(slotMin => {
+    // Ячейка времени
+    const timeCell = document.createElement('div');
+    timeCell.className = 'gl';
+    timeCell.textContent = minToStr(slotMin);
+    grid.appendChild(timeCell);
+
+    // Ячейки по лошадям
+    horses.forEach((horse, hi) => {
+      const gc = document.createElement('div');
+      gc.className = 'gc';
+
+      // Ищем брони для этой лошади, пересекающие этот слот
+      const slotEnd = slotMin + step;
+      const matched = dayBookings.filter(b =>
+        b.horse === horse &&
+        b.startMin < slotEnd &&
+        (b.startMin + b.dur * 60) > slotMin
+      );
+
+      if(matched.length === 0){
+        // Свободно
+        gc.classList.add('empty-slot');
+        if(isAdmin){
+          const ph = document.createElement('div');
+          ph.className = 'add-placeholder';
+          ph.textContent = '＋';
+          ph.title = 'Забронировать ' + horse + ' с ' + minToStr(slotMin);
+          ph.addEventListener('click', () => openFormFor(curDay, slotMin, horse));
+          gc.appendChild(ph);
+        }
+      } else {
+        // Есть брони — рисуем блоки
+        matched.forEach(b => {
+          const st = STATUSES[b.status] || STATUSES.wait;
+          const isPast = b.day === todayIdx && (b.startMin + b.dur * 60) <= nowMin;
+          const block = document.createElement('div');
+          block.className = 'bblock s-' + st.cls + (isPast ? ' past' : '');
+
+          const timeStr = minToStr(b.startMin) + '-' + minToStr(b.startMin + b.dur * 60);
+          let html = '<div class="btime">' + esc(timeStr) + '</div>';
+          html += '<div class="btrainer">' + esc(b.trainer || '—') + '</div>';
+          html += '<div class="bprice">' + fmt(b.price) + '</div>';
+          block.innerHTML = html;
+
+          block.addEventListener('click', () => openDetail(b.id));
+          gc.appendChild(block);
+        });
+      }
+      grid.appendChild(gc);
+    });
+  });
+
+  const wrap = document.createElement('div');
+  wrap.className = 'grid-wrap';
+  wrap.appendChild(grid);
+  box.innerHTML = '';
+  box.appendChild(wrap);
 }
 
-function renderHeaderState(){
-  const login = document.getElementById('adminBtn');
-  const cfg   = document.getElementById('adminCfgBtn');
-  const out   = document.getElementById('adminOutBtn');
-  const hint  = document.getElementById('guestHint');
-  const fab   = document.getElementById('fab');
+/* ===== Детальная карточка брони ===== */
+function openDetail(id){
+  const b = bookings.find(x => x.id === id);
+  if(!b) return;
+  const modal = document.getElementById('detailModal');
+  const st = STATUSES[b.status] || STATUSES.wait;
+
+  let html = '<h2>' + esc(b.horse) + ' · ' + minToStr(b.startMin) + '</h2>';
+  html += '<div class="detail-card">';
+  html += '<div class="dc-row"><span class="dc-label">Длительность</span><span class="dc-val">' + b.dur + ' ч</span></div>';
+  html += '<div class="dc-row"><span class="dc-label">Тренер</span><span class="dc-val">' + esc(b.trainer || '—') + '</span></div>';
+  html += '<div class="dc-row"><span class="dc-label">Нагрузка</span><span class="dc-val">' + esc(b.loadLabel || '—') + '</span></div>';
+  html += '<div class="dc-row"><span class="dc-label">Темп</span><span class="dc-val">' + esc(b.tempoLabel || '—') + '</span></div>';
+  html += '<div class="dc-row"><span class="dc-label">День</span><span class="dc-val">' + DAYS_FULL[b.day] + '</span></div>';
+  html += '<div class="dc-price">' + fmt(b.price) + '</div>';
+  html += '<span class="dc-status dc-' + st.cls + '">' + st.icon + ' ' + st.label + '</span>';
+  html += '</div>';
+
   if(isAdmin){
-    login.style.display = 'none';
-    cfg.style.display   = 'inline-block';
-    out.style.display   = 'inline-block';
-    hint.style.display  = 'none';
-    fab.style.display   = 'block';
-  }else{
-    login.style.display = 'inline-block';
-    cfg.style.display   = 'none';
-    out.style.display   = 'none';
-    hint.style.display  = 'block';
-    fab.style.display   = 'none';
+    // Кнопки смены статуса
+    html += '<div class="chips" style="margin-bottom:12px">';
+    Object.keys(STATUSES).forEach(key => {
+      const s = STATUSES[key];
+      const sel = (b.status || 'wait') === key ? ' sel' : '';
+      html += '<div class="chip' + sel + '" data-s="' + key + '" id="ds_' + key + '">' + s.icon + ' ' + s.label + '</div>';
+    });
+    html += '</div>';
+
+    html += '<button class="btn save wide" id="detailEdit">✏️ Редактировать</button>';
+    html += '<button class="dc-del" id="detailDel">🗑 Удалить бронь</button>';
+  }
+
+  modal.innerHTML = html;
+  document.getElementById('detailOverlay').classList.add('open');
+
+  if(isAdmin){
+    Object.keys(STATUSES).forEach(key => {
+      document.getElementById('ds_' + key).addEventListener('click', function(){
+        updateBooking(id, {status: key});
+        document.getElementById('detailOverlay').classList.remove('open');
+      });
+    });
+    document.getElementById('detailDel').addEventListener('click', () => {
+      if(confirm('Удалить бронь для «' + b.horse + '» на ' + minToStr(b.startMin) + '?')){
+        deleteBooking(id);
+        document.getElementById('detailOverlay').classList.remove('open');
+      }
+    });
+    document.getElementById('detailEdit').addEventListener('click', () => {
+      document.getElementById('detailOverlay').classList.remove('open');
+      openFormEdit(b);
+    });
   }
 }
 
-function refreshUI(){
-  renderHeaderState();
-  renderDays();
-  renderSched();
-  refreshPrice();
+function closeDetail(){
+  document.getElementById('detailOverlay').classList.remove('open');
 }
 
-/* ================= форма брони ================= */
+/* ===== Форма брони ===== */
 function openForm(){
+  editingId = null;
+  document.getElementById('formTitle').textContent = 'Новая бронь';
+  document.getElementById('fSave').textContent = 'Забронировать';
+  _fillForm(curDay, 480, config.horses[0] || '', 1.5, '', 0, 0, 'wait');
+  document.getElementById('overlay').classList.add('open');
+}
+
+function openFormFor(day, startMin, horse){
+  editingId = null;
+  document.getElementById('formTitle').textContent = 'Новая бронь';
+  document.getElementById('fSave').textContent = 'Забронировать';
+  _fillForm(day, startMin, horse, 1.5, '', curLoadIdx, curTempoIdx, 'wait');
+  document.getElementById('overlay').classList.add('open');
+}
+
+function openFormEdit(b){
+  editingId = b.id;
+  document.getElementById('formTitle').textContent = 'Редактирование брони';
+  document.getElementById('fSave').textContent = 'Сохранить';
+  // Найти индексы нагрузки и темпа
+  let li = 0, ti = 0;
+  config.loads.forEach((l, i) => { if(l.label === b.loadLabel) li = i; });
+  config.tempos.forEach((t, i) => { if(t.label === b.tempoLabel) ti = i; });
+  _fillForm(b.day, b.startMin, b.horse, b.dur, b.trainer, li, ti, b.status || 'wait');
+  document.getElementById('overlay').classList.add('open');
+}
+
+function _fillForm(day, startMin, horse, dur, trainer, loadIdx, tempoIdx, status){
   const dSel = document.getElementById('fDay');
   dSel.innerHTML = DAYS_FULL.map((d, i) =>
-    '<option value="' + i + '"' + (i === curDay ? ' selected' : '') + '>' + d + '</option>'
+    '<option value="' + i + '"' + (i === day ? ' selected' : '') + '>' + d + '</option>'
   ).join('');
 
   const tSel = document.getElementById('fTime');
   tSel.innerHTML = '';
-  for(let m = 480; m <= 1200; m += 30){
+  const slots = getTimeSlots();
+  slots.forEach(m => {
     const o = document.createElement('option');
     o.value = m;
     o.textContent = minToStr(m);
+    if(m === startMin) o.selected = true;
     tSel.appendChild(o);
-  }
+  });
 
   document.getElementById('fHorse').innerHTML =
-    config.horses.map(h => '<option>' + esc(h) + '</option>').join('') || '<option value="">— нет лошадей —</option>';
+    config.horses.map(h => '<option' + (h === horse ? ' selected' : '') + '>' + esc(h) + '</option>').join('')
+    || '<option value="">— нет —</option>';
 
   document.getElementById('trainerList').innerHTML =
     config.trainers.map(t => '<option value="' + esc(t) + '">').join('');
 
   document.getElementById('fLoad').innerHTML =
     config.loads.map((l, i) =>
-      '<div class="chip' + (i === curLoadIdx ? ' sel' : '') + '" data-i="' + i + '">' +
+      '<div class="chip' + (i === loadIdx ? ' sel' : '') + '" data-i="' + i + '">' +
       esc(l.label) + (l.price ? ' +' + fmt(l.price) : '') + '</div>'
     ).join('');
   document.getElementById('fTempo').innerHTML =
     config.tempos.map((t, i) =>
-      '<div class="chip' + (i === curTempoIdx ? ' sel' : '') + '" data-i="' + i + '">' +
+      '<div class="chip' + (i === tempoIdx ? ' sel' : '') + '" data-i="' + i + '">' +
       esc(t.label) + (t.price ? ' +' + fmt(t.price) : '') + '</div>'
     ).join('');
 
-  curStatus = 'wait';
-  document.querySelectorAll('#fStatus .chip').forEach(c =>
-    c.classList.toggle('sel', c.dataset.s === 'wait')
-  );
+  // Длительность
+  document.querySelectorAll('#fDur .chip').forEach(c => {
+    c.classList.toggle('sel', parseFloat(c.dataset.h) === dur);
+  });
+  curDur = dur;
+
+  // Статус
+  document.querySelectorAll('#fStatus .chip').forEach(c => {
+    c.classList.toggle('sel', c.dataset.s === status);
+  });
+  curStatus = status;
+  curLoadIdx = loadIdx;
+  curTempoIdx = tempoIdx;
 
   document.getElementById('fErr').style.display = 'none';
-  document.getElementById('fTrainer').value = '';
+  document.getElementById('fTrainer').value = trainer || '';
   refreshPrice();
-  document.getElementById('overlay').classList.add('open');
 }
 
 function closeForm(){
   document.getElementById('overlay').classList.remove('open');
+  editingId = null;
 }
 
 function bindChips(id, cb){
@@ -693,44 +751,47 @@ document.getElementById('fSave').addEventListener('click', () => {
     return;
   }
 
+  // Проверка пересечений (исключаем текущую редактируемую бронь)
   const clash = bookings.find(b =>
+    b.id !== editingId &&
     (b.status || 'wait') !== 'cancel' &&
     b.day === day && b.horse === horse &&
     b.startMin < endMin && startMin < b.startMin + b.dur * 60
   );
   if(clash){
     err.textContent = '⚠ «' + horse + '» уже занята с ' + minToStr(clash.startMin) +
-      ' до ' + minToStr(clash.startMin + clash.dur * 60) +
-      '. Выберите другое время или лошадь.';
+      ' до ' + minToStr(clash.startMin + clash.dur * 60) + '.';
     err.style.display = 'block';
     return;
   }
 
   err.style.display = 'none';
-  saveBookingToCloud({
+  const data = {
     day: day, startMin: startMin, dur: curDur,
     horse: horse, trainer: trainer,
     loadLabel: L.label, loadPrice: L.price || 0,
     tempoLabel: T.label, tempoPrice: T.price || 0,
     price: calcPrice(),
     status: curStatus
-  });
+  };
+
+  if(editingId){
+    updateBooking(editingId, data);
+  } else {
+    saveBookingToCloud(data);
+  }
   closeForm();
 });
 
-/* ================= вход админа ================= */
+/* ===== Вход админа ===== */
 function openLogin(){
   document.getElementById('loginErr').style.display = 'none';
   document.getElementById('loginPass').value = '';
   document.getElementById('loginOverlay').classList.add('open');
   setTimeout(() => document.getElementById('loginPass').focus(), 50);
 }
-
 document.getElementById('loginGo').addEventListener('click', doLogin);
-document.getElementById('loginPass').addEventListener('keydown', e => {
-  if(e.key === 'Enter') doLogin();
-});
-
+document.getElementById('loginPass').addEventListener('keydown', e => { if(e.key === 'Enter') doLogin(); });
 function doLogin(){
   const pass = document.getElementById('loginPass').value;
   if(pass === (config.adminPass || 'admin')){
@@ -743,28 +804,20 @@ function doLogin(){
     err.style.display = 'block';
   }
 }
-
 document.getElementById('loginCancel').addEventListener('click', () => {
   document.getElementById('loginOverlay').classList.remove('open');
 });
-
 document.getElementById('adminBtn').addEventListener('click', openLogin);
-document.getElementById('adminCfgBtn').addEventListener('click', () => {
-  if(isAdmin) openCfg();
-});
+document.getElementById('adminCfgBtn').addEventListener('click', () => { if(isAdmin) openCfg(); });
 document.getElementById('adminOutBtn').addEventListener('click', () => {
   if(!isAdmin) return;
   if(confirm('Выйти из панели администратора?')){
-    isAdmin = false;
-    closeCfg();
-    closeForm();
-    refreshUI();
+    isAdmin = false; closeCfg(); closeForm(); closeDetail(); refreshUI();
   }
 });
 
-/* ================= админ-конфигуратор ================= */
+/* ===== Конфигуратор ===== */
 let cfgDraft = null;
-
 function openCfg(){
   cfgDraft = JSON.parse(JSON.stringify(config));
   document.getElementById('cfgErr').style.display = 'none';
@@ -772,10 +825,7 @@ function openCfg(){
   renderCfg();
   document.getElementById('cfgOverlay').classList.add('open');
 }
-function closeCfg(){
-  document.getElementById('cfgOverlay').classList.remove('open');
-  cfgDraft = null;
-}
+function closeCfg(){ document.getElementById('cfgOverlay').classList.remove('open'); cfgDraft = null; }
 
 function renderCfg(){
   if(!cfgDraft) return;
@@ -802,8 +852,7 @@ function renderCfg(){
       rm.addEventListener('click', () => {
         const key = boxId === 'cfgLoads' ? 'loads' : 'tempos';
         if(cfgDraft[key].length <= 1) return;
-        cfgDraft[key].splice(i, 1);
-        renderCfg();
+        cfgDraft[key].splice(i, 1); renderCfg();
       });
       row.appendChild(li); row.appendChild(mi); row.appendChild(rm);
       box.appendChild(row);
@@ -812,30 +861,17 @@ function renderCfg(){
   rows(cfgDraft.loads,  'cfgLoads');
   rows(cfgDraft.tempos, 'cfgTempos');
 
-  const hBox = document.getElementById('cfgHorses');
-  hBox.innerHTML = '';
-  cfgDraft.horses.forEach((h, i) => {
-    const c = document.createElement('span');
-    c.className = 'namechip';
-    c.innerHTML = esc(h) + ' <button class="rm" title="Удалить">✕</button>';
-    c.querySelector('.rm').addEventListener('click', () => {
-      cfgDraft.horses.splice(i, 1);
-      renderCfg();
+  ['cfgHorses','cfgTrainers'].forEach(boxId => {
+    const key = boxId === 'cfgHorses' ? 'horses' : 'trainers';
+    const box = document.getElementById(boxId);
+    box.innerHTML = '';
+    cfgDraft[key].forEach((item, i) => {
+      const c = document.createElement('span');
+      c.className = 'namechip';
+      c.innerHTML = esc(item) + ' <button class="rm" title="Удалить">✕</button>';
+      c.querySelector('.rm').addEventListener('click', () => { cfgDraft[key].splice(i, 1); renderCfg(); });
+      box.appendChild(c);
     });
-    hBox.appendChild(c);
-  });
-
-  const tBox = document.getElementById('cfgTrainers');
-  tBox.innerHTML = '';
-  cfgDraft.trainers.forEach((t, i) => {
-    const c = document.createElement('span');
-    c.className = 'namechip';
-    c.innerHTML = esc(t) + ' <button class="rm" title="Удалить">✕</button>';
-    c.querySelector('.rm').addEventListener('click', () => {
-      cfgDraft.trainers.splice(i, 1);
-      renderCfg();
-    });
-    tBox.appendChild(c);
   });
 }
 
@@ -844,17 +880,10 @@ function addSimple(inputId, arr, render){
   const v = inp.value.trim();
   if(!v) return;
   if(arr.some(x => x.toLowerCase() === v.toLowerCase())){ inp.value=''; return; }
-  arr.push(v);
-  inp.value = '';
-  render();
+  arr.push(v); inp.value = ''; render();
 }
-
-document.getElementById('cfgHorseAdd').addEventListener('click', () => {
-  if(cfgDraft) addSimple('cfgHorseName', cfgDraft.horses, renderCfg);
-});
-document.getElementById('cfgTrainerAdd').addEventListener('click', () => {
-  if(cfgDraft) addSimple('cfgTrainerName', cfgDraft.trainers, renderCfg);
-});
+document.getElementById('cfgHorseAdd').addEventListener('click', () => { if(cfgDraft) addSimple('cfgHorseName', cfgDraft.horses, renderCfg); });
+document.getElementById('cfgTrainerAdd').addEventListener('click', () => { if(cfgDraft) addSimple('cfgTrainerName', cfgDraft.trainers, renderCfg); });
 document.getElementById('cfgLoadAdd').addEventListener('click', () => {
   if(!cfgDraft) return;
   const name = document.getElementById('cfgLoadName').value.trim();
@@ -881,47 +910,55 @@ document.getElementById('cfgSave').addEventListener('click', () => {
   const err = document.getElementById('cfgErr');
   const rate = parseFloat(document.getElementById('cfgRate').value);
   if(isNaN(rate) || rate < 0){
-    err.textContent = '⚠ Укажите корректную базовую ставку.';
-    err.style.display = 'block';
-    return;
+    err.textContent = '⚠ Укажите корректную базовую ставку.'; err.style.display = 'block'; return;
   }
   cfgDraft.rate = rate;
-  cfgDraft.loads  = cfgDraft.loads.filter(l => l.label && l.label.trim())
-                                   .map(l => ({label:l.label.trim(), price: l.price || 0}));
-  cfgDraft.tempos = cfgDraft.tempos.filter(t => t.label && t.label.trim())
-                                   .map(t => ({label:t.label.trim(), price: t.price || 0}));
+  cfgDraft.loads  = cfgDraft.loads.filter(l => l.label && l.label.trim()).map(l => ({label:l.label.trim(), price:l.price||0}));
+  cfgDraft.tempos = cfgDraft.tempos.filter(t => t.label && t.label.trim()).map(t => ({label:t.label.trim(), price:t.price||0}));
   if(!cfgDraft.loads.length || !cfgDraft.tempos.length){
-    err.textContent = '⚠ Нужен хотя бы один вариант нагрузки и темпа.';
-    err.style.display = 'block';
-    return;
+    err.textContent = '⚠ Нужен хотя бы один вариант нагрузки и темпа.'; err.style.display = 'block'; return;
   }
   cfgDraft.horses   = cfgDraft.horses.map(h => h.trim()).filter(Boolean);
   cfgDraft.trainers = cfgDraft.trainers.map(t => t.trim()).filter(Boolean);
   const newPass = document.getElementById('cfgPass').value.trim();
   if(newPass) cfgDraft.adminPass = newPass;
-
   config = cfgDraft;
-  curLoadIdx  = 0;
-  curTempoIdx = 0;
-  saveConfig();
-  closeCfg();
+  curLoadIdx = 0; curTempoIdx = 0;
+  saveConfig(); closeCfg();
 });
-
 document.getElementById('cfgCancel').addEventListener('click', closeCfg);
 
+/* ===== Общие клики ===== */
 document.getElementById('fCancel').addEventListener('click', closeForm);
 document.getElementById('fab').addEventListener('click', () => { if(isAdmin) openForm(); });
-document.getElementById('overlay').addEventListener('click', e => {
-  if(e.target === e.currentTarget) closeForm();
-});
-document.getElementById('cfgOverlay').addEventListener('click', e => {
-  if(e.target === e.currentTarget) closeCfg();
-});
-document.getElementById('loginOverlay').addEventListener('click', e => {
-  if(e.target === e.currentTarget) document.getElementById('loginOverlay').classList.remove('open');
-});
+document.getElementById('overlay').addEventListener('click', e => { if(e.target === e.currentTarget) closeForm(); });
+document.getElementById('cfgOverlay').addEventListener('click', e => { if(e.target === e.currentTarget) closeCfg(); });
+document.getElementById('loginOverlay').addEventListener('click', e => { if(e.target === e.currentTarget) document.getElementById('loginOverlay').classList.remove('open'); });
+document.getElementById('detailOverlay').addEventListener('click', e => { if(e.target === e.currentTarget) closeDetail(); });
 
-/* ================= живые часы Москвы ================= */
+function renderHeaderState(){
+  const login = document.getElementById('adminBtn');
+  const cfg   = document.getElementById('adminCfgBtn');
+  const out   = document.getElementById('adminOutBtn');
+  const hint  = document.getElementById('guestHint');
+  const fab   = document.getElementById('fab');
+  if(isAdmin){
+    login.style.display = 'none'; cfg.style.display = 'inline-block';
+    out.style.display = 'inline-block'; hint.style.display = 'none'; fab.style.display = 'block';
+  }else{
+    login.style.display = 'inline-block'; cfg.style.display = 'none';
+    out.style.display = 'none'; hint.style.display = 'block'; fab.style.display = 'none';
+  }
+}
+
+function refreshUI(){
+  renderHeaderState();
+  renderDays();
+  renderSched();
+  refreshPrice();
+}
+
+/* ===== Часы ===== */
 function startMskClock(){
   const tick = () => {
     const el = document.getElementById('mskClock');
@@ -937,7 +974,7 @@ function startMskClock(){
   setInterval(tick, 1000);
 }
 
-/* ================= запуск ================= */
+/* ===== Запуск ===== */
 initFirebase();
 refreshUI();
 startMskClock();

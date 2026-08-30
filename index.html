@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Конный клуб — бронирование</title>
+<style>
+  :root{
+    --bg:#f4f1ea; --card:#fff; --ink:#2d2a26; --muted:#8a8478;
+    --green:#4a7c59; --green-dark:#3a6247; --line:#e5e0d5; --red:#c0533e;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;
+    background:var(--bg); color:var(--ink); min-height:100vh;
+    padding:14px; padding-bottom:90px;
+  }
+  header{display:flex;flex-wrap:wrap;align-items:center;gap:10px;margin-bottom:12px}
+  header h1{font-size:19px;flex:1;min-width:160px}
+  .status{font-size:12px;padding:4px 10px;border-radius:20px;background:#eee;color:#777;white-space:nowrap}
+  .status.ok{background:#e2f3e5;color:#2e7d43}
+  .status.err{background:#fbe4e0;color:var(--red)}
+  .days{display:flex;gap:6px;overflow-x:auto;padding-bottom:6px;margin-bottom:12px;-webkit-overflow-scrolling:touch}
+  .day-tab{flex:0 0 auto;padding:10px 16px;border-radius:12px;border:1.5px solid var(--line);
+    background:var(--card);font-size:14px;font-weight:600;color:var(--muted);cursor:pointer}
+  .day-tab .cnt{display:inline-block;margin-left:6px;font-size:11px;background:var(--line);
+    color:var(--ink);border-radius:8px;padding:1px 6px}
+  .day-tab.active{background:var(--green);border-color:var(--green);color:#fff}
+  .day-tab.active .cnt{background:rgba(255,255,255,.25);color:#fff}
+  .slot{display:flex;align-items:center;gap:10px;background:var(--card);
+    border:1.5px solid var(--line);border-radius:12px;padding:10px 12px;margin-bottom:6px;flex-wrap:wrap}
+  .slot .time{font-weight:700;min-width:52px;font-size:15px}
+  .slot .info{flex:1;min-width:140px;font-size:13px;line-height:1.45}
+  .slot .meta{color:var(--muted);font-size:12px}
+  .slot .price{font-weight:700;color:var(--green-dark);white-space:nowrap}
+  .slot .del{border:none;background:#f7e9e6;color:var(--red);width:34px;height:34px;
+    border-radius:10px;font-size:15px;cursor:pointer;flex-shrink:0}
+  .empty{color:#999;text-align:center;padding:30px 0;font-style:italic;
+    border:1.5px dashed var(--line);border-radius:12px}
+  .fab{position:fixed;right:18px;bottom:18px;width:58px;height:58px;border-radius:50%;
+    border:none;background:var(--green);color:#fff;font-size:30px;cursor:pointer;
+    box-shadow:0 4px 14px rgba(0,0,0,.25);z-index:50}
+  .fab:active{transform:scale(.94)}
+  .overlay{position:fixed;inset:0;background:rgba(30,25,15,.5);display:none;
+    align-items:flex-end;justify-content:center;z-index:100}
+  .overlay.open{display:flex}
+  .modal{background:var(--card);width:100%;max-width:520px;max-height:92vh;overflow-y:auto;
+    border-radius:18px 18px 0 0;padding:18px}
+  @media(min-width:600px){.overlay{align-items:center}.modal{border-radius:18px}}
+  .modal h2{font-size:17px;margin-bottom:8px}
+  .modal label{display:block;font-size:12px;font-weight:600;color:var(--muted);margin:12px 0 4px}
+  .modal select,.modal input{width:100%;padding:11px 12px;font-size:15px;
+    border:1.5px solid var(--line);border-radius:10px;background:#fbfaf7;color:var(--ink)}
+  .chips{display:flex;gap:6px;flex-wrap:wrap}
+  .chip{padding:9px 14px;border:1.5px solid var(--line);border-radius:10px;
+    background:#fbfaf7;font-size:14px;font-weight:600;cursor:pointer}
+  .chip.sel{background:var(--green);border-color:var(--green);color:#fff}
+  .pricebox{margin-top:16px;padding:12px;border-radius:10px;background:#eef4ec;
+    border:1.5px solid #d3e2d4;display:flex;justify-content:space-between;align-items:center}
+  .pricebox .lbl{font-size:12px;color:var(--muted)}
+  .pricebox .hint{font-size:11px;color:var(--muted);margin-top:3px}
+  .pricebox .sum{font-size:20px;font-weight:800;color:var(--green-dark)}
+  .btnrow{display:flex;gap:10px;margin-top:16px}
+  .btn{flex:1;padding:13px;border:none;border-radius:10px;font-size:15px;font-weight:700;cursor:pointer}
+  .btn.save{background:var(--green);color:#fff}
+  .btn.cancel{background:#efece4;color:var(--muted)}
+  .err{color:var(--red);font-size:13px;margin-top:10px;display:none}
+</style>
+</head>
+<body>
+
+<header>
+  <h1>🐴 Расписание и бронирование</h1>
+  <div class="status" id="status">подключение…</div>
+</header>
+
+<div class="days" id="days"></div>
+<div id="sched"></div>
+
+<button class="fab" id="fab" title="Забронировать">＋</button>
+
+<div class="overlay" id="overlay">
+  <div class="modal">
+    <h2>Новая бронь</h2>
+
+    <label>День недели</label>
+    <select id="fDay"></select>
+
+    <label>Время начала</label>
+    <select id="fTime"></select>
+
+    <label>Длительность</label>
+    <div class="chips" id="fDur">
+      <div class="chip" data-h="1">1 час</div>
+      <div class="chip sel" data-h="1.5">1,5 часа</div>
+      <div class="chip" data-h="2">2 часа</div>
+      <div class="chip" data-h="3">3 часа</div>
+    </div>
+
+    <label>Лошадь</label>
+    <select id="fHorse">
+      <option>Рокки</option><option>Изюм</option><option>Форсаж</option>
+      <option>Дон</option><option>Былина</option><option>Армани</option>
+      <option>Падуб</option><option>Хаммер</option>
+    </select>
+
+    <label>Тренер</label>
+    <input type="text" id="fTrainer" placeholder="Имя тренера" list="trainerList">
+    <datalist id="trainerList">
+      <option>Анна Соколова</option><option>Игорь Волков</option>
+      <option>Мария Лебедева</option><option>Пётр Громов</option>
+    </datalist>
+
+    <label>Нагрузка (место занятия)</label>
+    <div class="chips" id="fLoad">
+      <div class="chip sel" data-k="1">Плац</div>
+      <div class="chip" data-k="1.1">Поле</div>
+      <div class="chip" data-k="1.2">Лес</div>
+    </div>
+
+    <label>Темп</label>
+    <div class="chips" id="fTempo">
+      <div class="chip sel" data-k="1">Шаг</div>
+      <div class="chip" data-k="1.15">Рысь</div>
+      <div class="chip" data-k="1.3">Галоп</div>
+    </div>
+
+    <div class="pricebox">
+      <div>
+        <div class="lbl">Стоимость занятия</div>
+        <div class="hint" id="pHint">База 800 ₽/час × длительность × нагрузка × темп</div>
+      </div>
+      <div class="sum" id="pSum">1 200 ₽</div>
+    </div>
+
+    <div class="err" id="fErr"></div>
+
+    <div class="btnrow">
+      <button class="btn cancel" id="fCancel">Отмена</button>
+      <button class="btn save" id="fSave">Забронировать</button>
+    </div>
+  </div>
+</div>
+
+<!-- Firebase SDK (compat-версии, загружаются синхронно) -->
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
+
+<script>
+'use strict';
+
+/* ============================================================
+   НАСТРОЙКА (2 минуты):
+   1. Зайдите на https://console.firebase.google.com → «Создать проект»
+   2. В меню слева: «Сборка» → «Realtime Database» → «Создать базу»
+      → режим «тестовый доступ» (test mode)
+   3. ⚙ «Настройки проекта» → «Ваши приложения» → «</> Web» —
+      скопируйте объект firebaseConfig и вставьте его сюда НИЖЕ,
+      заменив значение null.
+
+   Пока конфиг не вставлен — приложение работает в демо-режиме
+   (данные видны только у вас, синхронизации нет).
+============================================================= */
+const firebaseConfig = null; /* ← замените null на объект конфига, например:
+{
+  apiKey: "AIza...",
+  authDomain: "my-club.firebaseapp.com",
+  databaseURL: "https://my-club-default-rtdb.firebaseio.com",
+  projectId: "my-club",
+  storageBucket: "my-club.appspot.com",
+  messagingSenderId: "123456789",
+  appId: "1:123456789:web:abcdef"
+};
+*/
+
+/* ================= состояние ================= */
+const RATE = 800;                              // база ₽ за час
+const DAYS = ['Пн','Вт','Ср','Чт','Пт','Сб','Вс'];
+const DAYS_FULL = ['Понедельник','Вторник','Среда','Четверг','Пятница','Суббота','Воскресенье'];
+const LOADS  = {1:'Плац', 1.1:'Поле', 1.2:'Лес'};
+const TEMPOS = {1:'Шаг', 1.15:'Рысь', 1.3:'Галоп'};
+
+let db = null;            // ЕДИНСТВЕННОЕ объявление подключения к базе
+let bookings = [];        // все брони: {day, startMin, dur, horse, trainer, load, tempo, price}
+let curDay = new Date().getDay() === 0 ? 6 : new Date().getDay() - 1; // сегодня
+let curDur = 1.5, curLoad = 1, curTempo = 1;
+
+const fmt = n => Math.round(n).toLocaleString('ru-RU') + ' ₽';
+const minToStr = m => String(Math.floor(m/60)).padStart(2,'0') + ':' + String(m%60).padStart(2,'0');
+
+/* ================= подключение к Firebase ================= */
+function initFirebase(){
+  const st = document.getElementById('status');
+  if(!firebaseConfig || typeof firebase === 'undefined'){
+    st.textContent = 'демо-режим (нет базы)';
+    return;
+  }
+  try{
+    firebase.initializeApp(firebaseConfig);
+    db = firebase.database();
+    db.ref('bookings').on('value', snap => {
+      const val = snap.val();
+      bookings = val ? Object.keys(val).map(k => Object.assign({id:k}, val[k])) : [];
+      renderAll();
+      st.textContent = '● онлайн — синхронизировано';
+      st.className = 'status ok';
+    }, err => {
+      st.textContent = 'ошибка базы: ' + err.code;
+      st.className = 'status err';
+    });
+    st.textContent = 'подключение…';
+  }catch(e){
+    st.textContent = 'ошибка конфига — демо-режим';
+    st.className = 'status err';
+    db = null;
+  }
+}
+
+function saveBookingToCloud(item){
+  if(db){
+    db.ref('bookings').push(item);
+  }else{
+    // демо-режим: только локально в памяти
+    item.id = 'local_' + Date.now();
+    bookings.push(item);
+    renderAll();
+  }
+}
+
+function deleteBooking(id){
+  if(db){
+    db.ref('bookings/' + id).remove();
+  }else{
+    bookings = bookings.filter(b => b.id !== id);
+    renderAll();
+  }
+}
+
+/* ================= расчёт цены ================= */
+function calcPrice(){ return RATE * curDur * curLoad * curTempo; }
+
+function refreshPrice(){
+  document.getElementById('pSum').textContent = fmt(calcPrice());
+  const parts = [];
+  if(curLoad  !== 1) parts.push('нагрузка ×' + curLoad);
+  if(curTempo !== 1) parts.push('темп ×' + curTempo);
+  document.getElementById('pHint').textContent =
+    'База ' + fmt(RATE * curDur) + (parts.length ? ' · ' + parts.join(' · ') : '');
+}
+
+/* ================= отрисовка ================= */
+function renderDays(){
+  const box = document.getElementById('days');
+  box.innerHTML = '';
+  DAYS.forEach((d, i) => {
+    const n = bookings.filter(b => b.day === i).length;
+    const t = document.createElement('div');
+    t.className = 'day-tab' + (i === curDay ? ' active' : '');
+    t.innerHTML = d + '<span class="cnt">' + n + '</span>';
+    t.addEventListener('click', () => { curDay = i; renderAll(); });
+    box.appendChild(t);
+  });
+}
+
+function renderSched(){
+  const box = document.getElementById('sched');
+  const list = bookings
+    .filter(b => b.day === curDay)
+    .sort((a, b) => a.startMin - b.startMin);
+
+  box.innerHTML = '';
+  if(!list.length){
+    const e = document.createElement('div');
+    e.className = 'empty';
+    e.textContent = 'На этот день броней нет — нажмите ＋, чтобы добавить';
+    box.appendChild(e);
+    return;
+  }
+  list.forEach(b => {
+    const row = document.createElement('div');
+    row.className = 'slot';
+    row.innerHTML =
+      '<div class="time">' + minToStr(b.startMin) + '</div>' +
+      '<div class="info">' +
+        '<div><b>' + b.horse + '</b> <span class="meta">· ' + b.dur + ' ч · тренер: ' + (b.trainer || '—') + '</span></div>' +
+        '<div class="meta">Нагрузка: ' + (LOADS[b.load] || b.load) + ' · Темп: ' + (TEMPOS[b.tempo] || b.tempo) + '</div>' +
+      '</div>' +
+      '<div class="price">' + fmt(b.price) + '</div>';
+    const del = document.createElement('button');
+    del.className = 'del';
+    del.textContent = '✕';
+    del.title = 'Удалить бронь';
+    del.addEventListener('click', () => deleteBooking(b.id));
+    row.appendChild(del);
+    box.appendChild(row);
+  });
+}
+
+function renderAll(){
+  renderDays();
+  renderSched();
+}
+
+/* ================= форма ================= */
+function openForm(){
+  const dSel = document.getElementById('fDay');
+  dSel.innerHTML = DAYS_FULL.map((d, i) =>
+    '<option value="' + i + '"' + (i === curDay ? ' selected' : '') + '>' + d + '</option>'
+  ).join('');
+
+  const tSel = document.getElementById('fTime');
+  tSel.innerHTML = '';
+  for(let m = 480; m <= 1200; m += 30){          // 8:00 … 20:00, шаг 30 мин
+    const o = document.createElement('option');
+    o.value = m;
+    o.textContent = minToStr(m);
+    tSel.appendChild(o);
+  }
+
+  document.getElementById('fErr').style.display = 'none';
+  document.getElementById('fTrainer').value = '';
+  refreshPrice();
+  document.getElementById('overlay').classList.add('open');
+}
+
+function closeForm(){
+  document.getElementById('overlay').classList.remove('open');
+}
+
+/* выбор чипов (длительность / нагрузка / темп) */
+function bindChips(id, cb){
+  document.getElementById(id).addEventListener('click', e => {
+    const c = e.target.closest('.chip');
+    if(!c) return;
+    c.parentElement.querySelectorAll('.chip').forEach(x => x.classList.remove('sel'));
+    c.classList.add('sel');
+    cb(parseFloat(c.dataset.h !== undefined ? c.dataset.h : c.dataset.k));
+    refreshPrice();
+  });
+}
+bindChips('fDur',   v => curDur = v);
+bindChips('fLoad',  v => curLoad = v);
+bindChips('fTempo', v => curTempo = v);
+
+/* сохранение брони */
+document.getElementById('fSave').addEventListener('click', () => {
+  const err = document.getElementById('fErr');
+  const day      = parseInt(document.getElementById('fDay').value, 10);
+  const startMin = parseInt(document.getElementById('fTime').value, 10);
+  const horse    = document.getElementById('fHorse').value;
+  const trainer  = document.getElementById('fTrainer').value.trim();
+  const endMin   = startMin + curDur * 60;
+
+  if(!trainer){
+    err.textContent = '⚠ Укажите имя тренера.';
+    err.style.display = 'block';
+    return;
+  }
+
+  // пересечение по времени у той же лошади (проверяем по актуальным данным)
+  const clash = bookings.find(b =>
+    b.day === day && b.horse === horse &&
+    b.startMin < endMin && startMin < b.startMin + b.dur * 60
+  );
+  if(clash){
+    err.textContent = '⚠ «' + horse + '» уже занята с ' + minToStr(clash.startMin) +
+      ' до ' + minToStr(clash.startMin + clash.dur * 60) +
+      '. Выберите другое время или лошадь.';
+    err.style.display = 'block';
+    return;
+  }
+
+  err.style.display = 'none';
+  saveBookingToCloud({
+    day: day, startMin: startMin, dur: curDur,
+    horse: horse, trainer: trainer,
+    load: curLoad, tempo: curTempo, price: calcPrice()
+  });
+  closeForm();
+});
+
+document.getElementById('fCancel').addEventListener('click', closeForm);
+document.getElementById('fab').addEventListener('click', openForm);
+document.getElementById('overlay').addEventListener('click', e => {
+  if(e.target === e.currentTarget) closeForm();
+});
+
+/* ================= запуск ================= */
+initFirebase();
+renderAll();
+</script>
+</body>
+</html>

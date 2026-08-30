@@ -8,7 +8,7 @@
   :root{
     --bg:#f4f1ea; --card:#fff; --ink:#2d2a26; --muted:#8a8478;
     --green:#4a7c59; --green-dark:#3a6247; --line:#e5e0d5; --red:#c0533e;
-    --yellow:#e0b73f; --yellow-dark:#c2952c;
+    --yellow:#e0b73f; --yellow-dark:#c2952c; --blue:#3b6fa0;
   }
   *{box-sizing:border-box;margin:0;padding:0}
   body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;
@@ -24,32 +24,30 @@
     background:var(--card);color:var(--muted);font-weight:600;cursor:pointer;white-space:nowrap}
   .adminbtn.on{background:#3f3a33;border-color:#3f3a33;color:#fff}
   .adminbtn.out{background:#fdf6f4;border-color:#e8c9c0;color:var(--red)}
+  .adminbtn.blue{background:var(--blue);border-color:var(--blue);color:#fff}
   .legend{display:flex;gap:14px;flex-wrap:wrap;justify-content:center;align-items:center;
     font-size:12px;color:var(--muted);margin-bottom:8px}
   .legend .dot{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:5px;vertical-align:-1px}
-  .dot-done{background:var(--green)} .dot-wait{background:var(--yellow)} .dot-cancel{background:var(--red)} .dot-empty{background:var(--line)}
+  .dot-done{background:var(--green)} .dot-wait{background:var(--yellow)} .dot-cancel{background:var(--red)}
   .legend .tz{color:#b3ac9d;font-style:italic}
   .month-label{font-size:14px;font-weight:700;color:var(--ink);text-align:center;margin-bottom:8px}
   .days{display:flex;gap:6px;overflow-x:auto;padding-bottom:6px;margin-bottom:12px;-webkit-overflow-scrolling:touch}
   .day-tab{flex:0 0 auto;padding:8px 12px;border-radius:12px;border:1.5px solid var(--line);
     background:var(--card);font-size:13px;font-weight:600;color:var(--muted);cursor:pointer;text-align:center;min-width:64px}
-  .day-tab .dname{display:block;font-size:11px;font-weight:600}
+  .day-tab .dname{display:block;font-size:11px}
   .day-tab .dnum{display:block;font-size:16px;font-weight:800;margin-top:2px;line-height:1.2}
   .day-tab .cnt{display:inline-block;margin-top:2px;font-size:10px;background:var(--line);color:var(--ink);border-radius:8px;padding:1px 6px}
   .day-tab.today{border-color:var(--green);color:var(--green-dark)}
-  .day-tab.today .dnum{color:var(--green-dark)}
   .day-tab.active{background:var(--green);border-color:var(--green);color:#fff}
   .day-tab.active .cnt{background:rgba(255,255,255,.25);color:#fff}
-  .day-tab.active .dnum{color:#fff}
   .day-tab.new-month .dname, .day-tab.new-month .dnum{color:var(--muted);font-size:12px}
   .day-tab.active.new-month .dname, .day-tab.active.new-month .dnum{color:#fff;font-size:13px}
-  .guesthint{font-size:12px;color:var(--muted);text-align:center;margin-top:14px}
   .grid-wrap{overflow-x:auto;margin-top:12px;border-radius:12px;border:1.5px solid var(--line);background:var(--card)}
   .grid{display:grid;min-width:600px}
   .gh{position:sticky;top:0;z-index:5;background:#f0ece3;font-size:12px;font-weight:700;
     color:var(--muted);padding:10px 6px;text-align:center;border-bottom:1.5px solid var(--line);
     display:flex;align-items:center;justify-content:center;min-height:42px}
-  .gh.corner{background:#e8e3d8;justify-content:center;padding-right:10px;font-size:11px}
+  .gh.corner{background:#e8e3d8;justify-content:center;font-size:11px}
   .gl{position:sticky;left:0;z-index:4;background:#f7f5f0;font-size:13px;font-weight:700;
     padding:8px 10px;border-right:1.5px solid var(--line);border-bottom:1px solid var(--line);
     display:flex;align-items:center;justify-content:center;white-space:nowrap;min-height:52px}
@@ -68,7 +66,6 @@
   .gc .add-placeholder{width:100%;height:100%;min-height:44px;display:flex;align-items:center;
     justify-content:center;color:#ccc;font-size:18px;cursor:pointer;border-radius:6px;transition:background .15s,color .15s}
   .gc .add-placeholder:hover{background:#eef4ec;color:var(--green)}
-  .no-horses{color:#999;text-align:center;padding:40px 0;font-style:italic;border:1.5px dashed var(--line);border-radius:12px}
   .fab{position:fixed;right:18px;bottom:18px;width:58px;height:58px;border-radius:50%;
     border:none;background:var(--green);color:#fff;font-size:30px;cursor:pointer;box-shadow:0 4px 14px rgba(0,0,0,.25);z-index:50;display:none}
   .fab:active{transform:scale(.94)}
@@ -84,12 +81,8 @@
   .chips{display:flex;gap:6px;flex-wrap:wrap}
   .chip{padding:9px 14px;border:1.5px solid var(--line);border-radius:10px;background:#fbfaf7;font-size:14px;font-weight:600;cursor:pointer}
   .chip.sel{background:var(--green);border-color:var(--green);color:#fff}
-  #fStatus .chip.sel[data-s="done"]{background:var(--green);border-color:var(--green);color:#fff}
-  #fStatus .chip.sel[data-s="wait"]{background:var(--yellow-dark);border-color:var(--yellow-dark);color:#fff}
-  #fStatus .chip.sel[data-s="cancel"]{background:var(--red);border-color:var(--red);color:#fff}
   .pricebox{margin-top:16px;padding:12px;border-radius:10px;background:#eef4ec;border:1.5px solid #d3e2d4;display:flex;justify-content:space-between;align-items:center}
-  .pricebox .lbl{font-size:12px;color:var(--muted)}
-  .pricebox .hint{font-size:11px;color:var(--muted);margin-top:3px}
+  .pricebox .lbl{font-size:12px;color:var(--muted)} .pricebox .hint{font-size:11px;color:var(--muted);margin-top:3px}
   .pricebox .sum{font-size:20px;font-weight:800;color:var(--green-dark)}
   .btnrow{display:flex;gap:10px;margin-top:16px}
   .btn{flex:1;padding:13px;border:none;border-radius:10px;font-size:15px;font-weight:700;cursor:pointer}
@@ -105,6 +98,7 @@
   .multrow{display:flex;gap:8px;align-items:center;margin-bottom:8px;flex-wrap:wrap;padding:8px;border:1px solid var(--line);border-radius:8px;background:#fdfcfa}
   .multrow input.lbl-in{flex:1;min-width:120px}
   .multrow input.price-in{width:70px;flex:none;text-align:center}
+  .multrow input.dur-in{width:100%;margin-top:6px;font-size:12px;padding:6px 8px}
   .multrow .rm{border:none;background:#f7e9e6;color:var(--red);width:30px;height:30px;border-radius:8px;font-size:12px;cursor:pointer;flex-shrink:0}
   .muted{color:var(--muted);font-size:12px;margin-top:6px}
   .detail-card{padding:14px;border-radius:12px;border:1.5px solid var(--line);margin-bottom:12px}
@@ -117,6 +111,17 @@
   .dc-order-status{margin-top:8px;padding:8px;background:#f9f7f2;border-radius:8px;font-size:13px;color:var(--ink);font-style:italic}
   .db-stats{font-size:12px;color:var(--muted);text-align:center;margin-top:8px}
   .db-stats span{font-weight:700;color:var(--ink)}
+  
+  /* Наблюдатель */
+  .watch-panel{padding:20px; max-width:600px; margin:20px auto; background:var(--card); border-radius:16px; border:1.5px solid var(--line)}
+  .watch-panel h2{margin-bottom:16px; text-align:center}
+  .wp-online{background:#eef4ec; padding:12px; border-radius:10px; margin-bottom:16px; text-align:center}
+  .wp-online .num{font-size:32px; font-weight:800; color:var(--green-dark)}
+  .wp-logs{max-height:400px; overflow-y:auto; border:1px solid var(--line); border-radius:10px; background:#fdfcfa}
+  .wp-log{padding:10px 12px; border-bottom:1px solid var(--line); font-size:13px}
+  .wp-log:last-child{border-bottom:none}
+  .wp-log .time{color:var(--muted); font-size:11px; display:block; margin-bottom:2px}
+  .wp-log .act{color:var(--red)} .wp-log .act.done{color:var(--green)}
 </style>
 </head>
 <body>
@@ -130,25 +135,36 @@
   <button class="adminbtn out" id="adminOutBtn" style="display:none">🚪 Выход</button>
 </header>
 
-<div class="legend">
-  <span><i class="dot dot-done"></i>Выполнено</span>
-  <span><i class="dot dot-wait"></i>Ожидание</span>
-  <span><i class="dot dot-cancel"></i>Отменена</span>
-  <span class="tz">· МСК (UTC+3)</span>
+<div id="mainUI">
+  <div class="legend">
+    <span><i class="dot dot-done"></i>Выполнено</span>
+    <span><i class="dot dot-wait"></i>Ожидание</span>
+    <span><i class="dot dot-cancel"></i>Отменена</span>
+    <span class="tz">· МСК (UTC+3)</span>
+  </div>
+  <div class="month-label" id="monthLabel"></div>
+  <div class="days" id="days"></div>
+  <div id="sched"></div>
+  <div class="guesthint" id="guestHint" style="display:none">Вход для администратора — кнопка «🔒 Войти»</div>
+  <div class="db-stats" id="dbStats"></div>
 </div>
 
-<div class="month-label" id="monthLabel"></div>
-<div class="days" id="days"></div>
-<div id="sched"></div>
-<div class="guesthint" id="guestHint" style="display:none">Вход для администратора — кнопка «🔒 Войти»</div>
-<div class="db-stats" id="dbStats"></div>
+<div id="watchUI" style="display:none">
+  <div class="watch-panel">
+    <h2>👁️ Панель наблюдателя</h2>
+    <div class="wp-online">Онлайн на сайте сейчас: <div class="num" id="wpOnlineNum">0</div></div>
+    <h3 style="font-size:14px;color:var(--muted);margin-bottom:8px">Лог действий</h3>
+    <div class="wp-logs" id="wpLogs"><div class="wp-log" style="color:var(--muted);text-align:center;padding:20px">Загрузка логов...</div></div>
+  </div>
+</div>
 
 <button class="fab" id="fab" title="Забронировать">＋</button>
 
 <!-- Модалки -->
 <div class="overlay" id="loginOverlay"><div class="modal">
-  <h2>🔐 Вход</h2><label>Пароль</label>
-  <input type="password" id="loginPass" placeholder="Пароль админа">
+  <h2>🔐 Вход в систему</h2>
+  <label>Логин</label><input type="text" id="loginUser" placeholder="admin или watcher" value="admin">
+  <label>Пароль</label><input type="password" id="loginPass" placeholder="Пароль">
   <div class="err" id="loginErr"></div>
   <div class="btnrow"><button class="btn cancel" id="loginCancel">Отмена</button><button class="btn save" id="loginGo">Войти</button></div>
 </div></div>
@@ -158,25 +174,28 @@
   <div class="sec"><h3>Базовая ставка</h3>
     <label>Цена за 1 час по умолчанию, ₽</label>
     <input type="number" id="cfgRate" min="0" step="50">
-    <div class="muted">Используется, если у нагрузки не задана своя цена для длительности.</div>
   </div>
   <div class="sec"><h3>Нагрузки (место занятия)</h3>
-    <div class="muted" style="margin-top:0;margin-bottom:8px">Задайте цены для разных интервалов. Доплата берется за каждый час (напр. 2ч = цена 1ч × 2).</div>
+    <div class="muted" style="margin-top:0;margin-bottom:8px">В поле "Время" укажите нужные интервалы в часах через запятую (напр: 0.5, 1, 2). Пустое поле = все от 30м до 3ч.</div>
     <div id="cfgLoads"></div>
     <div class="addrow"><input type="text" id="cfgLoadName" placeholder="Название нагрузки"><button id="cfgLoadAdd">＋</button></div>
   </div>
-  <div class="sec"><h3>Темп (информация, не влияет на цену)</h3>
+  <div class="sec"><h3>Темп (информация)</h3>
     <div id="cfgTempos"></div>
     <div class="addrow"><input type="text" id="cfgTempoName" placeholder="Название темпа"><button id="cfgTempoAdd">＋</button></div>
   </div>
-  <div class="sec"><h3>Лошади</h3><div class="chips" id="cfgHorses"></div>
+  <div class="sec"><h3>Лошади / Тренеры</h3><div class="chips" id="cfgHorses"></div>
     <div class="addrow"><input type="text" id="cfgHorseName" placeholder="Кличка"><button id="cfgHorseAdd">＋</button></div>
-  </div>
-  <div class="sec"><h3>Тренеры</h3><div class="chips" id="cfgTrainers"></div>
+    <div style="height:12px"></div><div class="chips" id="cfgTrainers"></div>
     <div class="addrow"><input type="text" id="cfgTrainerName" placeholder="Имя"><button id="cfgTrainerAdd">＋</button></div>
   </div>
-  <div class="sec"><h3>Безопасность</h3><label>Новый пароль (пусто = не менять)</label>
-    <input type="text" id="cfgPass" placeholder="Новый пароль" autocomplete="off">
+  <div class="sec"><h3>Интеграции и Безопасность</h3>
+    <label>Пароль админа</label><input type="text" id="cfgPass" placeholder="Новый пароль" autocomplete="off">
+    <label>Логин Наблюдателя</label><input type="text" id="cfgWLogin" placeholder="Например: watcher">
+    <label>Пароль Наблюдателя</label><input type="text" id="cfgWPass" placeholder="Пароль для панели логов">
+    <label>Telegram Bot Token (для авто-отправки)</label><input type="text" id="cfgTgToken" placeholder="123456:ABC-DEF...">
+    <label>Telegram Chat ID</label><input type="text" id="cfgTgChat" placeholder="-100123456789">
+    <div class="muted">Чтобы получить Token и Chat ID: напишите боту @BotFather, создайте бота, затем добавьте его в группу и напишите боту @userinfobot в этой группе.</div>
   </div>
   <div class="err" id="cfgErr"></div>
   <div class="btnrow"><button class="btn cancel" id="cfgCancel">Отмена</button><button class="btn save" id="cfgSave">Сохранить</button></div>
@@ -188,19 +207,11 @@
   <h2 id="formTitle">Новая бронь</h2>
   <label>Дата</label><div id="fDayInfo" style="font-size:16px;font-weight:700;margin-bottom:12px;color:var(--ink)"></div>
   <label>Время начала</label><select id="fTime"></select>
-  <label>Длительность</label>
-  <div class="chips" id="fDur">
-    <div class="chip" data-h="0.5">30 мин</div>
-    <div class="chip" data-h="1">1 час</div>
-    <div class="chip sel" data-h="1.5">1,5 часа</div>
-    <div class="chip" data-h="2">2 часа</div>
-    <div class="chip" data-h="2.5">2,5 часа</div>
-    <div class="chip" data-h="3">3 часа</div>
-  </div>
+  <label>Длительность</label><div class="chips" id="fDur"></div>
   <label>Лошадь</label><select id="fHorse"></select>
   <label>Тренер</label><input type="text" id="fTrainer" placeholder="Имя тренера" list="trainerList"><datalist id="trainerList"></datalist>
-  <label>Нагрузка (место занятия)</label><div class="chips" id="fLoad"></div>
-  <label>Темп (для информации)</label><div class="chips" id="fTempo"></div>
+  <label>Нагрузка</label><div class="chips" id="fLoad"></div>
+  <label>Темп</label><div class="chips" id="fTempo"></div>
   <label>Статус записи</label>
   <div class="chips" id="fStatus">
     <div class="chip" data-s="done">✓ Выполнено</div>
@@ -208,11 +219,8 @@
     <div class="chip" data-s="cancel">🚫 Отменена</div>
   </div>
   <label>Статус заказа (опционально)</label>
-  <textarea id="fOrderStatus" placeholder="Например: Предоплата получена..."></textarea>
-  <div class="pricebox">
-    <div><div class="lbl">Стоимость занятия</div><div class="hint" id="pHint"></div></div>
-    <div class="sum" id="pSum">—</div>
-  </div>
+  <textarea id="fOrderStatus" placeholder="Предоплата получена..."></textarea>
+  <div class="pricebox"><div><div class="lbl">Стоимость</div><div class="hint" id="pHint"></div></div><div class="sum" id="pSum">—</div></div>
   <div class="err" id="fErr"></div>
   <div class="btnrow"><button class="btn cancel" id="fCancel">Отмена</button><button class="btn save" id="fSave">Забронировать</button></div>
 </div></div>
@@ -236,61 +244,92 @@ const firebaseConfig = {
 function moscowNow(){ const n=new Date(); return new Date(n.getTime()+(n.getTimezoneOffset()+180)*60000); }
 function mskClockStr(){ const d=moscowNow(); return String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0')+':'+String(d.getSeconds()).padStart(2,'0'); }
 function getDateKey(d){ return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
-
-function generateDates(){
-  const msk = moscowNow(); const dates = [];
-  for(let i=0; i<14; i++){ dates.push(new Date(msk.getFullYear(), msk.getMonth(), msk.getDate()+i)); }
-  return dates;
-}
+function generateDates(){ const msk=moscowNow(),d=[]; for(let i=0;i<14;i++) d.push(new Date(msk.getFullYear(),msk.getMonth(),msk.getDate()+i)); return d; }
 
 const MONTHS=['января','февраля','марта','апреля','мая','июня','июля','августа','сентября','октября','ноября','декабря'];
 const DAYS_SHORT=['Вс','Пн','Вт','Ср','Чт','Пт','Сб'];
 const STATUSES={done:{label:'Выполнено',cls:'done',icon:'✓'},wait:{label:'Ожидание',cls:'wait',icon:'⏳'},cancel:{label:'Отменена',cls:'cancel',icon:'🚫'}};
+const ALL_DURS = [0.5, 1, 1.5, 2, 2.5, 3];
 
 const DEFAULT_CONFIG = {
   rate: 800,
   loads: [
-    {label:'Плац', prices:{0.5:1500, 1:2500, 1.5:3500, 2:4500, 2.5:5500, 3:6500}},
-    {label:'Поле', prices:{0.5:500, 1:1000, 1.5:1500, 2:2000, 2.5:2500, 3:3000}},
-    {label:'Лес', prices:{0.5:750, 1:1500, 1.5:2250, 2:3000, 2.5:3750, 3:4500}}
+    {label:'Плац', durs:'0.5, 1, 1.5, 2, 3', prices:{0.5:1500, 1:2500, 1.5:3500, 2:4500, 3:6500}},
+    {label:'Поле', durs:'1, 1.5, 2', prices:{1:1000, 1.5:1500, 2:2000}},
+    {label:'Лес', durs:'1.5, 2, 2.5, 3', prices:{1.5:2250, 2:3000, 2.5:3750, 3:4500}}
   ],
   tempos: [{label:'Шаг'}, {label:'Рысь'}, {label:'Галоп'}],
-  horses: ['Рокки','Изюм','Форсаж','Дон','Былина','Армани','Падуб','Хаммер'],
-  trainers: ['Анна Соколова','Игорь Волков','Мария Лебедева','Пётр Громов'],
-  adminPass: 'admin', startHour: 8, endHour: 21, slotStep: 30
+  horses: ['Рокки','Изюм','Форсаж','Дон','Былина','Армани'],
+  trainers: ['Анна Соколова','Игорь Волков'],
+  adminPass: 'admin',
+  watcherLogin: 'watcher', watcherPass: 'watch',
+  tgToken: '', tgChat: ''
 };
 
-let db=null, config=JSON.parse(JSON.stringify(DEFAULT_CONFIG)), bookings=[];
-let isAdmin=localStorage.getItem('hc_admin')==='true';
+let db=null, config=JSON.parse(JSON.stringify(DEFAULT_CONFIG)), bookings=[], logs=[];
+let role=localStorage.getItem('hc_role')||'guest'; // guest, admin, watcher
 let dates=generateDates(), curDateOffset=0, curDur=1.5, curLoadIdx=0, curTempoIdx=0, curStatus='wait';
-let lastMskDateStr='', editingId=null;
-let dbSizeBytes = 0;
+let lastMskDateStr='', editingId=null, dbSizeBytes=0;
 
 const fmt=n=>Math.round(n).toLocaleString('ru-RU')+' ₽';
 const minToStr=m=>String(Math.floor(m/60)).padStart(2,'0')+':'+String(m%60).padStart(2,'0');
 const esc=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 function formatBytes(b){if(b<1024)return b+' Б';if(b<1048576)return (b/1024).toFixed(1)+' КБ';return (b/1048576).toFixed(2)+' МБ';}
+function getLoadDurs(loadObj){ if(!loadObj.durs) return ALL_DURS; return loadObj.durs.split(',').map(s=>parseFloat(s.trim())).filter(n=>!isNaN(n)).sort((a,b)=>a-b); }
 
 function getTimeSlots(){ const s=[]; for(let m=(config.startHour||8)*60; m<(config.endHour||21)*60; m+=(config.slotStep||30)) s.push(m); return s; }
 
-/* ================= Логика цен ================= */
 function getLoadPricePerHour(loadObj, dur){
   if(!loadObj || !loadObj.prices) return config.rate;
   if(loadObj.prices[dur] && loadObj.prices[dur] > 0) return loadObj.prices[dur] / dur;
   return config.rate;
 }
-
-function calcPrice(){
-  const l = config.loads[curLoadIdx] || {prices:{}};
-  return getLoadPricePerHour(l, curDur) * curDur;
-}
+function calcPrice(){ const l=config.loads[curLoadIdx]||{}; return getLoadPricePerHour(l,curDur)*curDur; }
 
 function refreshPrice(){
   document.getElementById('pSum').textContent = fmt(calcPrice());
-  const l = config.loads[curLoadIdx], t = config.tempos[curTempoIdx];
-  let hint = curDur + ' ч × ' + fmt(getLoadPricePerHour(l, curDur)) + '/ч';
-  if(t) hint += ' · темп: ' + t.label;
+  const l=config.loads[curLoadIdx], t=config.tempos[curTempoIdx];
+  let hint = curDur+' ч × '+fmt(getLoadPricePerHour(l,curDur))+'/ч';
+  if(t) hint += ' · темп: '+t.label;
   document.getElementById('pHint').textContent = hint;
+}
+
+/* Telegram */
+function sendTg(text){
+  if(!config.tgToken || !config.tgChat) return;
+  fetch('https://api.telegram.org/bot'+config.tgToken+'/sendMessage', {
+    method: 'POST', headers: {'Content-Type':'application/json'},
+    body: JSON.stringify({chat_id: config.tgChat, text: text, parse_mode: 'HTML'})
+  }).catch(()=>{});
+}
+
+/* Excel Export */
+function exportToExcel(){
+  const rows = [['Дата','Время','Длительность(ч)','Лошадь','Тренер','Нагрузка','Темп','Цена(₽)','Статус','Комментарий']];
+  bookings.filter(b=>(b.status||'wait')!=='cancel').forEach(b=>{
+    rows.push([b.dateKey, minToStr(b.startMin), b.dur, b.horse, b.trainer, b.loadLabel, b.tempoLabel, b.price, STATUSES[b.status]?.label||'Ожидание', b.orderStatus||'']);
+  });
+  let csv = rows.map(r=>r.map(c=>String(c).replace(/"/g,'""').replace(/\n/g,' ')).join(';')).join('\n');
+  const bom = '\uFEFF'; 
+  const blob = new Blob([bom + csv], {type:'text/csv;charset=utf-8;'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a'); a.href = url; a.download = 'bookings_'+getDateKey(moscowNow())+'.csv'; a.click();
+  URL.revokeObjectURL(url);
+}
+
+/* Logging */
+function addLog(action, details){
+  const logEntry = { time: new Date().toISOString(), action: action, details: details };
+  if(db) db.ref('logs').push(logEntry);
+}
+
+/* Presence (Онлайн) */
+function setupPresence(){
+  if(!db) return;
+  const myId = Date.now() + '_' + Math.random().toString(36).substr(2,9);
+  const userRef = db.ref('presence/'+myId);
+  userRef.set(true);
+  userRef.onDisconnect().remove();
 }
 
 /* ================= Firebase ================= */
@@ -299,6 +338,7 @@ function initFirebase(){
   if(!firebaseConfig||typeof firebase==='undefined'){st.textContent='демо-режим';refreshUI();return;}
   try{
     firebase.initializeApp(firebaseConfig); db=firebase.database();
+    setupPresence();
     
     db.ref('config').on('value',snap=>{
       const v=snap.val();
@@ -308,15 +348,7 @@ function initFirebase(){
         if(!Array.isArray(config.tempos))config.tempos=DEFAULT_CONFIG.tempos;
         if(!Array.isArray(config.horses))config.horses=[];
         if(!Array.isArray(config.trainers))config.trainers=[];
-        // Миграция старых форматов
-        config.loads.forEach(l=>{
-          if(!l.prices) l.prices={};
-          if(l.price!==undefined && !Object.keys(l.prices).length){
-             [0.5, 1, 1.5, 2, 2.5, 3].forEach(h => l.prices[h] = l.price * h);
-             delete l.price;
-          }
-          delete l.mult; delete l.price;
-        });
+        config.loads.forEach(l=>{if(!l.prices)l.prices={};if(!l.durs)l.durs=ALL_DURS.join(', ');delete l.mult;delete l.price;});
         config.tempos.forEach(t=>{delete t.mult;delete t.price;});
       }
       curLoadIdx=Math.min(curLoadIdx,config.loads.length-1);
@@ -327,64 +359,72 @@ function initFirebase(){
     db.ref('bookings').on('value',snap=>{
       const v=snap.val(); 
       bookings=v?Object.keys(v).map(k=>Object.assign({id:k},v[k])):[];
-      
-      // Подсчет размера хранилища
-      try {
-        const jsonStr = JSON.stringify(v);
-        dbSizeBytes = new Blob([jsonStr]).size;
-      } catch(e) { dbSizeBytes = 0; }
-      
-      refreshUI(); 
-      st.textContent='● онлайн'; st.className='status ok';
+      try{dbSizeBytes=new Blob([JSON.stringify(v)]).size;}catch(e){dbSizeBytes=0;}
+      refreshUI(); st.textContent='● онлайн'; st.className='status ok';
     },err=>{st.textContent='ошибка';st.className='status.err';});
-  }catch(e){st.textContent='ошибка конфига';st.className='status.err';db=null;refreshUI();}
+
+    db.ref('logs').orderByChild('time').limitToLast(50).on('value', snap => {
+      const v = snap.val();
+      logs = v ? Object.values(v).sort((a,b) => b.time.localeCompare(a.time)) : [];
+      if(role === 'watcher') renderWatchPanel();
+    });
+
+    db.ref('presence').on('value', snap => {
+      const v = snap.val();
+      const onlineCount = v ? Object.keys(v).length : 0;
+      const el = document.getElementById('wpOnlineNum');
+      if(el) el.textContent = onlineCount;
+    });
+
+  }catch(e){st.textContent='ошибка';st.className='status.err';db=null;refreshUI();}
 }
 
 function saveConfig(){if(db)db.ref('config').set(config);refreshUI();}
-function saveBookingToCloud(item){if(db)db.ref('bookings').push(item);else{item.id='local_'+Date.now();bookings.push(item);refreshUI();}}
-function updateBooking(id,data){if(db)db.ref('bookings/'+id).update(data);else{const b=bookings.find(x=>x.id===id);if(b)Object.assign(b,data);refreshUI();}}
-function deleteBooking(id){if(db)db.ref('bookings/'+id).remove();else{bookings=bookings.filter(b=>b.id!==id);refreshUI();}}
+function saveBookingToCloud(item){
+  if(db) db.ref('bookings').push(item);
+  else {item.id='local_'+Date.now();bookings.push(item);refreshUI();}
+  addLog('CREATE', item.horse+' '+minToStr(item.startMin)+' '+item.trainer);
+  sendTg('✅ <b>Новая бронь</b>\n'+item.dateKey+'\n'+item.horse+' в '+minToStr(item.startMin)+'\nТренер: '+item.trainer+'\n'+fmt(item.price));
+}
+function updateBooking(id,data){
+  if(db) db.ref('bookings/'+id).update(data);
+  else {const b=bookings.find(x=>x.id===id);if(b)Object.assign(b,data);refreshUI();}
+  if(data.status) {
+    addLog('STATUS', (bookings.find(x=>x.id===id)||{}).horse+' -> '+data.status);
+    sendTg('🔄 <b>Смена статуса</b>\n'+data.status.toUpperCase()+'\n'+(bookings.find(x=>x.id===id)||{}).horse);
+  }
+}
+function deleteBooking(id){
+  const b = bookings.find(x=>x.id===id);
+  if(db) db.ref('bookings/'+id).remove();
+  else {bookings=bookings.filter(x=>x.id!==id);refreshUI();}
+  if(b) { addLog('DELETE', b.horse+' '+minToStr(b.startMin)); sendTg('🗑 <b>Удалена бронь</b>\n'+b.horse+' в '+minToStr(b.startMin)); }
+}
 
 /* ================= Отрисовка ================= */
 function renderDays(){
   const box=document.getElementById('days'); box.innerHTML='';
-  const todayKey=getDateKey(moscowNow());
-  const firstDate=dates[0], lastDate=dates[13];
-  let mt=firstDate.getDate()+' – '+lastDate.getDate()+' '+MONTHS[lastDate.getMonth()]+' '+lastDate.getFullYear();
-  document.getElementById('monthLabel').textContent=mt;
-
+  const todayKey=getDateKey(moscowNow()), firstDate=dates[0], lastDate=dates[13];
+  document.getElementById('monthLabel').textContent=firstDate.getDate()+' – '+lastDate.getDate()+' '+MONTHS[lastDate.getMonth()]+' '+lastDate.getFullYear();
   dates.forEach((d,i)=>{
-    const dk=getDateKey(d);
-    const n=bookings.filter(b=>b.dateKey===dk&&(b.status||'wait')!=='cancel').length;
-    const isToday=dk===todayKey;
-    const isNewMonth=d.getMonth()!==firstDate.getMonth();
+    const dk=getDateKey(d), n=bookings.filter(b=>b.dateKey===dk&&(b.status||'wait')!=='cancel').length;
     const t=document.createElement('div');
-    t.className='day-tab'+(i===curDateOffset?' active':'')+(isToday?' today':'')+(isNewMonth?' new-month':'');
+    t.className='day-tab'+(i===curDateOffset?' active':'')+(dk===todayKey?' today':'')+(d.getMonth()!==firstDate.getMonth()?' new-month':'');
     t.innerHTML='<span class="dname">'+DAYS_SHORT[d.getDay()]+'</span><span class="dnum">'+d.getDate()+'</span><span class="cnt">'+n+'</span>';
-    t.addEventListener('click',()=>{curDateOffset=i;refreshUI();});
-    box.appendChild(t);
+    t.addEventListener('click',()=>{curDateOffset=i;refreshUI();});box.appendChild(t);
   });
 }
 
 function renderSched(){
   const box=document.getElementById('sched'), horses=config.horses;
-  if(!horses.length){box.innerHTML='<div class="no-horses">Нет лошадей в настройках.</div>';return;}
+  if(!horses.length){box.innerHTML='<div style="color:#999;text-align:center;padding:40px 0">Нет лошадей.</div>';return;}
   const activeDate=dates[curDateOffset], activeDateKey=getDateKey(activeDate);
   const dayBookings=bookings.filter(b=>b.dateKey===activeDateKey);
-  const isToday=activeDateKey===getDateKey(moscowNow());
-  const nowMin=moscowNow().getHours()*60+moscowNow().getMinutes();
+  const isToday=activeDateKey===getDateKey(moscowNow()), nowMin=moscowNow().getHours()*60+moscowNow().getMinutes();
   const step=config.slotStep||30, slots=getTimeSlots();
-
-  const grid=document.createElement('div'); grid.className='grid';
-  grid.style.gridTemplateColumns='72px repeat('+horses.length+', 1fr)';
-  
-  const corner=document.createElement('div'); 
-  corner.className='gh corner'; 
-  corner.textContent='Время'; 
-  grid.appendChild(corner);
-  
+  const grid=document.createElement('div');grid.className='grid';grid.style.gridTemplateColumns='72px repeat('+horses.length+', 1fr)';
+  const corner=document.createElement('div');corner.className='gh corner';corner.textContent='Время';grid.appendChild(corner);
   horses.forEach(h=>{const gh=document.createElement('div');gh.className='gh';gh.textContent=h;grid.appendChild(gh);});
-
   slots.forEach(slotMin=>{
     const tc=document.createElement('div');tc.className='gl';tc.textContent=minToStr(slotMin);grid.appendChild(tc);
     horses.forEach(horse=>{
@@ -392,11 +432,10 @@ function renderSched(){
       const matched=dayBookings.filter(b=>b.horse===horse&&b.startMin<slotMin+step&&(b.startMin+b.dur*60)>slotMin);
       if(!matched.length){
         gc.classList.add('empty-slot');
-        if(isAdmin){const ph=document.createElement('div');ph.className='add-placeholder';ph.textContent='＋';ph.title='Забронировать '+horse;ph.addEventListener('click',()=>openFormFor(curDateOffset,slotMin,horse));gc.appendChild(ph);}
+        if(role==='admin'){const ph=document.createElement('div');ph.className='add-placeholder';ph.textContent='＋';ph.addEventListener('click',()=>openFormFor(curDateOffset,slotMin,horse));gc.appendChild(ph);}
       } else {
         matched.forEach(b=>{
-          const st=STATUSES[b.status]||STATUSES.wait;
-          const isPast=isToday&&(b.startMin+b.dur*60)<=nowMin;
+          const st=STATUSES[b.status]||STATUSES.wait, isPast=isToday&&(b.startMin+b.dur*60)<=nowMin;
           const block=document.createElement('div');block.className='bblock s-'+st.cls+(isPast?' past':'');
           block.innerHTML='<div class="btime">'+minToStr(b.startMin)+'-'+minToStr(b.startMin+b.dur*60)+'</div><div class="btrainer">'+esc(b.trainer||'—')+'</div><div class="bprice">'+fmt(b.price)+'</div>';
           block.addEventListener('click',()=>openDetail(b.id));gc.appendChild(block);
@@ -408,54 +447,102 @@ function renderSched(){
   const wrap=document.createElement('div');wrap.className='grid-wrap';wrap.appendChild(grid);box.innerHTML='';box.appendChild(wrap);
 }
 
-function renderDbStats(){
-  const el = document.getElementById('dbStats');
-  if(!db) { el.innerHTML = ''; return; }
-  const limit = 104857600; // 100 МБ лимит бесплатного тарифа Firebase
-  const pct = ((dbSizeBytes / limit) * 100).toFixed(4);
-  el.innerHTML = 'Хранилище Firebase: занято <span>' + formatBytes(dbSizeBytes) + '</span> из 100 МБ (' + pct + '%)';
+function renderWatchPanel(){
+  const box = document.getElementById('wpLogs');
+  if(!logs.length){ box.innerHTML = '<div class="wp-log" style="color:var(--muted);text-align:center;padding:20px">Логов пока нет</div>'; return; }
+  box.innerHTML = '';
+  logs.forEach(l => {
+    const d = document.createElement('div'); d.className = 'wp-log';
+    const timeStr = new Date(l.time).toLocaleString('ru-RU');
+    const isDone = l.action === 'CREATE' || l.action === 'STATUS';
+    d.innerHTML = '<span class="time">'+timeStr+'</span><span class="act '+(isDone?'done':'')+'">'+l.action+': '+esc(l.details)+'</span>';
+    
+    if(role === 'watcher' && l.action === 'CREATE') {
+      // Ищем бронь по деталям (упрощенно)
+      const delBtn = document.createElement('button');
+      delBtn.className = 'dc-del'; delBtn.style.marginTop = '8px';
+      delBtn.textContent = 'Отменить/Удалить';
+      delBtn.addEventListener('click', () => {
+        if(confirm('Отменить эту запись?')) {
+          // Логика поиска и удаления по логу
+          const parts = l.details.split(' ');
+          const horse = parts[0];
+          const time = parts[1];
+          const target = bookings.find(b => b.horse === horse && minToStr(b.startMin) === time && (b.status||'wait')!=='cancel');
+          if(target) { deleteBooking(target.id); }
+        }
+      });
+      d.appendChild(delBtn);
+    }
+    box.appendChild(d);
+  });
 }
 
 function renderHeaderState(){
-  document.getElementById('adminBtn').style.display=isAdmin?'none':'inline-block';
-  document.getElementById('adminCfgBtn').style.display=isAdmin?'inline-block':'none';
-  document.getElementById('adminOutBtn').style.display=isAdmin?'inline-block':'none';
-  document.getElementById('guestHint').style.display=isAdmin?'none':'block';
-  document.getElementById('fab').style.display=isAdmin?'block':'none';
+  const isA = role==='admin', isW = role==='watcher';
+  document.getElementById('mainUI').style.display = isW ? 'none' : 'block';
+  document.getElementById('watchUI').style.display = isW ? 'block' : 'none';
+  document.getElementById('adminBtn').style.display = (!isA && !isW) ? 'inline-block' : 'none';
+  document.getElementById('adminCfgBtn').style.display = isA ? 'inline-block' : 'none';
+  document.getElementById('adminOutBtn').style.display = (isA || isW) ? 'inline-block' : 'none';
+  document.getElementById('guestHint').style.display = (!isA && !isW) ? 'block' : 'none';
+  document.getElementById('fab').style.display = isA ? 'block' : 'none';
+  if(isA) {
+    let expBtn = document.getElementById('expBtn');
+    if(!expBtn) {
+      expBtn = document.createElement('button'); expBtn.id = 'expBtn'; expBtn.className = 'adminbtn blue';
+      expBtn.textContent = '📊 Скачать Excel'; expBtn.style.marginRight = '8px';
+      expBtn.addEventListener('click', exportToExcel);
+      document.getElementById('adminOutBtn').before(expBtn);
+    }
+    expBtn.style.display = 'inline-block';
+  } else {
+    const expBtn = document.getElementById('expBtn');
+    if(expBtn) expBtn.style.display = 'none';
+  }
 }
-function refreshUI(){renderHeaderState();renderDays();renderSched();renderDbStats();refreshPrice();}
 
-/* ================= Детали ================= */
+function renderDbStats(){
+  const el=document.getElementById('dbStats');if(!db){el.innerHTML='';return;}
+  el.innerHTML='Хранилище: <span>'+formatBytes(dbSizeBytes)+'</span> из 100 МБ';
+}
+
+function refreshUI(){renderHeaderState();if(role!=='watcher'){renderDays();renderSched();renderDbStats();refreshPrice();}else{renderWatchPanel();}}
+
+/* ================= Формы ================= */
 function openDetail(id){
   const b=bookings.find(x=>x.id===id);if(!b)return;
   const m=document.getElementById('detailModal'), st=STATUSES[b.status]||STATUSES.wait;
   let h='<h2>'+esc(b.horse)+' · '+minToStr(b.startMin)+'</h2><div class="detail-card">';
-  h+='<div class="dc-row"><span class="dc-label">Дата</span><span class="dc-val">'+esc(b.dateKey)+'</span></div>';
-  h+='<div class="dc-row"><span class="dc-label">Длительность</span><span class="dc-val">'+b.dur+' ч</span></div>';
-  h+='<div class="dc-row"><span class="dc-label">Тренер</span><span class="dc-val">'+esc(b.trainer||'—')+'</span></div>';
-  h+='<div class="dc-row"><span class="dc-label">Нагрузка</span><span class="dc-val">'+esc(b.loadLabel||'—')+'</span></div>';
-  h+='<div class="dc-row"><span class="dc-label">Темп</span><span class="dc-val">'+esc(b.tempoLabel||'—')+'</span></div>';
+  h+='<div class="dc-row"><span class="dc-label">Дата</span><span class="dc-val">'+b.dateKey+'</span></div>';
+  h+='<div class="dc-row"><span class="dc-label">Время</span><span class="dc-val">'+minToStr(b.startMin)+' – '+minToStr(b.startMin+b.dur*60)+'</span></div>';
+  h+='<div class="dc-row"><span class="dc-label">Тренер</span><span class="dc-val">'+esc(b.trainer)+'</span></div>';
+  h+='<div class="dc-row"><span class="dc-label">Нагрузка</span><span class="dc-val">'+esc(b.loadLabel)+'</span></div>';
+  h+='<div class="dc-row"><span class="dc-label">Темп</span><span class="dc-val">'+esc(b.tempoLabel)+'</span></div>';
   h+='<div class="dc-price">'+fmt(b.price)+'</div>';
   h+='<span class="dc-status dc-'+st.cls+'">'+st.icon+' '+st.label+'</span>';
   if(b.orderStatus) h+='<div class="dc-order-status">💬 '+esc(b.orderStatus)+'</div>';
   h+='</div>';
-  if(isAdmin){
+  if(role==='admin'){
     h+='<div class="chips" style="margin-bottom:12px">';
     Object.keys(STATUSES).forEach(k=>{const s=STATUSES[k];h+='<div class="chip'+((b.status||'wait')===k?' sel':'')+'" data-s="'+k+'" id="ds_'+k+'">'+s.icon+' '+s.label+'</div>';});
-    h+='</div><button class="btn save wide" id="detailEdit">✏️ Редактировать</button><button class="dc-del" id="detailDel">🗑 Удалить</button>';
+    h+='</div><button class="btn save wide" id="detailEdit">✏️ Ред.</button><button class="dc-del" id="detailDel">🗑 Удалить</button>';
   }
-  m.innerHTML=h; document.getElementById('detailOverlay').classList.add('open');
-  if(isAdmin){
+  if(role==='watcher'){
+    h+='<button class="dc-del" id="detailDel">Отменить бронь</button>';
+  }
+  m.innerHTML=h;document.getElementById('detailOverlay').classList.add('open');
+  const del=document.getElementById('detailDel');
+  if(del) del.addEventListener('click',()=>{if(confirm('Отменить/Удалить?')){deleteBooking(id);document.getElementById('detailOverlay').classList.remove('open');}});
+  if(role==='admin'){
     Object.keys(STATUSES).forEach(k=>{document.getElementById('ds_'+k).addEventListener('click',function(){updateBooking(id,{status:k});document.getElementById('detailOverlay').classList.remove('open');});});
-    document.getElementById('detailDel').addEventListener('click',()=>{if(confirm('Удалить?')){deleteBooking(id);document.getElementById('detailOverlay').classList.remove('open');}});
     document.getElementById('detailEdit').addEventListener('click',()=>{document.getElementById('detailOverlay').classList.remove('open');openFormEdit(b);});
   }
 }
 function closeDetail(){document.getElementById('detailOverlay').classList.remove('open');}
 
-/* ================= Форма ================= */
 function openForm(){editingId=null;document.getElementById('formTitle').textContent='Новая бронь';document.getElementById('fSave').textContent='Забронировать';_fillForm(curDateOffset,480,config.horses[0]||'',1.5,'',0,0,'wait','');document.getElementById('overlay').classList.add('open');}
-function openFormFor(off,t,h){editingId=null;document.getElementById('formTitle').textContent='Новая бронь';document.getElementById('fSave').textContent='Забронировать';_fillForm(off,t,h,1.5,'',curLoadIdx,curTempoIdx,'wait','');document.getElementById('overlay').classList.add('open');}
+function openFormFor(off,t,h){editingId=null;document.getElementById('formTitle').textContent='Новая бронь';_fillForm(off,t,h,1.5,'',curLoadIdx,curTempoIdx,'wait','');document.getElementById('overlay').classList.add('open');}
 function openFormEdit(b){
   editingId=b.id;document.getElementById('formTitle').textContent='Редактирование';document.getElementById('fSave').textContent='Сохранить';
   let li=0,ti=0,off=0;config.loads.forEach((l,i)=>{if(l.label===b.loadLabel)li=i;});config.tempos.forEach((t,i)=>{if(t.label===b.tempoLabel)ti=i;});
@@ -471,11 +558,19 @@ function _fillForm(off,startMin,horse,dur,trainer,loadIdx,tempoIdx,status,orderS
   getTimeSlots().forEach(m=>{const o=document.createElement('option');o.value=m;o.textContent=minToStr(m);if(m===startMin)o.selected=true;tSel.appendChild(o);});
   document.getElementById('fHorse').innerHTML=config.horses.map(h=>'<option'+(h===horse?' selected':'')+'>'+esc(h)+'</option>').join('')||'<option>—</option>';
   document.getElementById('trainerList').innerHTML=config.trainers.map(t=>'<option value="'+esc(t)+'">').join('');
+  
+  const activeDurs = getLoadDurs(config.loads[loadIdx]);
+  const durBox = document.getElementById('fDur'); durBox.innerHTML = '';
+  if(!activeDurs.includes(dur)) dur = activeDurs[0] || 1;
+  activeDurs.forEach(h => {
+    const label = h < 1 ? (h*60)+' мин' : h+' ч';
+    durBox.innerHTML += '<div class="chip'+(h===dur?' sel':'')+'" data-h="'+h+'">'+label+'</div>';
+  });
+
   document.getElementById('fLoad').innerHTML=config.loads.map((l,i)=>'<div class="chip'+(i===loadIdx?' sel':'')+'" data-i="'+i+'">'+esc(l.label)+'</div>').join('');
   document.getElementById('fTempo').innerHTML=config.tempos.map((t,i)=>'<div class="chip'+(i===tempoIdx?' sel':'')+'" data-i="'+i+'">'+esc(t.label)+'</div>').join('');
-  document.querySelectorAll('#fDur .chip').forEach(c=>c.classList.toggle('sel',parseFloat(c.dataset.h)===dur));
   document.querySelectorAll('#fStatus .chip').forEach(c=>c.classList.toggle('sel',c.dataset.s===status));
-  curDur=dur; curStatus=status; curLoadIdx=loadIdx; curTempoIdx=tempoIdx; curDateOffset=off;
+  curDur=dur;curStatus=status;curLoadIdx=loadIdx;curTempoIdx=tempoIdx;curDateOffset=off;
   document.getElementById('fErr').style.display='none';
   document.getElementById('fTrainer').value=trainer||'';
   document.getElementById('fOrderStatus').value=orderStatus||'';
@@ -484,76 +579,77 @@ function _fillForm(off,startMin,horse,dur,trainer,loadIdx,tempoIdx,status,orderS
 
 function closeForm(){document.getElementById('overlay').classList.remove('open');editingId=null;}
 
-function bindChips(id,cb){document.getElementById(id).addEventListener('click',e=>{const c=e.target.closest('.chip');if(!c)return;c.parentElement.querySelectorAll('.chip').forEach(x=>x.classList.remove('sel'));c.classList.add('sel');cb(c);refreshPrice();});}
+function bindChips(id,cb){document.getElementById(id).addEventListener('click',e=>{const c=e.target.closest('.chip');if(!c)return;c.parentElement.querySelectorAll('.chip').forEach(x=>x.classList.remove('sel'));c.classList.add('sel');cb(c);if(id==='fLoad') refreshUI(); else refreshPrice();});}
 bindChips('fDur',c=>curDur=parseFloat(c.dataset.h));
-bindChips('fLoad',c=>curLoadIdx=parseInt(c.dataset.i,10));
+bindChips('fLoad',c=>{curLoadIdx=parseInt(c.dataset.i,10);});
 bindChips('fTempo',c=>curTempoIdx=parseInt(c.dataset.i,10));
 bindChips('fStatus',c=>curStatus=c.dataset.s);
 
 document.getElementById('fSave').addEventListener('click',()=>{
-  const err=document.getElementById('fErr'), d=dates[curDateOffset], dk=getDateKey(d);
-  const startMin=parseInt(document.getElementById('fTime').value,10), horse=document.getElementById('fHorse').value;
-  const trainer=document.getElementById('fTrainer').value.trim(), endMin=startMin+curDur*60;
-  const L=config.loads[curLoadIdx]||{label:'',prices:{}}, T=config.tempos[curTempoIdx]||{label:''};
+  const err=document.getElementById('fErr'),d=dates[curDateOffset],dk=getDateKey(d);
+  const startMin=parseInt(document.getElementById('fTime').value,10),horse=document.getElementById('fHorse').value;
+  const trainer=document.getElementById('fTrainer').value.trim(),endMin=startMin+curDur*60;
+  const L=config.loads[curLoadIdx]||{label:''},T=config.tempos[curTempoIdx]||{label:''};
   if(!trainer){err.textContent='⚠ Укажите тренера.';err.style.display='block';return;}
   const clash=bookings.find(b=>b.id!==editingId&&(b.status||'wait')!=='cancel'&&b.dateKey===dk&&b.horse===horse&&b.startMin<endMin&&startMin<b.startMin+b.dur*60);
-  if(clash){err.textContent='⚠ «'+horse+'» занята с '+minToStr(clash.startMin)+' до '+minToStr(clash.startMin+clash.dur*60)+'.';err.style.display='block';return;}
+  if(clash){err.textContent='⚠ Занято с '+minToStr(clash.startMin)+' до '+minToStr(clash.startMin+clash.dur*60);err.style.display='block';return;}
   err.style.display='none';
-  const data={dateKey:dk,startMin:startMin,dur:curDur,horse,trainer,loadLabel:L.label,tempoLabel:T.label,price:calcPrice(),status:curStatus,orderStatus:document.getElementById('fOrderStatus').value.trim()};
-  if(editingId) updateBooking(editingId,data); else saveBookingToCloud(data);
+  const data={dateKey:dk,startMin,dur:curDur,horse,trainer,loadLabel:L.label,tempoLabel:T.label,price:calcPrice(),status:curStatus,orderStatus:document.getElementById('fOrderStatus').value.trim()};
+  if(editingId)updateBooking(editingId,data);else saveBookingToCloud(data);
   closeForm();
 });
 
 /* ================= Вход ================= */
-function openLogin(){document.getElementById('loginErr').style.display='none';document.getElementById('loginPass').value='';document.getElementById('loginOverlay').classList.add('open');}
+function openLogin(){document.getElementById('loginErr').style.display='none';document.getElementById('loginOverlay').classList.add('open');}
 document.getElementById('loginGo').addEventListener('click',doLogin);
 document.getElementById('loginPass').addEventListener('keydown',e=>{if(e.key==='Enter')doLogin();});
-function doLogin(){const p=document.getElementById('loginPass').value;if(p===(config.adminPass||'admin')){isAdmin=true;localStorage.setItem('hc_admin','true');document.getElementById('loginOverlay').classList.remove('open');refreshUI();}else{const e=document.getElementById('loginErr');e.textContent='⚠ Неверный пароль.';e.style.display='block';}}
+function doLogin(){
+  const u=document.getElementById('loginUser').value.trim(), p=document.getElementById('loginPass').value;
+  if(u===config.watcherLogin && p===config.watcherPass){ role='watcher'; localStorage.setItem('hc_role','watcher'); document.getElementById('loginOverlay').classList.remove('open'); refreshUI(); }
+  else if(p===(config.adminPass||'admin')){ role='admin'; localStorage.setItem('hc_role','admin'); document.getElementById('loginOverlay').classList.remove('open'); refreshUI(); }
+  else{const e=document.getElementById('loginErr');e.textContent='⚠ Неверный логин или пароль.';e.style.display='block';}
+}
 document.getElementById('loginCancel').addEventListener('click',()=>document.getElementById('loginOverlay').classList.remove('open'));
 document.getElementById('adminBtn').addEventListener('click',openLogin);
-document.getElementById('adminCfgBtn').addEventListener('click',()=>{if(isAdmin)openCfg();});
-document.getElementById('adminOutBtn').addEventListener('click',()=>{if(!isAdmin)return;if(confirm('Выйти?')){isAdmin=false;localStorage.removeItem('hc_admin');closeCfg();closeForm();closeDetail();refreshUI();}});
+document.getElementById('adminCfgBtn').addEventListener('click',()=>{if(role==='admin')openCfg();});
+document.getElementById('adminOutBtn').addEventListener('click',()=>{if(confirm('Выйти?')){role='guest';localStorage.removeItem('hc_role');closeCfg();closeForm();closeDetail();refreshUI();}});
 
 /* ================= Конфигуратор ================= */
 let cfgDraft=null;
-function openCfg(){cfgDraft=JSON.parse(JSON.stringify(config));document.getElementById('cfgErr').style.display='none';document.getElementById('cfgPass').value='';renderCfg();document.getElementById('cfgOverlay').classList.add('open');}
+function openCfg(){cfgDraft=JSON.parse(JSON.stringify(config));document.getElementById('cfgErr').style.display='none';renderCfg();document.getElementById('cfgOverlay').classList.add('open');}
 function closeCfg(){document.getElementById('cfgOverlay').classList.remove('open');cfgDraft=null;}
 
 function renderCfg(){
   if(!cfgDraft)return;
   document.getElementById('cfgRate').value=cfgDraft.rate;
-  const durKeys=[0.5, 1, 1.5, 2, 2.5, 3];
-  const durLabels={'0.5':'30м','1':'1ч','1.5':'1.5ч','2':'2ч','2.5':'2.5ч','3':'3ч'};
+  document.getElementById('cfgPass').value='';
+  document.getElementById('cfgWLogin').value=cfgDraft.watcherLogin||'';
+  document.getElementById('cfgWPass').value=cfgDraft.watcherPass||'';
+  document.getElementById('cfgTgToken').value=cfgDraft.tgToken||'';
+  document.getElementById('cfgTgChat').value=cfgDraft.tgChat||'';
   
   const loadBox=document.getElementById('cfgLoads'); loadBox.innerHTML='';
   cfgDraft.loads.forEach((it,i)=>{
-    const row=document.createElement('div'); row.className='multrow'; row.style.flexDirection='column'; row.style.alignItems='stretch'; row.style.gap='8px';
-    const topRow=document.createElement('div'); topRow.style.display='flex'; topRow.style.gap='8px'; topRow.style.alignItems='center';
-    const li=document.createElement('input');li.className='lbl-in';li.type='text';li.value=it.label;li.placeholder='Нагрузка';
+    const row=document.createElement('div');row.className='multrow';row.style.flexDirection='column';row.style.alignItems='stretch';row.style.gap='8px';
+    const topRow=document.createElement('div');topRow.style.display='flex';topRow.style.gap='8px';
+    const li=document.createElement('input');li.className='lbl-in';li.value=it.label;li.placeholder='Нагрузка';
     li.addEventListener('input',()=>cfgDraft.loads[i].label=li.value);
-    const rm=document.createElement('button');rm.className='rm';rm.textContent='✕';
-    rm.addEventListener('click',()=>{if(cfgDraft.loads.length<=1)return;cfgDraft.loads.splice(i,1);renderCfg();});
-    topRow.appendChild(li); topRow.appendChild(rm);
+    const rm=document.createElement('button');rm.className='rm';rm.textContent='✕';rm.addEventListener('click',()=>{if(cfgDraft.loads.length<=1)return;cfgDraft.loads.splice(i,1);renderCfg();});
+    topRow.appendChild(li);topRow.appendChild(rm);
     
-    const priceRow=document.createElement('div'); priceRow.style.display='flex'; priceRow.style.gap='6px'; priceRow.style.flexWrap='wrap';
-    durKeys.forEach(dur=>{
-      const wrap=document.createElement('div'); wrap.style.display='flex'; wrap.style.alignItems='center'; wrap.style.gap='4px';
-      wrap.innerHTML='<span style="font-size:11px;color:var(--muted);width:28px">'+durLabels[dur]+'</span>';
-      const inp=document.createElement('input');inp.className='price-in';inp.type='number';inp.step='50';inp.min='0';
-      inp.value=it.prices[dur]||0; inp.placeholder='₽';
-      inp.addEventListener('input',()=>{if(!cfgDraft.loads[i].prices)cfgDraft.loads[i].prices={};cfgDraft.loads[i].prices[dur]=parseFloat(inp.value)||0;});
-      wrap.appendChild(inp); priceRow.appendChild(wrap);
-    });
-    row.appendChild(topRow); row.appendChild(priceRow); loadBox.appendChild(row);
-  });
+    const durIn=document.createElement('input');durIn.className='dur-in';durIn.type='text';durIn.value=it.durs||'';durIn.placeholder='Время (напр: 0.5, 1, 2)';
+    durIn.addEventListener('input',()=>{cfgDraft.loads[i].durs=durIn.value; renderCfgPrices();});
 
-  const tempoBox=document.getElementById('cfgTempos'); tempoBox.innerHTML='';
+    const priceRow=document.createElement('div');priceRow.id='priceRow_'+i;priceRow.style.display='flex';priceRow.style.gap='6px';priceRow.style.flexWrap='wrap';
+    row.appendChild(topRow);row.appendChild(durIn);row.appendChild(priceRow);loadBox.appendChild(row);
+  });
+  renderCfgPrices();
+
+  const tempoBox=document.getElementById('cfgTempos');tempoBox.innerHTML='';
   cfgDraft.tempos.forEach((it,i)=>{
     const row=document.createElement('div');row.className='multrow';
-    const li=document.createElement('input');li.className='lbl-in';li.type='text';li.value=it.label;li.placeholder='Темп';
-    li.addEventListener('input',()=>cfgDraft.tempos[i].label=li.value);
-    const rm=document.createElement('button');rm.className='rm';rm.textContent='✕';
-    rm.addEventListener('click',()=>{if(cfgDraft.tempos.length<=1)return;cfgDraft.tempos.splice(i,1);renderCfg();});
+    const li=document.createElement('input');li.className='lbl-in';li.value=it.label;li.placeholder='Темп';li.addEventListener('input',()=>cfgDraft.tempos[i].label=li.value);
+    const rm=document.createElement('button');rm.className='rm';rm.textContent='✕';rm.addEventListener('click',()=>{if(cfgDraft.tempos.length<=1)return;cfgDraft.tempos.splice(i,1);renderCfg();});
     row.appendChild(li);row.appendChild(rm);tempoBox.appendChild(row);
   });
 
@@ -563,63 +659,57 @@ function renderCfg(){
   });
 }
 
+function renderCfgPrices(){
+  cfgDraft.loads.forEach((it,i)=>{
+    const box=document.getElementById('priceRow_'+i); if(!box) return;
+    box.innerHTML='';
+    const durs = getLoadDurs(it);
+    durs.forEach(dur=>{
+      const wrap=document.createElement('div');wrap.style.display='flex';wrap.style.alignItems='center';wrap.style.gap='4px';
+      const label = dur < 1 ? (dur*60)+'м' : dur+'ч';
+      wrap.innerHTML='<span style="font-size:11px;color:var(--muted);width:28px">'+label+'</span>';
+      const inp=document.createElement('input');inp.className='price-in';inp.type='number';inp.step='50';inp.min='0';
+      inp.value=it.prices[dur]||0;inp.placeholder='₽';
+      inp.addEventListener('input',()=>{if(!cfgDraft.loads[i].prices)cfgDraft.loads[i].prices={};cfgDraft.loads[i].prices[dur]=parseFloat(inp.value)||0;});
+      wrap.appendChild(inp);box.appendChild(wrap);
+    });
+  });
+}
+
 function addSimple(iId,arr){const inp=document.getElementById(iId),v=inp.value.trim();if(!v)return;if(arr.some(x=>x.toLowerCase()===v.toLowerCase())){inp.value='';return;}arr.push(v);inp.value='';renderCfg();}
 document.getElementById('cfgHorseAdd').addEventListener('click',()=>{if(cfgDraft)addSimple('cfgHorseName',cfgDraft.horses);});
 document.getElementById('cfgTrainerAdd').addEventListener('click',()=>{if(cfgDraft)addSimple('cfgTrainerName',cfgDraft.trainers);});
-document.getElementById('cfgLoadAdd').addEventListener('click',()=>{if(!cfgDraft)return;const n=document.getElementById('cfgLoadName').value.trim();if(!n)return;cfgDraft.loads.push({label:n,prices:{0.5:0,1:0,1.5:0,2:0,2.5:0,3:0}});document.getElementById('cfgLoadName').value='';renderCfg();});
+document.getElementById('cfgLoadAdd').addEventListener('click',()=>{if(!cfgDraft)return;const n=document.getElementById('cfgLoadName').value.trim();if(!n)return;cfgDraft.loads.push({label:n,durs:'1, 1.5, 2',prices:{1:0,1.5:0,2:0}});document.getElementById('cfgLoadName').value='';renderCfg();});
 document.getElementById('cfgTempoAdd').addEventListener('click',()=>{if(!cfgDraft)return;const n=document.getElementById('cfgTempoName').value.trim();if(!n)return;cfgDraft.tempos.push({label:n});document.getElementById('cfgTempoName').value='';renderCfg();});
 
 document.getElementById('cfgSave').addEventListener('click',()=>{
-  if(!cfgDraft)return; 
-  const err=document.getElementById('cfgErr');
-  const rate=parseFloat(document.getElementById('cfgRate').value);
-  if(isNaN(rate)||rate<0){err.textContent='⚠ Укажите корректную ставку.';err.style.display='block';return;}
-  
+  if(!cfgDraft)return;const err=document.getElementById('cfgErr'),rate=parseFloat(document.getElementById('cfgRate').value);
+  if(isNaN(rate)||rate<0){err.textContent='⚠ Ставка error';err.style.display='block';return;}
   cfgDraft.rate=rate;
-  
-  // Правильная сборка цен нагрузок
-  cfgDraft.loads = cfgDraft.loads.filter(l => l.label && l.label.trim()).map(l => {
-    const p = {};
-    [0.5, 1, 1.5, 2, 2.5, 3].forEach(k => { p[k] = (l.prices ? l.prices[k] : 0) || 0; });
-    return { label: l.label.trim(), prices: p };
-  });
-  
-  cfgDraft.tempos = cfgDraft.tempos.filter(t => t.label && t.label.trim()).map(t => ({label: t.label.trim()}));
-  
-  if(!cfgDraft.loads.length || !cfgDraft.tempos.length){err.textContent='⚠ Добавьте варианты нагрузок и темпов.';err.style.display='block';return;}
-  
-  cfgDraft.horses = cfgDraft.horses.map(h => h.trim()).filter(Boolean);
-  cfgDraft.trainers = cfgDraft.trainers.map(t => t.trim()).filter(Boolean);
-  
-  const np = document.getElementById('cfgPass').value.trim();
-  if(np) cfgDraft.adminPass = np;
-  
-  // ФИНАЛЬНОЕ ПРИСВОЕНИЕ И СОХРАНЕНИЕ
-  config = JSON.parse(JSON.stringify(cfgDraft));
-  curLoadIdx = 0; 
-  curTempoIdx = 0;
-  
-  saveConfig();
-  closeCfg();
+  cfgDraft.loads=cfgDraft.loads.filter(l=>l.label&&l.label.trim()).map(l=>{const p={};getLoadDurs(l).forEach(k=>{p[k]=l.prices?l.prices[k]||0:0;});return{label:l.label.trim(),durs:l.durs,prices:p};});
+  cfgDraft.tempos=cfgDraft.tempos.filter(t=>t.label&&t.label.trim()).map(t=>({label:t.label.trim()}));
+  if(!cfgDraft.loads.length||!cfgDraft.tempos.length){err.textContent='⚠ Добавьте варианты';err.style.display='block';return;}
+  cfgDraft.horses=cfgDraft.horses.map(h=>h.trim()).filter(Boolean);
+  cfgDraft.trainers=cfgDraft.trainers.map(t=>t.trim()).filter(Boolean);
+  const np=document.getElementById('cfgPass').value.trim();if(np)cfgDraft.adminPass=np;
+  cfgDraft.watcherLogin=document.getElementById('cfgWLogin').value.trim();
+  cfgDraft.watcherPass=document.getElementById('cfgWPass').value.trim();
+  cfgDraft.tgToken=document.getElementById('cfgTgToken').value.trim();
+  cfgDraft.tgChat=document.getElementById('cfgTgChat').value.trim();
+  config=JSON.parse(JSON.stringify(cfgDraft));curLoadIdx=0;curTempoIdx=0;saveConfig();closeCfg();
 });
-
 document.getElementById('cfgCancel').addEventListener('click',closeCfg);
 
 /* ================= Кликеры ================= */
 document.getElementById('fCancel').addEventListener('click',closeForm);
-document.getElementById('fab').addEventListener('click',()=>{if(isAdmin)openForm();});
+document.getElementById('fab').addEventListener('click',()=>{if(role==='admin')openForm();});
 document.getElementById('overlay').addEventListener('click',e=>{if(e.target===e.currentTarget)closeForm();});
 document.getElementById('cfgOverlay').addEventListener('click',e=>{if(e.target===e.currentTarget)closeCfg();});
 document.getElementById('loginOverlay').addEventListener('click',e=>{if(e.target===e.currentTarget)document.getElementById('loginOverlay').classList.remove('open');});
 document.getElementById('detailOverlay').addEventListener('click',e=>{if(e.target===e.currentTarget)closeDetail();});
 
-/* ================= Часы ================= */
 function startMskClock(){
-  const tick=()=>{
-    document.getElementById('mskClock').textContent='🕐 МСК '+mskClockStr();
-    const cd=getDateKey(moscowNow());
-    if(cd!==lastMskDateStr){lastMskDateStr=cd;dates=generateDates();if(curDateOffset>0)curDateOffset--;refreshUI();}
-  };
+  const tick=()=>{document.getElementById('mskClock').textContent='🕐 МСК '+mskClockStr();const cd=getDateKey(moscowNow());if(cd!==lastMskDateStr){lastMskDateStr=cd;dates=generateDates();if(curDateOffset>0)curDateOffset--;refreshUI();}};
   tick();setInterval(tick,1000);
 }
 

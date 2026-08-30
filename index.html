@@ -1,113 +1,770 @@
 <!DOCTYPE html>
-  <html lang="ru">
-  <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Конный клуб — бронирование</title>
-  <style>
-    :root{
-      --bg:#f4f1ea; --card:#fff; --ink:#2d2a26; --muted:#8a8478;
-      --green:#4a7c59; --green-dark:#3a6247; --line:#e5e0d5; --red:#c0533e;
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Конный клуб — бронирование</title>
+<style>
+  :root{
+    --bg:#f4f1ea; --card:#fff; --ink:#2d2a26; --muted:#8a8478;
+    --green:#4a7c59; --green-dark:#3a6247; --line:#e5e0d5; --red:#c0533e;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;
+    background:var(--bg); color:var(--ink); min-height:100vh;
+    padding:14px; padding-bottom:90px;
+  }
+  header{display:flex;flex-wrap:wrap;align-items:center;gap:10px;margin-bottom:12px}
+  header h1{font-size:19px;flex:1;min-width:160px}
+  .status{font-size:12px;padding:4px 10px;border-radius:20px;background:#eee;color:#777;white-space:nowrap}
+  .status.ok{background:#e2f3e5;color:#2e7d43}
+  .status.err{background:#fbe4e0;color:var(--red)}
+  .adminbtn{font-size:12px;padding:6px 12px;border-radius:20px;border:1.5px solid var(--line);
+    background:var(--card);color:var(--muted);font-weight:600;cursor:pointer;white-space:nowrap}
+  .adminbtn.on{background:#3f3a33;border-color:#3f3a33;color:#fff}
+  .days{display:flex;gap:6px;overflow-x:auto;padding-bottom:6px;margin-bottom:12px;-webkit-overflow-scrolling:touch}
+  .day-tab{flex:0 0 auto;padding:10px 16px;border-radius:12px;border:1.5px solid var(--line);
+    background:var(--card);font-size:14px;font-weight:600;color:var(--muted);cursor:pointer}
+  .day-tab .cnt{display:inline-block;margin-left:6px;font-size:11px;background:var(--line);
+    color:var(--ink);border-radius:8px;padding:1px 6px}
+  .day-tab.active{background:var(--green);border-color:var(--green);color:#fff}
+  .day-tab.active .cnt{background:rgba(255,255,255,.25);color:#fff}
+  .slot{display:flex;align-items:center;gap:10px;background:var(--card);
+    border:1.5px solid var(--line);border-radius:12px;padding:10px 12px;margin-bottom:6px;flex-wrap:wrap}
+  .slot .time{font-weight:700;min-width:52px;font-size:15px}
+  .slot .info{flex:1;min-width:140px;font-size:13px;line-height:1.45}
+  .slot .meta{color:var(--muted);font-size:12px}
+  .slot .price{font-weight:700;color:var(--green-dark);white-space:nowrap}
+  .slot .del{border:none;background:#f7e9e6;color:var(--red);width:34px;height:34px;
+    border-radius:10px;font-size:15px;cursor:pointer;flex-shrink:0}
+  .empty{color:#999;text-align:center;padding:30px 0;font-style:italic;
+    border:1.5px dashed var(--line);border-radius:12px}
+  .guesthint{font-size:12px;color:var(--muted);text-align:center;margin-top:14px}
+  .fab{position:fixed;right:18px;bottom:18px;width:58px;height:58px;border-radius:50%;
+    border:none;background:var(--green);color:#fff;font-size:30px;cursor:pointer;
+    box-shadow:0 4px 14px rgba(0,0,0,.25);z-index:50;display:none}
+  .fab:active{transform:scale(.94)}
+  .overlay{position:fixed;inset:0;background:rgba(30,25,15,.5);display:none;
+    align-items:flex-end;justify-content:center;z-index:100}
+  .overlay.open{display:flex}
+  .modal{background:var(--card);width:100%;max-width:520px;max-height:92vh;overflow-y:auto;
+    border-radius:18px 18px 0 0;padding:18px}
+  @media(min-width:600px){.overlay{align-items:center}.modal{border-radius:18px}}
+  .modal h2{font-size:17px;margin-bottom:8px}
+  .modal label{display:block;font-size:12px;font-weight:600;color:var(--muted);margin:12px 0 4px}
+  .modal select,.modal input{width:100%;padding:11px 12px;font-size:15px;
+    border:1.5px solid var(--line);border-radius:10px;background:#fbfaf7;color:var(--ink)}
+  .chips{display:flex;gap:6px;flex-wrap:wrap}
+  .chip{padding:9px 14px;border:1.5px solid var(--line);border-radius:10px;
+    background:#fbfaf7;font-size:14px;font-weight:600;cursor:pointer}
+  .chip.sel{background:var(--green);border-color:var(--green);color:#fff}
+  .pricebox{margin-top:16px;padding:12px;border-radius:10px;background:#eef4ec;
+    border:1.5px solid #d3e2d4;display:flex;justify-content:space-between;align-items:center}
+  .pricebox .lbl{font-size:12px;color:var(--muted)}
+  .pricebox .hint{font-size:11px;color:var(--muted);margin-top:3px}
+  .pricebox .sum{font-size:20px;font-weight:800;color:var(--green-dark)}
+  .btnrow{display:flex;gap:10px;margin-top:16px}
+  .btn{flex:1;padding:13px;border:none;border-radius:10px;font-size:15px;font-weight:700;cursor:pointer}
+  .btn.save{background:var(--green);color:#fff}
+  .btn.cancel{background:#efece4;color:var(--muted)}
+  .btn.wide{width:100%}
+  .err{color:var(--red);font-size:13px;margin-top:10px;display:none}
+
+  /* --- админ-панель --- */
+  .sec{border:1.5px solid var(--line);border-radius:12px;padding:12px;margin-top:12px}
+  .sec h3{font-size:13px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px}
+  .namechip{display:inline-flex;align-items:center;gap:6px;padding:7px 8px 7px 12px;
+    border:1.5px solid var(--line);border-radius:10px;background:#fbfaf7;
+    font-size:14px;font-weight:600;margin:0 6px 6px 0}
+  .namechip .rm{border:none;background:#f7e9e6;color:var(--red);width:22px;height:22px;
+    border-radius:7px;font-size:12px;cursor:pointer;line-height:1}
+  .addrow{display:flex;gap:8px;margin-top:6px}
+  .addrow input{flex:1}
+  .addrow button{padding:0 16px;border:none;border-radius:10px;background:var(--green);
+    color:#fff;font-size:15px;font-weight:700;cursor:pointer}
+  .multrow{display:flex;gap:8px;align-items:center;margin-bottom:6px}
+  .multrow input.lbl-in{flex:2}
+  .multrow input.mult-in{flex:1}
+  .multrow .rm{border:none;background:#f7e9e6;color:var(--red);width:34px;height:40px;
+    border-radius:10px;font-size:14px;cursor:pointer;flex-shrink:0}
+  .muted{color:var(--muted);font-size:12px;margin-top:6px}
+</style>
+</head>
+<body>
+
+<header>
+  <h1>🐴 Расписание и бронирование</h1>
+  <div class="status" id="status">подключение…</div>
+  <button class="adminbtn" id="adminBtn">🔒 Войти</button>
+</header>
+
+<div class="days" id="days"></div>
+<div id="sched"></div>
+<div class="guesthint" id="guestHint">Вход для администратора — кнопка «🔒 Войти» вверху</div>
+
+<button class="fab" id="fab" title="Забронировать">＋</button>
+
+<!-- ======== модалка: вход ======== -->
+<div class="overlay" id="loginOverlay">
+  <div class="modal">
+    <h2>🔐 Вход администратора</h2>
+    <label>Пароль</label>
+    <input type="password" id="loginPass" placeholder="Пароль админа" autocomplete="current-password">
+    <div class="err" id="loginErr"></div>
+    <div class="btnrow">
+      <button class="btn cancel" id="loginCancel">Отмена</button>
+      <button class="btn save" id="loginGo">Войти</button>
+    </div>
+  </div>
+</div>
+
+<!-- ======== модалка: админ-конфигуратор ======== -->
+<div class="overlay" id="cfgOverlay">
+  <div class="modal">
+    <h2>⚙️ Конфигуратор</h2>
+
+    <div class="sec">
+      <h3>Цены</h3>
+      <label>Базовая ставка, ₽ за час</label>
+      <input type="number" id="cfgRate" min="0" step="50">
+      <div class="muted">Итог: ставка × длительность × множитель нагрузки × множитель темпа</div>
+    </div>
+
+    <div class="sec">
+      <h3>Нагрузки (место занятия)</h3>
+      <div id="cfgLoads"></div>
+      <div class="addrow">
+        <input type="text" id="cfgLoadName" placeholder="Название (напр. Маршрут)">
+        <input type="number" id="cfgLoadMult" placeholder="×1.0" step="0.05" min="0" style="max-width:90px">
+        <button id="cfgLoadAdd">＋</button>
+      </div>
+    </div>
+
+    <div class="sec">
+      <h3>Темп</h3>
+      <div id="cfgTempos"></div>
+      <div class="addrow">
+        <input type="text" id="cfgTempoName" placeholder="Название (напр. Кентер)">
+        <input type="number" id="cfgTempoMult" placeholder="×1.0" step="0.05" min="0" style="max-width:90px">
+        <button id="cfgTempoAdd">＋</button>
+      </div>
+    </div>
+
+    <div class="sec">
+      <h3>Лошади</h3>
+      <div class="chips" id="cfgHorses"></div>
+      <div class="addrow">
+        <input type="text" id="cfgHorseName" placeholder="Кличка лошади">
+        <button id="cfgHorseAdd">＋</button>
+      </div>
+    </div>
+
+    <div class="sec">
+      <h3>Тренеры</h3>
+      <div class="chips" id="cfgTrainers"></div>
+      <div class="addrow">
+        <input type="text" id="cfgTrainerName" placeholder="Имя тренера">
+        <button id="cfgTrainerAdd">＋</button>
+      </div>
+    </div>
+
+    <div class="sec">
+      <h3>Безопасность</h3>
+      <label>Новый пароль админа (оставьте пустым, чтобы не менять)</label>
+      <input type="text" id="cfgPass" placeholder="Новый пароль" autocomplete="off">
+u    </div>
+
+    <div class="err" id="cfgErr"></div>
+
+    <div class="btnrow">
+      <button class="btn cancel" id="cfgCancel">Отмена</button>
+      <button class="btn save" id="cfgSave">Сохранить</button>
+    </div>
+  </div>
+</div>
+
+<!-- ======== модалка: новая бронь ======== -->
+<div class="overlay" id="overlay">
+  <div class="modal">
+    <h2>Новая бронь</h2>
+
+    <label>День недели</label>
+    <select id="fDay"></select>
+
+    <label>Время начала</label>
+    <select id="fTime"></select>
+
+    <label>Длительность</label>
+    <div class="chips" id="fDur">
+      <div class="chip" data-h="1">1 час</div>
+      <div class="chip sel" data-h="1.5">1,5 часа</div>
+      <div class="chip" data-h="2">2 часа</div>
+      <div class="chip" data-h="3">3 часа</div>
+    </div>
+
+    <label>Лошадь</label>
+    <select id="fHorse"></select>
+
+    <label>Тренер</label>
+    <input type="text" id="fTrainer" placeholder="Имя тренера" list="trainerList">
+    <datalist id="trainerList"></datalist>
+
+    <label>Нагрузка (место занятия)</label>
+    <div class="chips" id="fLoad"></div>
+
+    <label>Темп</label>
+    <div class="chips" id="fTempo"></div>
+
+    <div class="pricebox">
+      <div>
+        <div class="lbl">Стоимость занятия</div>
+        <div class="hint" id="pHint">База 800 ₽/час × длительность × нагрузка × темп</div>
+      </div>
+      <div class="sum" id="pSum">1 200 ₽</div>
+    </div>
+
+    <div class="err" id="fErr"></div>
+
+    <div class="btnrow">
+      <button class="btn cancel" id="fCancel">Отмена</button>
+      <button class="btn save" id="fSave">Забронировать</button>
+    </div>
+  </div>
+</div>
+
+<!-- Firebase SDK (compat-версии, загружаются синхронно) -->
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
+
+<script>
+'use strict';
+
+/* ============================================================
+   НАСТРОЙКА (2 минуты):
+   1. Зайдите на https://console.firebase.google.com → «Создать проект»
+   2. «Сборка» → «Realtime Database» → «Создать базу» → режим «тестовый доступ»
+   3. ⚙ «Настройки проекта» → «Ваши приложения» → «</> Web» —
+      скопируйте объект firebaseConfig и вставьте его НИЖЕ вместо null.
+
+   В базе будут два узла:
+     /bookings — брони
+     /config   — ставки, множители, списки лошадей/тренеров, пароль админа
+
+   Пароль админа по умолчанию: admin  (смените его в конфигураторе
+   сразу после первого входа!)
+
+   Пока конфиг не вставлен — приложение работает в демо-режиме
+   (данные только в памяти, синхронизации между устройствами нет).
+============================================================= */
+const firebaseConfig = null; /* ← замените null на объект конфига, например:
+{
+  apiKey: "AIza...",
+  authDomain: "my-club.firebaseapp.com",
+  databaseURL: "https://my-club-default-rtdb.firebaseio.com",
+  projectId: "my-club",
+  storageBucket: "my-club.appspot.com",
+  messagingSenderId: "123456789",
+  appId: "1:123456789:web:abcdef"
+};
+*/
+
+/* ================= состояние ================= */
+const DAYS = ['Пн','Вт','Ср','Чт','Пт','Сб','Вс'];
+const DAYS_FULL = ['Понедельник','Вторник','Среда','Четверг','Пятница','Суббота','Воскресенье'];
+
+const DEFAULT_CONFIG = {
+  rate: 800,
+  loads:  [{label:'Плац', mult:1}, {label:'Поле', mult:1.1}, {label:'Лес', mult:1.2}],
+  tempos: [{label:'Шаг', mult:1}, {label:'Рысь', mult:1.15}, {label:'Галоп', mult:1.3}],
+  horses: ['Рокки','Изюм','Форсаж','Дон','Былина','Армани','Падуб','Хаммер'],
+  trainers: ['Анна Соколова','Игорь Волков','Мария Лебедева','Пётр Громов'],
+  adminPass: 'admin'
+};
+
+let db = null;
+let config = JSON.parse(JSON.stringify(DEFAULT_CONFIG)); // ставки, списки, пароль
+let bookings = [];   // {day, startMin, dur, horse, trainer, loadLabel, loadMult, tempoLabel, tempoMult, price}
+let isAdmin = false; // сессия админа (сбрасывается при перезагрузке страницы)
+let curDay = new Date().getDay() === 0 ? 6 : new Date().getDay() - 1;
+let curDur = 1.5, curLoadIdx = 0, curTempoIdx = 0;
+
+const fmt = n => Math.round(n).toLocaleString('ru-RU') + ' ₽';
+const minToStr = m => String(Math.floor(m/60)).padStart(2,'0') + ':' + String(m%60).padStart(2,'0');
+const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g,
+  c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+
+/* ================= подключение к Firebase ================= */
+function initFirebase(){
+  const st = document.getElementById('status');
+  if(!firebaseConfig || typeof firebase === 'undefined'){
+    st.textContent = 'демо-режим (нет базы)';
+    refreshUI();
+    return;
+  }
+  try{
+    firebase.initializeApp(firebaseConfig);
+    db = firebase.database();
+
+    // конфиг (ставки, списки, пароль)
+    db.ref('config').on('value', snap => {
+      const val = snap.val();
+      if(val){
+        config = Object.assign(JSON.parse(JSON.stringify(DEFAULT_CONFIG)), val);
+        if(!Array.isArray(config.loads))  config.loads  = DEFAULT_CONFIG.loads;
+        if(!Array.isArray(config.tempos)) config.tempos = DEFAULT_CONFIG.tempos;
+        if(!Array.isArray(config.horses))   config.horses   = [];
+        if(!Array.isArray(config.trainers)) config.trainers = [];
+      }
+      curLoadIdx  = Math.min(curLoadIdx,  config.loads.length  - 1);
+      curTempoIdx = Math.min(curTempoIdx, config.tempos.length - 1);
+      refreshUI();
+    });
+
+    // брони
+    db.ref('bookings').on('value', snap => {
+      const val = snap.val();
+      bookings = val ? Object.keys(val).map(k => Object.assign({id:k}, val[k])) : [];
+      refreshUI();
+      st.textContent = '● онлайн — синхронизировано';
+      st.className = 'status ok';
+    }, err => {
+      st.textContent = 'ошибка базы: ' + err.code;
+      st.className = 'status err';
+    });
+  }catch(e){
+    st.textContent = 'ошибка конфига — демо-режим';
+    st.className = 'status err';
+    db = null;
+    refreshUI();
+  }
+}
+
+function saveConfig(){
+  if(db){
+    db.ref('config').set(config);
+  }
+  refreshUI(); // в демо-режиме просто перерисовать
+}
+
+function saveBookingToCloud(item){
+  if(db){
+    db.ref('bookings').push(item);
+  }else{
+    item.id = 'local_' + Date.now();
+    bookings.push(item);
+    refreshUI();
+  }
+}
+
+function deleteBooking(id){
+  if(db){
+    db.ref('bookings/' + id).remove();
+  }else{
+    bookings = bookings.filter(b => b.id !== id);
+    refreshUI();
+  }
+}
+
+/* ================= расчёт цены ================= */
+function calcPrice(){
+  const l = config.loads[curLoadIdx] || {mult:1};
+  const t = config.tempos[curTempoIdx] || {mult:1};
+  return config.rate * curDur * l.mult * t.mult;
+}
+
+function refreshPrice(){
+  document.getElementById('pSum').textContent = fmt(calcPrice());
+  const l = config.loads[curLoadIdx], t = config.tempos[curTempoIdx];
+  const parts = [];
+  if(l && l.mult !== 1) parts.push('нагрузка ×' + l.mult);
+  if(t && t.mult !== 1) parts.push('темп ×' + t.mult);
+  document.getElementById('pHint').textContent =
+    'База ' + fmt(config.rate * curDur) + (parts.length ? ' · ' + parts.join(' · ') : '');
+}
+
+/* ================= отрисовка ================= */
+function renderDays(){
+  const box = document.getElementById('days');
+  box.innerHTML = '';
+  DAYS.forEach((d, i) => {
+    const n = bookings.filter(b => b.day === i).length;
+    const t = document.createElement('div');
+    t.className = 'day-tab' + (i === curDay ? ' active' : '');
+    t.innerHTML = d + '<span class="cnt">' + n + '</span>';
+    t.addEventListener('click', () => { curDay = i; refreshUI(); });
+    box.appendChild(t);
+  });
+}
+
+function renderSched(){
+  const box = document.getElementById('sched');
+  const list = bookings
+    .filter(b => b.day === curDay)
+    .sort((a, b) => a.startMin - b.startMin);
+
+  box.innerHTML = '';
+  if(!list.length){
+    const e = document.createElement('div');
+    e.className = 'empty';
+    e.textContent = isAdmin
+      ? 'На этот день броней нет — нажмите ＋, чтобы добавить'
+      : 'На этот день броней нет';
+    box.appendChild(e);
+    return;
+  }
+  list.forEach(b => {
+    const row = document.createElement('div');
+    row.className = 'slot';
+    row.innerHTML =
+      '<div class="time">' + minToStr(b.startMin) + '</div>' +
+      '<div class="info">' +
+        '<div><b>' + esc(b.horse) + '</b> <span class="meta">· ' + b.dur + ' ч · тренер: ' + esc(b.trainer || '—') + '</span></div>' +
+        '<div class="meta">' + esc(b.loadLabel || '') + ' · ' + esc(b.tempoLabel || '') + '</div>' +
+      '</div>' +
+      '<div class="price">' + fmt(b.price) + '</div>';
+    if(isAdmin){
+      const del = document.createElement('button');
+      del.className = 'del';
+      del.textContent = '✕';
+      del.title = 'Удалить бронь';
+      del.addEventListener('click', () => deleteBooking(b.id));
+      row.appendChild(del);
     }
-    *{box-sizing:border-box;margin:0;padding:0}
-    body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;
-      background:var(--bg);color:var(--ink);min-height:100vh;padding:14px;padding-bottom:90px}
-    header{display:flex;flex-wrap:wrap;align-items:center;gap:10px;margin-bottom:12px}
-    header h1{font-size:19px;flex:1;min-width:160px}
-    .status{font-size:12px;padding:4px 10px;border-radius:20px;background:#eee;color:#777;white-space:nowrap}
-    .status.ok{background:#e2f3e5;color:#2e7d43}
-    .status.err{background:#fbe4e0;color:var(--red)}
-    .loginbtn{font-size:13px;padding:7px 14px;border-radius:10px;border:1.5px solid var(--line);
-      background:var(--card);cursor:pointer;color:var(--ink)}
-    .loginbtn:hover{background:#f0ede5}
-  
-    .days{display:flex;gap:6px;overflow-x:auto;padding-bottom:6px;margin-bottom:12px;-webkit-overflow-scrolling:touch}
-    .day-tab{flex:0 0 auto;padding:10px 16px;border-radius:12px;border:1.5px solid var(--line);
-      background:var(--card);font-size:14px;font-weight:600;color:var(--muted);cursor:pointer}
-    .day-tab.active{background:var(--green);border-color:var(--green);color:#fff}
-    .slot{display:flex;align-items:center;gap:10px;background:var(--card);
-      border:1.5px solid var(--line);border-radius:12px;padding:10px 12px;margin-bottom:6px;flex-wrap:wrap}
-    .slot .time{font-weight:700;min-width:52px;font-size:15px}
-    .slot .info{flex:1;min-width:140px;font-size:13px;line-height:1.45}
-    .slot .meta{color:var(--muted);font-size:12px}
-    .slot .price{font-weight:700;color:var(--green-dark);white-space:nowrap}
-    .slot.past{opacity:.6;border-color:#e0b3ab;background:#faf2f0}
-    .slot.past .price{color:#a8432f;text-decoration:line-through}
-    .slot.past .time{color:#a8432f}
-    .slot.now{border-color:#d9a441;background:#fdf6e4}
-    .slot.now .time{color:#8a6d1f}
-    .badge-now{font-size:11px;font-weight:700;color:#8a6d1f;background:#f5e3b0;
-      border-radius:8px;padding:3px 9px;white-space:nowrap}
-    .badge-past{font-size:11px;font-weight:600;color:#a8432f;background:#f6ded8;
-      border-radius:8px;padding:3px 9px;white-space:nowrap}
-+   .slot.past{opacity:.6;border-color:#e0b3ab;background:#faf2f0}
-+   .slot.past .price{color:#a8432f;text-decoration:line-through}
-+   .slot.past .time{color:#a8432f}
-+   .slot.now{border-color:#d9a441;background:#fdf6e4}
-+   .slot.now .time{color:#8a6d1f}
-+   .badge-now{font-size:11px;font-weight:700;color:#8a6d1f;background:#f5e3b0;
-+     border-radius:8px;padding:3px 9px;white-space:nowrap}
-+   .badge-past{font-size:11px;font-weight:600;color:#a8432f;background:#f6ded8;
-+     border-radius:8px;padding:3px 9px;white-space:nowrap}
-    .slot .del{border:none;background:#f7e9e6;color:var(--red);width:34px;height:34px;
-      border-radius:10px;font-size:15px;cursor:pointer;flex-shrink:0}
-    .empty{color:#999;text-align:center;padding:30px 0;font-style:italic;
-      border:1.5px dashed var(--line);border-radius:12px}
-    .fab{position:fixed;right:18px;bottom:18px;width:58px;height:58px;border-radius:50%;
-      border:none;background:var(--green);color:#fff;font-size:30px;cursor:pointer;
-      box-shadow:0 4px 14px rgba(0,0,0,.25);z-index:50}
-    .fab:active{transform:scale(.94)}
-  
-    .overlay{position:fixed;inset:0;background:rgba(30,25,15,.5);display:none;
-      align-items:flex-end;justify-content:center;z-index:100}
-    .overlay.open{display:flex}
-    .modal{background:var(--card);width:100%;max-width:520px;max-height:92vh;overflow-y:auto;
-      border-radius:18px 18px 0 0;padding:18px}
-    @media(min-width:600px){.overlay{align-items:center}.modal{border-radius:18px}}
-    .modal h2{font-size:17px;margin-bottom:10px}
-    .modal label{display:block;font-size:12px;font-weight:600;color:var(--muted);margin:12px 0 4px}
-    .modal select,.modal input[type=text],.modal input[type=email],.modal input[type=password],.modal input[type=number]{
-      width:100%;padding:11px 12px;font-size:15px;border:1.5px solid var(--line);
-      border-radius:10px;background:#fbfaf7;color:var(--ink)}
-    .chips{display:flex;gap:6px;flex-wrap:wrap}
-    .chip{padding:9px 14px;border:1.5px solid var(--line);border-radius:10px;
-      background:#fbfaf7;font-size:14px;font-weight:600;cursor:pointer}
-    .chip.sel{background:var(--green);border-color:var(--green);color:#fff}
-    .pricebox{margin-top:16px;padding:12px;border-radius:10px;background:#eef4ec;
-      border:1.5px solid #d3e2d4;display:flex;justify-content:space-between;align-items:center}
-    .pricebox .sum{font-size:20px;font-weight:800;color:var(--green-dark)}
-    .pricebox .hint{font-size:11px;color:var(--muted);margin-top:3px}
-    .btnrow{display:flex;gap:10px;margin-top:16px}
-    .btn{flex:1;padding:13px;border:none;border-radius:10px;font-size:15px;font-weight:700;cursor:pointer}
-    .btn.save{background:var(--green);color:#fff}
-    .btn.cancel{background:#efece4;color:var(--muted)}
-    .err{color:var(--red);font-size:13px;margin-top:10px;display:none}
-  
-    /* ---- админ-панель ---- */
-    .admin{background:var(--card);border:1.5px solid var(--line);border-radius:14px;
-      padding:16px;margin-bottom:14px}
-    .admin h2{font-size:16px;margin-bottom:10px;display:flex;justify-content:space-between;align-items:center}
-    .admin .toggle{font-size:13px;color:var(--green);cursor:pointer;background:none;border:none;font-weight:600}
-    .grid{display:grid;grid-template-columns:1fr 1fr;gap:10px 14px}
-    .field label{display:block;font-size:12px;font-weight:600;color:var(----muted,#8a8478);margin-bottom:4px}
-    .field input{width:100%;padding:9px 10px;font-size:15px;border:1.5px solid var(--line);
-      border-radius:8px;background:#fbfaf7}
-    .admin textarea{width:100%;min-height:110px;padding:10px;font-size:14px;border:1.5px solid var(--line);
-      border-radius:10px;background:#fbfaf7;font-family:inherit;resize:vertical}
-    .note{font-size:12px;color:var(--muted);margin-top:8px;line-height:1.5}
-    .adminbtns{display:flex;gap:10px;margin-top:12px}
-    .savebtn{background:var(--green);color:#fff;border:none;border-radius:10px;
-      padding:12px 22px;font-size:15px;font-weight:700;cursor:pointer}
-    .msg{font-size:13px;margin-left:10px}
-    .msg.ok{color:#2e7d43}.msg.bad{color:var(--red)}
-  </style>
-  </head>
-  <body>
-  
-  <header>
-    <h1>🐴 Расписание и бронирование</h1>
-    <button class="loginbtn" id="authBtn">Войти</button>
-    <div class="status" id="status">подключение…</div>
-  </header>
-  
-  <!-- Админ-
+    box.appendChild(row);
+  });
+}
+
+function renderHeaderState(){
+  const btn = document.getElementById('adminBtn');
+  const hint = document.getElementById('guestHint');
+  const fab  = document.getElementById('fab');
+  if(isAdmin){
+    btn.textContent = '⚙️ Конфигуратор · выйти';
+    btn.classList.add('on');
+    hint.style.display = 'none';
+    fab.style.display = 'block';
+  }else{
+    btn.textContent = '🔒 Войти';
+    btn.classList.remove('on');
+    hint.style.display = 'block';
+    fab.style.display = 'none';
+  }
+}
+
+function refreshUI(){
+  renderHeaderState();
+  renderDays();
+  renderSched();
+  refreshPrice();
+}
+
+/* ================= форма брони ================= */
+function openForm(){
+  const dSel = document.getElementById('fDay');
+  dSel.innerHTML = DAYS_FULL.map((d, i) =>
+    '<option value="' + i + '"' + (i === curDay ? ' selected' : '') + '>' + d + '</option>'
+  ).join('');
+
+  const tSel = document.getElementById('fTime');
+  tSel.innerHTML = '';
+  for(let m = 480; m <= 1200; m += 30){          // 8:00 … 20:00, шаг 30 мин
+    const o = document.createElement('option');
+    o.value = m;
+    o.textContent = minToStr(m);
+    tSel.appendChild(o);
+  }
+
+  document.getElementById('fHorse').innerHTML =
+    config.horses.map(h => '<option>' + esc(h) + '</option>').join('') || '<option value="">— нет лошадей —</option>';
+
+  document.getElementById('trainerList').innerHTML =
+    config.trainers.map(t => '<option value="' + esc(t) + '">').join('');
+
+  document.getElementById('fLoad').innerHTML =
+    config.loads.map((l, i) =>
+      '<div class="chip' + (i === curLoadIdx ? ' sel' : '') + '" data-i="' + i + '">' + esc(l.label) + '</div>'
+    ).join('');
+  document.getElementById('fTempo').innerHTML =
+    config.tempos.map((t, i) =>
+      '<div class="chip' + (i === curTempoIdx ? ' sel' : '') + '" data-i="' + i + '">' + esc(t.label) + '</div>'
+    ).join('');
+
+  document.getElementById('fErr').style.display = 'none';
+  document.getElementById('fTrainer').value = '';
+  refreshPrice();
+  document.getElementById('overlay').classList.add('open');
+}
+
+function closeForm(){
+  document.getElementById('overlay').classList.remove('open');
+}
+
+/* выбор чипов (длительность / нагрузка / темп) */
+function bindChips(id, cb){
+  document.getElementById(id).addEventListener('click', e => {
+    const c = e.target.closest('.chip');
+    if(!c) return;
+    c.parentElement.querySelectorAll('.chip').forEach(x => x.classList.remove('sel'));
+    c.classList.add('sel');
+    cb(c);
+    refreshPrice();
+  });
+}
+bindChips('fDur',   c => curDur      = parseFloat(c.dataset.h));
+bindChips('fLoad',  c => curLoadIdx  = parseInt(c.dataset.i, 10));
+bindChips('fTempo', c => curTempoIdx = parseInt(c.dataset.i, 10));
+
+/* сохранение брони */
+document.getElementById('fSave').addEventListener('click', () => {
+  const err = document.getElementById('fErr');
+  const day      = parseInt(document.getElementById('fDay').value, 10);
+  const startMin = parseInt(document.getElementById('fTime').value, 10);
+  const horse    = document.getElementById('fHorse').value;
+  const trainer  = document.getElementById('fTrainer').value.trim();
+  const endMin   = startMin + curDur * 60;
+  const L = config.loads[curLoadIdx] || {label:'', mult:1};
+  const T = config.tempos[curTempoIdx] || {label:'', mult:1};
+
+  if(!trainer){
+    err.textContent = '⚠ Укажите имя тренера.';
+    err.style.display = 'block';
+    return;
+  }
+
+  // пересечение по времени у той же лошади
+  const clash = bookings.find(b =>
+    b.day === day && b.horse === horse &&
+    b.startMin < endMin && startMin < b.startMin + b.dur * 60
+  );
+  if(clash){
+    err.textContent = '⚠ «' + horse + '» уже занята с ' + minToStr(clash.startMin) +
+      ' до ' + minToStr(clash.startMin + clash.dur * 60) +
+      '. Выберите другое время или лошадь.';
+    err.style.display = 'block';
+    return;
+  }
+
+  err.style.display = 'none';
+  saveBookingToCloud({
+    day: day, startMin: startMin, dur: curDur,
+    horse: horse, trainer: trainer,
+    loadLabel: L.label, loadMult: L.mult,
+    tempoLabel: T.label, tempoMult: T.mult,
+    price: calcPrice()
+  });
+  closeForm();
+});
+
+/* ================= вход админа ================= */
+function openLogin(){
+  document.getElementById('loginErr').style.display = 'none';
+  document.getElementById('loginPass').value = '';
+  document.getElementById('loginOverlay').classList.add('open');
+  setTimeout(() => document.getElementById('loginPass').focus(), 50);
+}
+
+document.getElementById('loginGo').addEventListener('click', doLogin);
+document.getElementById('loginPass').addEventListener('keydown', e => {
+  if(e.key === 'Enter') doLogin();
+});
+
+function doLogin(){
+  const pass = document.getElementById('loginPass').value;
+  if(pass === (config.adminPass || 'admin')){
+    isAdmin = true;
+    document.getElementById('loginOverlay').classList.remove('open');
+    refreshUI();
+    openCfg();
+  }else{
+    const err = document.getElementById('loginErr');
+    err.textContent = '⚠ Неверный пароль.';
+    err.style.display = 'block';
+  }
+}
+
+document.getElementById('loginCancel').addEventListener('click', () => {
+  document.getElementById('loginOverlay').classList.remove('open');
+});
+document.getElementById('adminBtn').addEventListener('click', () => {
+  if(isAdmin){
+    if(confirmLogout()) return;
+  }else{
+    openLogin();
+  }
+});
+function confirmLogout(){
+  // выходим сразу; панель, если открыта, закрываем
+  closeCfg();
+  isAdmin = false;
+  refreshUI();
+  return true;
+}
+
+/* ================= админ-конфигуратор ================= */
+let cfgDraft = null; // черновик правок
+
+function openCfg(){
+  cfgDraft = JSON.parse(JSON.stringify(config));
+  document.getElementById('cfgErr').style.display = 'none';
+  document.getElementById('cfgPass').value = '';
+  renderCfg();
+  document.getElementById('cfgOverlay').classList.add('open');
+}
+function closeCfg(){
+  document.getElementById('cfgOverlay').classList.remove('open');
+  cfgDraft = null;
+}
+
+function renderCfg(){
+  if(!cfgDraft) return;
+  document.getElementById('cfgRate').value = cfgDraft.rate;
+
+  // нагрузки и темпы
+  const rows = (arr, boxId) => {
+    const box = document.getElementById(boxId);
+    box.innerHTML = '';
+    arr.forEach((it, i) => {
+      const row = document.createElement('div');
+      row.className = 'multrow';
+      const li = document.createElement('input');
+      li.className = 'lbl-in'; li.type = 'text'; li.value = it.label; li.placeholder = 'Название';
+      li.addEventListener('input', () => cfgDraft[boxId === 'cfgLoads' ? 'loads' : 'tempos'][i].label = li.value);
+      const mi = document.createElement('input');
+      mi.className = 'mult-in'; mi.type = 'number'; mi.step = '0.05'; mi.min = '0'; mi.value = it.mult;
+      mi.addEventListener('input', () => {
+        const v = parseFloat(mi.value);
+        cfgDraft[boxId === 'cfgLoads' ? 'loads' : 'tempos'][i].mult = isNaN(v) ? 1 : v;
+      });
+      const rm = document.createElement('button');
+      rm.className = 'rm'; rm.textContent = '✕'; rm.title = 'Удалить';
+      rm.addEventListener('click', () => {
+        const key = boxId === 'cfgLoads' ? 'loads' : 'tempos';
+        if(cfgDraft[key].length <= 1) return; // хотя бы один вариант
+        cfgDraft[key].splice(i, 1);
+        renderCfg();
+      });
+      row.appendChild(li); row.appendChild(mi); row.appendChild(rm);
+      box.appendChild(row);
+    });
+  };
+  rows(cfgDraft.loads,  'cfgLoads');
+  rows(cfgDraft.tempos, 'cfgTempos');
+
+  // лошади
+  const hBox = document.getElementById('cfgHorses');
+  hBox.innerHTML = '';
+  cfgDraft.horses.forEach((h, i) => {
+    const c = document.createElement('span');
+    c.className = 'namechip';
+    c.innerHTML = esc(h) + ' <button class="rm" title="Удалить">✕</button>';
+    c.querySelector('.rm').addEventListener('click', () => {
+      cfgDraft.horses.splice(i, 1);
+      renderCfg();
+    });
+    hBox.appendChild(c);
+  });
+
+  // тренеры
+  const tBox = document.getElementById('cfgTrainers');
+  tBox.innerHTML = '';
+  cfgDraft.trainers.forEach((t, i) => {
+    const c = document.createElement('span');
+    c.className = 'namechip';
+    c.innerHTML = esc(t) + ' <button class="rm" title="Удалить">✕</button>';
+    c.querySelector('.rm').addEventListener('click', () => {
+      cfgDraft.trainers.splice(i, 1);
+      renderCfg();
+    });
+    tBox.appendChild(c);
+  });
+}
+
+function addSimple(inputId, arr, render){
+  const inp = document.getElementById(inputId);
+  const v = inp.value.trim();
+  if(!v) return;
+  if(arr.some(x => x.toLowerCase() === v.toLowerCase())){ inp.value=''; return; }
+  arr.push(v);
+  inp.value = '';
+  render();
+}
+
+document.getElementById('cfgHorseAdd').addEventListener('click', () => {
+  if(cfgDraft) addSimple('cfgHorseName', cfgDraft.horses, renderCfg);
+});
+document.getElementById('cfgTrainerAdd').addEventListener('click', () => {
+  if(cfgDraft) addSimple('cfgTrainerName', cfgDraft.trainers, renderCfg);
+});
+document.getElementById('cfgLoadAdd').addEventListener('click', () => {
+  if(!cfgDraft) return;
+  const name = document.getElementById('cfgLoadName').value.trim();
+  const mult = parseFloat(document.getElementById('cfgLoadMult').value) || 1;
+  if(!name) return;
+  cfgDraft.loads.push({label:name, mult:mult});
+  document.getElementById('cfgLoadName').value = '';
+  document.getElementById('cfgLoadMult').value = '';
+  renderCfg();
+});
+document.getElementById('cfgTempoAdd').addEventListener('click', () => {
+  if(!cfgDraft) return;
+  const name = document.getElementById('cfgTempoName').value.trim();
+  const mult = parseFloat(document.getElementById('cfgTempoMult').value) || 1;
+  if(!name) return;
+  cfgDraft.tempos.push({label:name, mult:mult});
+  document.getElementById('cfgTempoName').value = '';
+  document.getElementById('cfgTempoMult').value = '';
+  renderCfg();
+});
+
+document.getElementById('cfgSave').addEventListener('click', () => {
+  if(!cfgDraft) return;
+  const err = document.getElementById('cfgErr');
+  const rate = parseFloat(document.getElementById('cfgRate').value);
+  if(isNaN(rate) || rate < 0){
+    err.textContent = '⚠ Укажите корректную базовую ставку.';
+    err.style.display = 'block';
+    return;
+  }
+  cfgDraft.rate = rate;
+  cfgDraft.loads  = cfgDraft.loads.filter(l => l.label && l.label.trim() && l.mult > 0)
+                                   .map(l => ({label:l.label.trim(), mult:l.mult}));
+  cfgDraft.tempos = cfgDraft.tempos.filter(t => t.label && t.label.trim() && t.mult > 0)
+                                   .map(t => ({label:t.label.trim(), mult:t.mult}));
+  if(!cfgDraft.loads.length || !cfgDraft.tempos.length){
+    err.textContent = '⚠ Нужен хотя бы один вариант нагрузки и темпа.';
+    err.style.display = 'block';
+    return;
+  }
+  cfgDraft.horses   = cfgDraft.horses.map(h => h.trim()).filter(Boolean);
+  cfgDraft.trainers = cfgDraft.trainers.map(t => t.trim()).filter(Boolean);
+  const newPass = document.getElementById('cfgPass').value.trim();
+  if(newPass) cfgDraft.adminPass = newPass;
+
+  config = cfgDraft;
+  curLoadIdx  = 0;
+  curTempoIdx = 0;
+  saveConfig();
+  closeCfg();
+});
+
+document.getElementById('cfgCancel').addEventListener('click', closeCfg);
+
+document.getElementById('fCancel').addEventListener('click', closeForm);
+document.getElementById('fab').addEventListener('click', () => { if(isAdmin) openForm(); });
+document.getElementById('overlay').addEventListener('click', e => {
+  if(e.target === e.currentTarget) closeForm();
+});
+document.getElementById('cfgOverlay').addEventListener('click', e => {
+  if(e.target === e.currentTarget) closeCfg();
+});
+document.getElementById('loginOverlay').addEventListener('click', e => {
+  if(e.target === e.currentTarget) document.getElementById('loginOverlay').classList.remove('open');
+});
+
+/* ================= запуск ================= */
+initFirebase();
+refreshUI();
+</script>
+</body>
+</html>

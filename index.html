@@ -8,6 +8,7 @@
   :root{
     --bg:#f4f1ea; --card:#fff; --ink:#2d2a26; --muted:#8a8478;
     --green:#4a7c59; --green-dark:#3a6247; --line:#e5e0d5; --red:#c0533e;
+    --yellow:#e0b73f; --yellow-dark:#c2952c;
   }
   *{box-sizing:border-box;margin:0;padding:0}
   body{
@@ -15,19 +16,31 @@
     background:var(--bg); color:var(--ink); min-height:100vh;
     padding:14px; padding-bottom:90px;
   }
-  header{display:flex;flex-wrap:wrap;align-items:center;gap:10px;margin-bottom:12px}
+  header{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin-bottom:10px}
   header h1{font-size:19px;flex:1;min-width:160px}
+  .msk{font-size:12px;font-weight:700;color:var(--muted);background:var(--card);
+    border:1.5px solid var(--line);padding:4px 10px;border-radius:20px;
+    white-space:nowrap;font-variant-numeric:tabular-nums}
   .status{font-size:12px;padding:4px 10px;border-radius:20px;background:#eee;color:#777;white-space:nowrap}
   .status.ok{background:#e2f3e5;color:#2e7d43}
   .status.err{background:#fbe4e0;color:var(--red)}
   .adminbtn{font-size:12px;padding:6px 12px;border-radius:20px;border:1.5px solid var(--line);
     background:var(--card);color:var(--muted);font-weight:600;cursor:pointer;white-space:nowrap}
   .adminbtn.on{background:#3f3a33;border-color:#3f3a33;color:#fff}
+  .adminbtn.out{background:#fdf6f4;border-color:#e8c9c0;color:var(--red)}
+  .legend{display:flex;gap:14px;flex-wrap:wrap;justify-content:center;align-items:center;
+    font-size:12px;color:var(--muted);margin-bottom:12px}
+  .legend .dot{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:5px;vertical-align:-1px}
+  .dot-done{background:var(--green)}
+  .dot-wait{background:var(--yellow)}
+  .dot-cancel{background:var(--red)}
+  .legend .tz{color:#b3ac9d;font-style:italic}
   .days{display:flex;gap:6px;overflow-x:auto;padding-bottom:6px;margin-bottom:12px;-webkit-overflow-scrolling:touch}
   .day-tab{flex:0 0 auto;padding:10px 16px;border-radius:12px;border:1.5px solid var(--line);
     background:var(--card);font-size:14px;font-weight:600;color:var(--muted);cursor:pointer}
   .day-tab .cnt{display:inline-block;margin-left:6px;font-size:11px;background:var(--line);
     color:var(--ink);border-radius:8px;padding:1px 6px}
+  .day-tab.today{border-color:var(--green);color:var(--green-dark)}
   .day-tab.active{background:var(--green);border-color:var(--green);color:#fff}
   .day-tab.active .cnt{background:rgba(255,255,255,.25);color:#fff}
   .slot{display:flex;align-items:center;gap:10px;background:var(--card);
@@ -38,6 +51,22 @@
   .slot .price{font-weight:700;color:var(--green-dark);white-space:nowrap}
   .slot .del{border:none;background:#f7e9e6;color:var(--red);width:34px;height:34px;
     border-radius:10px;font-size:15px;cursor:pointer;flex-shrink:0}
+  /* --- цветовые статусы записи --- */
+  .slot.done{border-left:5px solid var(--green);background:#f4faf5}
+  .slot.wait{border-left:5px solid var(--yellow);background:#fffdf5}
+  .slot.cancel{border-left:5px solid var(--red);background:#fdf4f2}
+  .slot.past{opacity:.55}
+  .badge{display:inline-block;margin-top:5px;font-size:11px;font-weight:700;
+    padding:2px 9px;border-radius:8px}
+  .b-done{background:#e2f3e5;color:#2e7d43}
+  .b-wait{background:#fbf0d2;color:#9a7b16}
+  .b-cancel{background:#fbe4e0;color:var(--red)}
+  .stbtns{display:flex;gap:4px;flex-shrink:0}
+  .st{width:32px;height:32px;border-radius:9px;border:1.5px solid var(--line);
+    background:#fbfaf7;cursor:pointer;font-size:14px;line-height:1;padding:0}
+  .st.st-done.on{background:var(--green);border-color:var(--green);color:#fff}
+  .st.st-wait.on{background:var(--yellow-dark);border-color:var(--yellow-dark);color:#fff}
+  .st.st-cancel.on{background:var(--red);border-color:var(--red);color:#fff}
   .empty{color:#999;text-align:center;padding:30px 0;font-style:italic;
     border:1.5px dashed var(--line);border-radius:12px}
   .guesthint{font-size:12px;color:var(--muted);text-align:center;margin-top:14px}
@@ -59,6 +88,9 @@
   .chip{padding:9px 14px;border:1.5px solid var(--line);border-radius:10px;
     background:#fbfaf7;font-size:14px;font-weight:600;cursor:pointer}
   .chip.sel{background:var(--green);border-color:var(--green);color:#fff}
+  #fStatus .chip.sel[data-s="done"]{background:var(--green);border-color:var(--green);color:#fff}
+  #fStatus .chip.sel[data-s="wait"]{background:var(--yellow-dark);border-color:var(--yellow-dark);color:#fff}
+  #fStatus .chip.sel[data-s="cancel"]{background:var(--red);border-color:var(--red);color:#fff}
   .pricebox{margin-top:16px;padding:12px;border-radius:10px;background:#eef4ec;
     border:1.5px solid #d3e2d4;display:flex;justify-content:space-between;align-items:center}
   .pricebox .lbl{font-size:12px;color:var(--muted)}
@@ -95,9 +127,19 @@
 
 <header>
   <h1>🐴 Расписание и бронирование</h1>
+  <div class="msk" id="mskClock">🕐 МСК --:--:--</div>
   <div class="status" id="status">подключение…</div>
   <button class="adminbtn" id="adminBtn">🔒 Войти</button>
+  <button class="adminbtn on" id="adminCfgBtn" style="display:none">⚙️ Конфигурация</button>
+  <button class="adminbtn out" id="adminOutBtn" style="display:none">🚪 Выход</button>
 </header>
+
+<div class="legend">
+  <span><i class="dot dot-done"></i>Выполнено</span>
+  <span><i class="dot dot-wait"></i>Ожидание</span>
+  <span><i class="dot dot-cancel"></i>Отменена</span>
+  <span class="tz">· все времена — московские (МСК, UTC+3)</span>
+</div>
 
 <div class="days" id="days"></div>
 <div id="sched"></div>
@@ -173,7 +215,7 @@
       <h3>Безопасность</h3>
       <label>Новый пароль админа (оставьте пустым, чтобы не менять)</label>
       <input type="text" id="cfgPass" placeholder="Новый пароль" autocomplete="off">
-u    </div>
+    </div>
 
     <div class="err" id="cfgErr"></div>
 
@@ -216,6 +258,13 @@ u    </div>
     <label>Темп</label>
     <div class="chips" id="fTempo"></div>
 
+    <label>Статус записи</label>
+    <div class="chips" id="fStatus">
+      <div class="chip" data-s="done">✓ Выполнено</div>
+      <div class="chip sel" data-s="wait">⏳ Ожидание</div>
+      <div class="chip" data-s="cancel">🚫 Отменена</div>
+    </div>
+
     <div class="pricebox">
       <div>
         <div class="lbl">Стоимость занятия</div>
@@ -248,31 +297,58 @@ u    </div>
       скопируйте объект firebaseConfig и вставьте его НИЖЕ вместо null.
 
    В базе будут два узла:
-     /bookings — брони
+     /bookings — брони (у каждой есть поле status:
+                 wait — жёлтая, ожидание; done — зелёная, выполнено;
+                 cancel — красная, отменена)
      /config   — ставки, множители, списки лошадей/тренеров, пароль админа
 
    Пароль админа по умолчанию: admin  (смените его в конфигураторе
    сразу после первого входа!)
+
+   Все времена в приложении — московские (МСК = UTC+3),
+   независимо от часового пояса устройства.
 
    Пока конфиг не вставлен — приложение работает в демо-режиме
    (данные только в памяти, синхронизации между устройствами нет).
 ============================================================= */
 const firebaseConfig = null; /* ← замените null на объект конфига, например:
 {
-  apiKey: "AIzaSyB9IaJLOmpUUezSpI6Ie41P1OB2cWanUuY",
-  authDomain: "courage-club-46edd.firebaseapp.com",
-  databaseURL: "https://courage-club-46edd-default-rtdb.europe-west1.firebasedatabase.app",
-  projectId: "courage-club-46edd",
-  storageBucket: "courage-club-46edd.firebasestorage.app",
-  messagingSenderId: "479863326444",
-  appId: "1:479863326444:web:5dd3edfb9594e74af5c7c9",
-  measurementId: "G-G1KHG5Z1WR"
+  apiKey: "AIza...",
+  authDomain: "my-club.firebaseapp.com",
+  databaseURL: "https://my-club-default-rtdb.firebaseio.com",
+  projectId: "my-club",
+  storageBucket: "my-club.appspot.com",
+  messagingSenderId: "123456789",
+  appId: "1:123456789:web:abcdef"
 };
 */
+
+/* ================= время Москвы (МСК = UTC+3) ================= */
+function moscowNow(){
+  const now = new Date();
+  // UTC-миллисекунды + 3 часа → «московское» время на любом устройстве
+  return new Date(now.getTime() + (now.getTimezoneOffset() + 180) * 60000);
+}
+function mskDayIndex(){
+  const d = moscowNow().getDay();   // 0=Вс … 6=Сб
+  return (d + 6) % 7;               // 0=Пн … 6=Вс
+}
+function mskClockStr(){
+  const d = moscowNow();
+  return String(d.getHours()).padStart(2,'0') + ':' +
+         String(d.getMinutes()).padStart(2,'0') + ':' +
+         String(d.getSeconds()).padStart(2,'0');
+}
 
 /* ================= состояние ================= */
 const DAYS = ['Пн','Вт','Ср','Чт','Пт','Сб','Вс'];
 const DAYS_FULL = ['Понедельник','Вторник','Среда','Четверг','Пятница','Суббота','Воскресенье'];
+
+const STATUSES = {
+  done:   {label:'Выполнено', cls:'done',   icon:'✓'},
+  wait:   {label:'Ожидание',  cls:'wait',   icon:'⏳'},
+  cancel: {label:'Отменена',  cls:'cancel', icon:'🚫'}
+};
 
 const DEFAULT_CONFIG = {
   rate: 800,
@@ -285,10 +361,11 @@ const DEFAULT_CONFIG = {
 
 let db = null;
 let config = JSON.parse(JSON.stringify(DEFAULT_CONFIG)); // ставки, списки, пароль
-let bookings = [];   // {day, startMin, dur, horse, trainer, loadLabel, loadMult, tempoLabel, tempoMult, price}
+let bookings = [];   // {day, startMin, dur, horse, trainer, loadLabel, loadMult, tempoLabel, tempoMult, price, status}
 let isAdmin = false; // сессия админа (сбрасывается при перезагрузке страницы)
-let curDay = new Date().getDay() === 0 ? 6 : new Date().getDay() - 1;
-let curDur = 1.5, curLoadIdx = 0, curTempoIdx = 0;
+let curDay = mskDayIndex();                            // текущий день — по Москве
+let curDur = 1.5, curLoadIdx = 0, curTempoIdx = 0, curStatus = 'wait';
+let lastMskDay = mskDayIndex();
 
 const fmt = n => Math.round(n).toLocaleString('ru-RU') + ' ₽';
 const minToStr = m => String(Math.floor(m/60)).padStart(2,'0') + ':' + String(m%60).padStart(2,'0');
@@ -358,6 +435,15 @@ function saveBookingToCloud(item){
   }
 }
 
+function updateBookingStatus(id, status){
+  if(db){
+    db.ref('bookings/' + id).update({status: status});
+  }else{
+    const b = bookings.find(x => x.id === id);
+    if(b){ b.status = status; refreshUI(); }
+  }
+}
+
 function deleteBooking(id){
   if(db){
     db.ref('bookings/' + id).remove();
@@ -388,10 +474,12 @@ function refreshPrice(){
 function renderDays(){
   const box = document.getElementById('days');
   box.innerHTML = '';
+  const todayIdx = mskDayIndex(); // «сегодня» — по московскому времени
   DAYS.forEach((d, i) => {
     const n = bookings.filter(b => b.day === i).length;
     const t = document.createElement('div');
-    t.className = 'day-tab' + (i === curDay ? ' active' : '');
+    t.className = 'day-tab' + (i === curDay ? ' active' : '') + (i === todayIdx ? ' today' : '');
+    if(i === todayIdx) t.title = 'Сегодня по Москве';
     t.innerHTML = d + '<span class="cnt">' + n + '</span>';
     t.addEventListener('click', () => { curDay = i; refreshUI(); });
     box.appendChild(t);
@@ -414,17 +502,43 @@ function renderSched(){
     box.appendChild(e);
     return;
   }
+  const todayIdx = mskDayIndex();
+  const nowMin = moscowNow().getHours() * 60 + moscowNow().getMinutes();
+
   list.forEach(b => {
+    const st = STATUSES[b.status] || STATUSES.wait; // старые записи без статуса → «Ожидание»
     const row = document.createElement('div');
-    row.className = 'slot';
+    row.className = 'slot ' + st.cls;
+    // прошедшие слоты сегодняшнего (московского) дня приглушаем
+    if(b.day === todayIdx && (b.startMin + b.dur * 60) <= nowMin) row.classList.add('past');
+
+    const priceStyle = st.cls === 'cancel'
+      ? ' style="text-decoration:line-through;opacity:.55"' : '';
+
     row.innerHTML =
       '<div class="time">' + minToStr(b.startMin) + '</div>' +
       '<div class="info">' +
         '<div><b>' + esc(b.horse) + '</b> <span class="meta">· ' + b.dur + ' ч · тренер: ' + esc(b.trainer || '—') + '</span></div>' +
         '<div class="meta">' + esc(b.loadLabel || '') + ' · ' + esc(b.tempoLabel || '') + '</div>' +
+        '<span class="badge b-' + st.cls + '">' + st.label + '</span>' +
       '</div>' +
-      '<div class="price">' + fmt(b.price) + '</div>';
+      '<div class="price"' + priceStyle + '>' + fmt(b.price) + '</div>';
+
     if(isAdmin){
+      // кнопки смены статуса: ✓ выполнено / ⏳ ожидание / 🚫 отменена
+      const sw = document.createElement('div');
+      sw.className = 'stbtns';
+      Object.keys(STATUSES).forEach(key => {
+        const s = STATUSES[key];
+        const btn = document.createElement('button');
+        btn.className = 'st st-' + s.cls + ((b.status || 'wait') === key ? ' on' : '');
+        btn.textContent = s.icon;
+        btn.title = 'Статус: ' + s.label;
+        btn.addEventListener('click', () => updateBookingStatus(b.id, key));
+        sw.appendChild(btn);
+      });
+      row.appendChild(sw);
+
       const del = document.createElement('button');
       del.className = 'del';
       del.textContent = '✕';
@@ -437,19 +551,23 @@ function renderSched(){
 }
 
 function renderHeaderState(){
-  const btn = document.getElementById('adminBtn');
-  const hint = document.getElementById('guestHint');
-  const fab  = document.getElementById('fab');
+  const login = document.getElementById('adminBtn');
+  const cfg   = document.getElementById('adminCfgBtn');
+  const out   = document.getElementById('adminOutBtn');
+  const hint  = document.getElementById('guestHint');
+  const fab   = document.getElementById('fab');
   if(isAdmin){
-    btn.textContent = '⚙️ Конфигуратор · выйти';
-    btn.classList.add('on');
-    hint.style.display = 'none';
-    fab.style.display = 'block';
+    login.style.display = 'none';
+    cfg.style.display   = 'inline-block';
+    out.style.display   = 'inline-block';
+    hint.style.display  = 'none';
+    fab.style.display   = 'block';
   }else{
-    btn.textContent = '🔒 Войти';
-    btn.classList.remove('on');
-    hint.style.display = 'block';
-    fab.style.display = 'none';
+    login.style.display = 'inline-block';
+    cfg.style.display   = 'none';
+    out.style.display   = 'none';
+    hint.style.display  = 'block';
+    fab.style.display   = 'none';
   }
 }
 
@@ -491,6 +609,11 @@ function openForm(){
       '<div class="chip' + (i === curTempoIdx ? ' sel' : '') + '" data-i="' + i + '">' + esc(t.label) + '</div>'
     ).join('');
 
+  curStatus = 'wait';
+  document.querySelectorAll('#fStatus .chip').forEach(c =>
+    c.classList.toggle('sel', c.dataset.s === 'wait')
+  );
+
   document.getElementById('fErr').style.display = 'none';
   document.getElementById('fTrainer').value = '';
   refreshPrice();
@@ -501,7 +624,7 @@ function closeForm(){
   document.getElementById('overlay').classList.remove('open');
 }
 
-/* выбор чипов (длительность / нагрузка / темп) */
+/* выбор чипов (длительность / нагрузка / темп / статус) */
 function bindChips(id, cb){
   document.getElementById(id).addEventListener('click', e => {
     const c = e.target.closest('.chip');
@@ -512,9 +635,10 @@ function bindChips(id, cb){
     refreshPrice();
   });
 }
-bindChips('fDur',   c => curDur      = parseFloat(c.dataset.h));
-bindChips('fLoad',  c => curLoadIdx  = parseInt(c.dataset.i, 10));
-bindChips('fTempo', c => curTempoIdx = parseInt(c.dataset.i, 10));
+bindChips('fDur',    c => curDur      = parseFloat(c.dataset.h));
+bindChips('fLoad',   c => curLoadIdx  = parseInt(c.dataset.i, 10));
+bindChips('fTempo',  c => curTempoIdx = parseInt(c.dataset.i, 10));
+bindChips('fStatus', c => curStatus   = c.dataset.s);
 
 /* сохранение брони */
 document.getElementById('fSave').addEventListener('click', () => {
@@ -533,8 +657,9 @@ document.getElementById('fSave').addEventListener('click', () => {
     return;
   }
 
-  // пересечение по времени у той же лошади
+  // пересечение по времени у той же лошади (отменённые брони слот не занимают)
   const clash = bookings.find(b =>
+    (b.status || 'wait') !== 'cancel' &&
     b.day === day && b.horse === horse &&
     b.startMin < endMin && startMin < b.startMin + b.dur * 60
   );
@@ -552,7 +677,8 @@ document.getElementById('fSave').addEventListener('click', () => {
     horse: horse, trainer: trainer,
     loadLabel: L.label, loadMult: L.mult,
     tempoLabel: T.label, tempoMult: T.mult,
-    price: calcPrice()
+    price: calcPrice(),
+    status: curStatus
   });
   closeForm();
 });
@@ -575,8 +701,7 @@ function doLogin(){
   if(pass === (config.adminPass || 'admin')){
     isAdmin = true;
     document.getElementById('loginOverlay').classList.remove('open');
-    refreshUI();
-    openCfg();
+    refreshUI(); // появятся две кнопки: «⚙️ Конфигурация» и «🚪 Выход»
   }else{
     const err = document.getElementById('loginErr');
     err.textContent = '⚠ Неверный пароль.';
@@ -587,20 +712,21 @@ function doLogin(){
 document.getElementById('loginCancel').addEventListener('click', () => {
   document.getElementById('loginOverlay').classList.remove('open');
 });
-document.getElementById('adminBtn').addEventListener('click', () => {
-  if(isAdmin){
-    if(confirmLogout()) return;
-  }else{
-    openLogin();
+
+/* две отдельные кнопки админ-панели */
+document.getElementById('adminBtn').addEventListener('click', openLogin);
+document.getElementById('adminCfgBtn').addEventListener('click', () => {
+  if(isAdmin) openCfg();
+});
+document.getElementById('adminOutBtn').addEventListener('click', () => {
+  if(!isAdmin) return;
+  if(confirm('Выйти из панели администратора?')){
+    isAdmin = false;
+    closeCfg();
+    closeForm();
+    refreshUI();
   }
 });
-function confirmLogout(){
-  // выходим сразу; панель, если открыта, закрываем
-  closeCfg();
-  isAdmin = false;
-  refreshUI();
-  return true;
-}
 
 /* ================= админ-конфигуратор ================= */
 let cfgDraft = null; // черновик правок
@@ -763,9 +889,26 @@ document.getElementById('loginOverlay').addEventListener('click', e => {
   if(e.target === e.currentTarget) document.getElementById('loginOverlay').classList.remove('open');
 });
 
+/* ================= живые часы Москвы ================= */
+function startMskClock(){
+  const tick = () => {
+    const el = document.getElementById('mskClock');
+    if(el) el.textContent = '🕐 МСК ' + mskClockStr();
+    const d = mskDayIndex();
+    if(d !== lastMskDay){            // наступили новые сутки по Москве
+      if(curDay === lastMskDay) curDay = d;
+      lastMskDay = d;
+      refreshUI();
+    }
+  };
+  tick();
+  setInterval(tick, 1000);
+}
+
 /* ================= запуск ================= */
 initFirebase();
 refreshUI();
+startMskClock();
 </script>
 </body>
 </html>

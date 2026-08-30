@@ -9,25 +9,51 @@
     --bg:#f4f1ea; --card:#fff; --ink:#2d2a26; --muted:#8a8478;
     --green:#4a7c59; --green-dark:#3a6247; --line:#e5e0d5; --red:#c0533e;
     --yellow:#e0b73f; --yellow-dark:#c2952c;
+    --surface:#f0ece3; --surface-alt:#e8e3d8; --cell-empty:#fafaf7;
+    --cell-hover:#f9f7f2; --input-bg:#fbfaf7;
+    --wait-bg:#fdf6e0; --done-bg:#e8f5ea; --cancel-bg:#fdeae6;
+    --done-text:#2e7d43; --wait-text:#9a7b16;
+    --overlay-bg:rgba(30,25,15,.5);
+    --chip-sel-bg:var(--green); --chip-sel-color:#fff;
+  }
+  body.dark{
+    --bg:#1a1a1e; --card:#25252b; --ink:#e0ddd6; --muted:#8a857e;
+    --green:#5fa872; --green-dark:#5fa872; --line:#3a3a42; --red:#e06050;
+    --yellow:#e8c34a; --yellow-dark:#d4ad35;
+    --surface:#2a2a32; --surface-alt:#222228; --cell-empty:#1e1e24;
+    --cell-hover:#2e2e36; --input-bg:#1e1e24;
+    --wait-bg:#2e2a1e; --done-bg:#1e2e22; --cancel-bg:#2e1e1e;
+    --done-text:#5fa872; --wait-text:#d4ad35;
+    --overlay-bg:rgba(10,10,12,.72);
+    --chip-sel-bg:var(--green); --chip-sel-color:#fff;
   }
   *{box-sizing:border-box;margin:0;padding:0}
   body{
     font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;
     background:var(--bg); color:var(--ink); min-height:100vh;
     padding:14px; padding-bottom:90px;
+    transition:background .3s,color .3s;
   }
   header{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin-bottom:10px}
   header h1{font-size:19px;flex:1;min-width:160px}
   .msk{font-size:12px;font-weight:700;color:var(--muted);background:var(--card);
     border:1.5px solid var(--line);padding:4px 10px;border-radius:20px;
-    white-space:nowrap;font-variant-numeric:tabular-nums}
-  .status{font-size:12px;padding:4px 10px;border-radius:20px;background:#eee;color:#777;white-space:nowrap}
-  .status.ok{background:#e2f3e5;color:#2e7d43}
-  .status.err{background:#fbe4e0;color:var(--red)}
+    white-space:nowrap;font-variant-numeric:tabular-nums;
+    transition:background .3s,border-color .3s,color .3s}
+  .status{font-size:12px;padding:4px 10px;border-radius:20px;background:var(--surface);
+    color:var(--muted);white-space:nowrap;transition:background .3s,color .3s}
+  .status.ok{background:var(--done-bg);color:var(--done-text)}
+  .status.err{background:var(--cancel-bg);color:var(--red)}
   .adminbtn{font-size:12px;padding:6px 12px;border-radius:20px;border:1.5px solid var(--line);
-    background:var(--card);color:var(--muted);font-weight:600;cursor:pointer;white-space:nowrap}
+    background:var(--card);color:var(--muted);font-weight:600;cursor:pointer;white-space:nowrap;
+    transition:background .3s,border-color .3s,color .3s}
   .adminbtn.on{background:#3f3a33;border-color:#3f3a33;color:#fff}
-  .adminbtn.out{background:#fdf6f4;border-color:#e8c9c0;color:var(--red)}
+  body.dark .adminbtn.on{background:#e0ddd6;border-color:#e0ddd6;color:#1a1a1e}
+  .adminbtn.out{background:var(--cancel-bg);border-color:var(--red);color:var(--red)}
+  .theme-btn{font-size:16px;padding:5px 10px;border-radius:20px;border:1.5px solid var(--line);
+    background:var(--card);color:var(--muted);cursor:pointer;white-space:nowrap;line-height:1.2;
+    transition:background .3s,border-color .3s,color .3s}
+  .theme-btn:hover{border-color:var(--green);color:var(--green)}
   .legend{display:flex;gap:14px;flex-wrap:wrap;justify-content:center;align-items:center;
     font-size:12px;color:var(--muted);margin-bottom:4px}
   .legend .dot{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:5px;vertical-align:-1px}
@@ -35,21 +61,23 @@
   .dot-wait{background:var(--yellow)}
   .dot-cancel{background:var(--red)}
   .dot-empty{background:var(--line)}
-  .legend .tz{color:#b3ac9d;font-style:italic}
+  .legend .tz{color:var(--line);font-style:italic}
   .trainer-legend{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;align-items:center;
     font-size:11px;color:var(--muted);margin-bottom:8px}
   .trainer-legend .tl-item{display:inline-flex;align-items:center;gap:4px}
   .trainer-legend .tl-dot{width:10px;height:10px;border-radius:3px;flex-shrink:0}
-  .month-label{font-size:14px;font-weight:700;color:var(--ink);text-align:center;margin-bottom:8px}
-  .days{display:flex;gap:6px;overflow-x:auto;padding-bottom:6px;margin-bottom:12px;-webkit-overflow-scrolling:touch;
-    scroll-snap-type:x proximity}
+  .month-label{font-size:14px;font-weight:700;color:var(--ink);text-align:center;margin-bottom:8px;
+    transition:color .3s}
+  .days{display:flex;gap:6px;overflow-x:auto;padding-bottom:6px;margin-bottom:12px;
+    -webkit-overflow-scrolling:touch;scroll-snap-type:x proximity}
   .day-tab{flex:0 0 auto;padding:10px 14px;border-radius:12px;border:1.5px solid var(--line);
     background:var(--card);font-size:14px;font-weight:600;color:var(--muted);cursor:pointer;
-    text-align:center;min-width:62px;scroll-snap-align:start}
+    text-align:center;min-width:62px;scroll-snap-align:start;
+    transition:background .3s,border-color .3s,color .3s}
   .day-tab .dname{display:block;font-size:12px;font-weight:600}
   .day-tab .dnum{display:block;font-size:18px;font-weight:800;margin-top:2px;line-height:1.2}
   .day-tab .cnt{display:inline-block;margin-top:3px;font-size:11px;background:var(--line);
-    color:var(--ink);border-radius:8px;padding:1px 6px}
+    color:var(--ink);border-radius:8px;padding:1px 6px;transition:background .3s,color .3s}
   .day-tab.today{border-color:var(--green);color:var(--green-dark)}
   .day-tab.today .dnum{color:var(--green-dark)}
   .day-tab.active{background:var(--green);border-color:var(--green);color:#fff}
@@ -59,72 +87,81 @@
   .day-tab.active.new-month .dnum{color:#fff;font-size:18px}
   .day-tab.past-day{opacity:.55}
   .day-tab.active.past-day{opacity:1}
-  .guesthint{font-size:12px;color:var(--muted);text-align:center;margin-top:14px}
+  .guesthint{font-size:12px;color:var(--line);text-align:center;margin-top:14px}
 
-  .grid-wrap{overflow-x:auto;margin-top:12px;border-radius:12px;border:1.5px solid var(--line);background:var(--card)}
+  .grid-wrap{overflow-x:auto;margin-top:12px;border-radius:12px;border:1.5px solid var(--line);
+    background:var(--card);transition:background .3s,border-color .3s}
   .grid{display:grid;min-width:600px}
-  .gh{position:sticky;top:0;z-index:5;background:#f0ece3;font-size:12px;font-weight:700;
+  .gh{position:sticky;top:0;z-index:5;background:var(--surface);font-size:12px;font-weight:700;
     color:var(--muted);padding:10px 6px;text-align:center;border-bottom:1.5px solid var(--line);
-    display:flex;align-items:center;justify-content:center;min-height:42px}
-  .gh.corner{background:#e8e3d8;justify-content:flex-end;padding-right:10px;font-size:11px}
-  .gl{position:sticky;left:0;z-index:4;background:#f7f5f0;font-size:13px;font-weight:700;
+    display:flex;align-items:center;justify-content:center;min-height:42px;
+    transition:background .3s,border-color .3s,color .3s}
+  .gh.corner{background:var(--surface-alt);justify-content:flex-end;padding-right:10px;font-size:11px}
+  .gl{position:sticky;left:0;z-index:4;background:var(--surface-alt);font-size:13px;font-weight:700;
     padding:8px 10px;border-right:1.5px solid var(--line);border-bottom:1px solid var(--line);
-    display:flex;align-items:center;white-space:nowrap;min-height:52px}
-  .gc{padding:4px;border-bottom:1px solid #f0ece3;border-right:1px solid #f0ece3;
+    display:flex;align-items:center;white-space:nowrap;min-height:52px;
+    transition:background .3s,border-color .3s}
+  .gc{padding:4px;border-bottom:1px solid var(--line);border-right:1px solid var(--line);
     display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:52px;
     transition:background .15s}
-  .gc:hover{background:#f9f7f2}
-  .gc.empty-slot{background:#fafaf7}
+  .gc:hover{background:var(--cell-hover)}
+  .gc.empty-slot{background:var(--cell-empty)}
   .gc .btime{font-size:10px;color:var(--muted);line-height:1.2}
   .gc .btrainer{font-size:10px;color:var(--ink);font-weight:600;margin-top:1px;white-space:nowrap;
     overflow:hidden;text-overflow:ellipsis;max-width:100%;text-align:center}
   .gc .bblock{width:100%;padding:3px 4px;border-radius:6px;text-align:center;cursor:pointer;
-    margin-bottom:2px;border-left:4px solid var(--line);transition:transform .1s}
+    margin-bottom:2px;border-left:4px solid var(--line);transition:transform .1s,background .3s}
   .gc .bblock:active{transform:scale(.96)}
-  .gc .bblock.s-wait{background:#fdf6e0}
-  .gc .bblock.s-done{background:#e8f5ea}
-  .gc .bblock.s-cancel{background:#fdeae6;opacity:.6}
+  .gc .bblock.s-wait{background:var(--wait-bg)}
+  .gc .bblock.s-done{background:var(--done-bg)}
+  .gc .bblock.s-cancel{background:var(--cancel-bg);opacity:.6}
   .gc .bblock.past{opacity:.45}
   .gc .add-placeholder{width:100%;height:100%;min-height:44px;display:flex;align-items:center;
-    justify-content:center;color:#ccc;font-size:18px;cursor:pointer;border-radius:6px;
+    justify-content:center;color:var(--line);font-size:18px;cursor:pointer;border-radius:6px;
     transition:background .15s,color .15s}
-  .gc .add-placeholder:hover{background:#eef4ec;color:var(--green)}
-  .no-horses{color:#999;text-align:center;padding:40px 0;font-style:italic;
+  .gc .add-placeholder:hover{background:var(--done-bg);color:var(--green)}
+  .no-horses{color:var(--muted);text-align:center;padding:40px 0;font-style:italic;
     border:1.5px dashed var(--line);border-radius:12px}
 
   .fab{position:fixed;right:18px;bottom:18px;width:58px;height:58px;border-radius:50%;
     border:none;background:var(--green);color:#fff;font-size:30px;cursor:pointer;
     box-shadow:0 4px 14px rgba(0,0,0,.25);z-index:50;display:none}
   .fab:active{transform:scale(.94)}
-  .overlay{position:fixed;inset:0;background:rgba(30,25,15,.5);display:none;
-    align-items:flex-end;justify-content:center;z-index:100}
+  .overlay{position:fixed;inset:0;background:var(--overlay-bg);display:none;
+    align-items:flex-end;justify-content:center;z-index:100;transition:background .3s}
   .overlay.open{display:flex}
   .modal{background:var(--card);width:100%;max-width:520px;max-height:92vh;overflow-y:auto;
-    border-radius:18px 18px 0 0;padding:18px}
+    border-radius:18px 18px 0 0;padding:18px;transition:background .3s,color .3s}
   @media(min-width:600px){.overlay{align-items:center}.modal{border-radius:18px}}
   .modal h2{font-size:17px;margin-bottom:8px}
   .modal label{display:block;font-size:12px;font-weight:600;color:var(--muted);margin:12px 0 4px}
   .modal select,.modal input[type="text"],.modal input[type="password"],.modal input[type="number"]{
     width:100%;padding:11px 12px;font-size:15px;
-    border:1.5px solid var(--line);border-radius:10px;background:#fbfaf7;color:var(--ink)}
+    border:1.5px solid var(--line);border-radius:10px;background:var(--input-bg);color:var(--ink);
+    transition:background .3s,border-color .3s,color .3s}
+  .modal select:focus,.modal input:focus{outline:none;border-color:var(--green)}
   .chips{display:flex;gap:6px;flex-wrap:wrap}
   .chip{padding:9px 14px;border:1.5px solid var(--line);border-radius:10px;
-    background:#fbfaf7;font-size:14px;font-weight:600;cursor:pointer}
-  .chip.sel{background:var(--green);border-color:var(--green);color:#fff}
+    background:var(--input-bg);font-size:14px;font-weight:600;cursor:pointer;color:var(--ink);
+    transition:background .3s,border-color .3s,color .3s}
+  .chip.sel{background:var(--chip-sel-bg);border-color:var(--chip-sel-bg);color:var(--chip-sel-color)}
   #fStatus .chip.sel[data-s="done"]{background:var(--green);border-color:var(--green);color:#fff}
   #fStatus .chip.sel[data-s="wait"]{background:var(--yellow-dark);border-color:var(--yellow-dark);color:#fff}
   #fStatus .chip.sel[data-s="cancel"]{background:var(--red);border-color:var(--red);color:#fff}
   .btnrow{display:flex;gap:10px;margin-top:16px}
-  .btn{flex:1;padding:13px;border:none;border-radius:10px;font-size:15px;font-weight:700;cursor:pointer}
+  .btn{flex:1;padding:13px;border:none;border-radius:10px;font-size:15px;font-weight:700;cursor:pointer;
+    transition:background .3s,color .3s}
   .btn.save{background:var(--green);color:#fff}
-  .btn.cancel{background:#efece4;color:var(--muted)}
+  .btn.cancel{background:var(--surface);color:var(--muted)}
   .err{color:var(--red);font-size:13px;margin-top:10px;display:none}
-  .sec{border:1.5px solid var(--line);border-radius:12px;padding:12px;margin-top:12px}
+  .sec{border:1.5px solid var(--line);border-radius:12px;padding:12px;margin-top:12px;
+    transition:border-color .3s}
   .sec h3{font-size:13px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px}
   .namechip{display:inline-flex;align-items:center;gap:6px;padding:7px 8px 7px 12px;
-    border:1.5px solid var(--line);border-radius:10px;background:#fbfaf7;
-    font-size:14px;font-weight:600;margin:0 6px 6px 0}
-  .namechip .rm{border:none;background:#f7e9e6;color:var(--red);width:22px;height:22px;
+    border:1.5px solid var(--line);border-radius:10px;background:var(--input-bg);
+    font-size:14px;font-weight:600;margin:0 6px 6px 0;color:var(--ink);
+    transition:background .3s,border-color .3s,color .3s}
+  .namechip .rm{border:none;background:var(--cancel-bg);color:var(--red);width:22px;height:22px;
     border-radius:7px;font-size:12px;cursor:pointer;line-height:1}
   .addrow{display:flex;gap:8px;margin-top:6px}
   .addrow input{flex:1}
@@ -132,27 +169,31 @@
     color:#fff;font-size:15px;font-weight:700;cursor:pointer}
   .multrow{display:flex;gap:8px;align-items:center;margin-bottom:6px}
   .multrow input.lbl-in{flex:1}
-  .multrow .rm{border:none;background:#f7e9e6;color:var(--red);width:34px;height:40px;
+  .multrow .rm{border:none;background:var(--cancel-bg);color:var(--red);width:34px;height:40px;
     border-radius:10px;font-size:14px;cursor:pointer;flex-shrink:0}
   .trainer-row{display:flex;gap:8px;align-items:center;margin-bottom:6px;padding:6px 8px;
-    border:1.5px solid var(--line);border-radius:10px;background:#fbfaf7}
+    border:1.5px solid var(--line);border-radius:10px;background:var(--input-bg);
+    transition:background .3s,border-color .3s}
   .trainer-row input[type="color"]{width:38px;height:38px;padding:2px;border:1.5px solid var(--line);
-    border-radius:8px;cursor:pointer;flex-shrink:0;background:var(--card)}
+    border-radius:8px;cursor:pointer;flex-shrink:0;background:var(--card);
+    transition:background .3s,border-color .3s}
   .trainer-row span{flex:1;font-size:14px;font-weight:600}
-  .trainer-row .rm{border:none;background:#f7e9e6;color:var(--red);width:30px;height:30px;
+  .trainer-row .rm{border:none;background:var(--cancel-bg);color:var(--red);width:30px;height:30px;
     border-radius:8px;font-size:12px;cursor:pointer;flex-shrink:0}
-  .muted{color:var(--muted);font-size:12px;margin-top:6px}
+  .muted-text{color:var(--muted);font-size:12px;margin-top:6px}
 
-  .detail-card{padding:14px;border-radius:12px;border:1.5px solid var(--line);margin-bottom:12px}
+  .detail-card{padding:14px;border-radius:12px;border:1.5px solid var(--line);margin-bottom:12px;
+    transition:border-color .3s}
   .detail-card .dc-row{display:flex;justify-content:space-between;padding:4px 0;font-size:14px}
   .detail-card .dc-row .dc-label{color:var(--muted);font-size:12px}
   .detail-card .dc-row .dc-val{font-weight:600}
   .detail-card .dc-status{display:inline-block;padding:3px 10px;border-radius:8px;font-size:12px;font-weight:700;margin-top:6px}
-  .dc-done{background:#e2f3e5;color:#2e7d43}
-  .dc-wait{background:#fbf0d2;color:#9a7b16}
-  .dc-cancel{background:#fbe4e0;color:var(--red)}
+  .dc-done{background:var(--done-bg);color:var(--done-text)}
+  .dc-wait{background:var(--wait-bg);color:var(--wait-text)}
+  .dc-cancel{background:var(--cancel-bg);color:var(--red)}
   .dc-del{margin-top:10px;width:100%;padding:10px;border:1.5px solid var(--red);border-radius:10px;
-    background:#fdf4f2;color:var(--red);font-size:14px;font-weight:700;cursor:pointer}
+    background:var(--cancel-bg);color:var(--red);font-size:14px;font-weight:700;cursor:pointer;
+    transition:background .3s,color .3s}
 </style>
 </head>
 <body>
@@ -161,6 +202,7 @@
   <h1>🐴 Расписание и бронирование</h1>
   <div class="msk" id="mskClock">🕐 МСК --:--:--</div>
   <div class="status" id="status">подключение…</div>
+  <button class="theme-btn" id="themeBtn" title="Сменить тему">🌙</button>
   <button class="adminbtn" id="adminBtn" style="display:none">🔒 Войти</button>
   <button class="adminbtn on" id="adminCfgBtn" style="display:none">⚙️ Конфигурация</button>
   <button class="adminbtn out" id="adminOutBtn" style="display:none">🚪 Выход</button>
@@ -310,6 +352,20 @@ var TRAINER_PALETTE = [
   '#e67e22','#1abc9c','#e84393','#2d6a4f','#d4a373'
 ];
 
+/* ================= Тема ================= */
+var isDark = localStorage.getItem('hc_dark') === 'true';
+function applyTheme(){
+  document.body.classList.toggle('dark', isDark);
+  document.getElementById('themeBtn').textContent = isDark ? '☀️' : '🌙';
+}
+applyTheme();
+document.getElementById('themeBtn').addEventListener('click', function(){
+  isDark = !isDark;
+  localStorage.setItem('hc_dark', isDark);
+  applyTheme();
+});
+
+/* ================= Время Москвы ================= */
 function moscowNow(){
   var now = new Date();
   return new Date(now.getTime() + (now.getTimezoneOffset() + 180) * 60000);
@@ -343,11 +399,10 @@ var DEFAULT_CONFIG = {
   tempos:   [{label:'Шаг'},{label:'Рысь'},{label:'Галоп'}],
   horses:   ['Рокки','Изюм','Форсаж','Дон','Былина','Армани','Падуб','Хаммер'],
   trainers: [
-    {name:'Ольга (тренер)', color:'#4a7c59'},
-    {name:'Алиса (тренер)', color:'#4a7c59'},
-    {name:'Наталья (тренер)',   color:'#c0533e'},
-    {name:'Ангелина (тренер)', color:'#e0b73f'},
-    {name:'Эльвира (берейтор)',    color:'#5b7fb5'}
+    {name:'Анна Соколова', color:'#4a7c59'},
+    {name:'Игорь Волков',   color:'#c0533e'},
+    {name:'Мария Лебедева', color:'#e0b73f'},
+    {name:'Пётр Громов',    color:'#5b7fb5'}
   ],
   adminPass: 'admin',
   startHour: 8,
@@ -389,6 +444,7 @@ function getTrainerColor(name){
   return t ? (t.color || null) : null;
 }
 
+/* ================= Firebase ================= */
 function initFirebase(){
   var st = document.getElementById('status');
   if(!firebaseConfig || typeof firebase === 'undefined'){
@@ -461,6 +517,7 @@ function deleteBooking(id){
   else{ bookings = bookings.filter(function(b){ return b.id !== id; }); refreshUI(); }
 }
 
+/* ================= Отрисовка ================= */
 function renderTrainerLegend(){
   var box = document.getElementById('trainerLegend');
   if(!config.trainers.length){ box.innerHTML = ''; return; }
@@ -636,6 +693,7 @@ function refreshUI(){
   renderSched();
 }
 
+/* ================= Детали брони ================= */
 function openDetail(id){
   var b = bookings.find(function(x){ return x.id === id; });
   if(!b) return;
@@ -691,6 +749,7 @@ function openDetail(id){
 }
 function closeDetail(){ document.getElementById('detailOverlay').classList.remove('open'); }
 
+/* ================= Форма брони ================= */
 function openForm(){
   editingId = null;
   document.getElementById('formTitle').textContent = 'Новая бронь';
@@ -848,6 +907,7 @@ document.getElementById('fSave').addEventListener('click', function(){
   closeForm();
 });
 
+/* ================= Вход админа ================= */
 function openLogin(){
   document.getElementById('loginErr').style.display = 'none';
   document.getElementById('loginPass').value = '';
@@ -884,6 +944,7 @@ document.getElementById('adminOutBtn').addEventListener('click', function(){
   }
 });
 
+/* ================= Конфигуратор ================= */
 var cfgDraft = null;
 function openCfg(){
   cfgDraft = JSON.parse(JSON.stringify(config));
@@ -1027,6 +1088,7 @@ document.getElementById('cfgSave').addEventListener('click', function(){
 });
 document.getElementById('cfgCancel').addEventListener('click', closeCfg);
 
+/* ================= Обработчики кликов ================= */
 document.getElementById('fCancel').addEventListener('click', closeForm);
 document.getElementById('fab').addEventListener('click', function(){ if(isAdmin) openForm(); });
 document.getElementById('overlay').addEventListener('click', function(e){ if(e.target === e.currentTarget) closeForm(); });
@@ -1034,6 +1096,7 @@ document.getElementById('cfgOverlay').addEventListener('click', function(e){ if(
 document.getElementById('loginOverlay').addEventListener('click', function(e){ if(e.target === e.currentTarget) document.getElementById('loginOverlay').classList.remove('open'); });
 document.getElementById('detailOverlay').addEventListener('click', function(e){ if(e.target === e.currentTarget) closeDetail(); });
 
+/* ================= Часы и скользящее окно ================= */
 function startMskClock(){
   var tick = function(){
     var el = document.getElementById('mskClock');
@@ -1058,6 +1121,7 @@ function startMskClock(){
   setInterval(tick, 1000);
 }
 
+/* ================= Запуск ================= */
 lastMskDateStr = getDateKey(moscowNow());
 initFirebase();
 refreshUI();

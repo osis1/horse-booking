@@ -5,153 +5,299 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Конный клуб — расписание</title>
 <style>
-  :root{--bg:#f4f1ea;--card:#fff;--ink:#2d2a26;--muted:#8a8478;--green:#4a7c59;--green-dark:#3a6247;--line:#e5e0d5;--red:#c0533e;--yellow:#e0b73f;--yellow-dark:#c2952c}
+  :root{
+    --bg:#f4f1ea; --card:#fff; --ink:#2d2a26; --muted:#8a8478;
+    --green:#4a7c59; --green-dark:#3a6247; --line:#e5e0d5; --red:#c0533e;
+    --yellow:#e0b73f; --yellow-dark:#c2952c;
+  }
   *{box-sizing:border-box;margin:0;padding:0}
-  body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;background:var(--bg);color:var(--ink);min-height:100vh;padding:14px;padding-bottom:90px}
+  body{
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;
+    background:var(--bg); color:var(--ink); min-height:100vh;
+    padding:14px; padding-bottom:90px;
+  }
   header{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin-bottom:10px}
   header h1{font-size:19px;flex:1;min-width:160px}
-  .msk{font-size:12px;font-weight:700;color:var(--muted);background:var(--card);border:1.5px solid var(--line);padding:4px 10px;border-radius:20px;white-space:nowrap}
+  .msk{font-size:12px;font-weight:700;color:var(--muted);background:var(--card);
+    border:1.5px solid var(--line);padding:4px 10px;border-radius:20px;
+    white-space:nowrap;font-variant-numeric:tabular-nums}
   .status{font-size:12px;padding:4px 10px;border-radius:20px;background:#eee;color:#777;white-space:nowrap}
   .status.ok{background:#e2f3e5;color:#2e7d43}
   .status.err{background:#fbe4e0;color:var(--red)}
-  .adminbtn{font-size:12px;padding:6px 12px;border-radius:20px;border:1.5px solid var(--line);background:var(--card);color:var(--muted);font-weight:600;cursor:pointer;white-space:nowrap}
+  .adminbtn{font-size:12px;padding:6px 12px;border-radius:20px;border:1.5px solid var(--line);
+    background:var(--card);color:var(--muted);font-weight:600;cursor:pointer;white-space:nowrap}
   .adminbtn.on{background:#3f3a33;border-color:#3f3a33;color:#fff}
   .adminbtn.out{background:#fdf6f4;border-color:#e8c9c0;color:var(--red)}
-  .legend{display:flex;gap:14px;flex-wrap:wrap;justify-content:center;font-size:12px;color:var(--muted);margin-bottom:8px}
+  .legend{display:flex;gap:14px;flex-wrap:wrap;justify-content:center;align-items:center;
+    font-size:12px;color:var(--muted);margin-bottom:8px}
   .legend .dot{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:5px;vertical-align:-1px}
-  .dot-done{background:var(--green)}.dot-wait{background:var(--yellow)}.dot-cancel{background:var(--red)}
+  .dot-done{background:var(--green)}
+  .dot-wait{background:var(--yellow)}
+  .dot-cancel{background:var(--red)}
+  .dot-empty{background:var(--line)}
+  .legend .tz{color:#b3ac9d;font-style:italic}
   .month-label{font-size:14px;font-weight:700;color:var(--ink);text-align:center;margin-bottom:8px}
   .days{display:flex;gap:6px;overflow-x:auto;padding-bottom:6px;margin-bottom:12px;-webkit-overflow-scrolling:touch}
-  .day-tab{flex:0 0 auto;padding:8px 12px;border-radius:12px;border:1.5px solid var(--line);background:var(--card);font-size:13px;font-weight:600;color:var(--muted);cursor:pointer;text-align:center;min-width:64px}
-  .day-tab .dname{display:block;font-size:11px}.day-tab .dnum{display:block;font-size:16px;font-weight:800;margin-top:2px;line-height:1.2}
-  .day-tab .cnt{display:inline-block;margin-top:2px;font-size:10px;background:var(--line);color:var(--ink);border-radius:8px;padding:1px 6px}
+  .day-tab{flex:0 0 auto;padding:10px 16px;border-radius:12px;border:1.5px solid var(--line);
+    background:var(--card);font-size:14px;font-weight:600;color:var(--muted);cursor:pointer;
+    text-align:center;min-width:68px}
+  .day-tab .dname{display:block;font-size:13px;font-weight:600}
+  .day-tab .dnum{display:block;font-size:18px;font-weight:800;margin-top:2px;line-height:1.2}
+  .day-tab .cnt{display:inline-block;margin-top:3px;font-size:11px;background:var(--line);
+    color:var(--ink);border-radius:8px;padding:1px 6px}
   .day-tab.today{border-color:var(--green);color:var(--green-dark)}
+  .day-tab.today .dnum{color:var(--green-dark)}
   .day-tab.active{background:var(--green);border-color:var(--green);color:#fff}
   .day-tab.active .cnt{background:rgba(255,255,255,.25);color:#fff}
-  .day-tab.new-month .dname,.day-tab.new-month .dnum{color:var(--muted);font-size:12px}
-  .day-tab.active.new-month .dname,.day-tab.active.new-month .dnum{color:#fff;font-size:13px}
+  .day-tab.active .dnum{color:#fff}
+  .day-tab.new-month .dnum{color:var(--muted);font-size:15px}
+  .day-tab.active.new-month .dnum{color:#fff;font-size:18px}
+  .guesthint{font-size:12px;color:var(--muted);text-align:center;margin-top:14px}
+
   .grid-wrap{overflow-x:auto;margin-top:12px;border-radius:12px;border:1.5px solid var(--line);background:var(--card)}
   .grid{display:grid;min-width:600px}
-  .gh{position:sticky;top:0;z-index:5;background:#f0ece3;font-size:12px;font-weight:700;color:var(--muted);padding:10px 6px;text-align:center;border-bottom:1.5px solid var(--line);display:flex;align-items:center;justify-content:center;min-height:42px}
-  .gh.corner{background:#e8e3d8;font-size:11px}
-  .gl{position:sticky;left:0;z-index:4;background:#f7f5f0;font-size:13px;font-weight:700;padding:8px 10px;border-right:1.5px solid var(--line);border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:center;white-space:nowrap;min-height:52px}
-  .gc{padding:4px;border-bottom:1px solid #f0ece3;border-right:1px solid #f0ece3;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:52px}
+  .gh{position:sticky;top:0;z-index:5;background:#f0ece3;font-size:12px;font-weight:700;
+    color:var(--muted);padding:10px 6px;text-align:center;border-bottom:1.5px solid var(--line);
+    display:flex;align-items:center;justify-content:center;min-height:42px}
+  .gh.corner{background:#e8e3d8;justify-content:flex-end;padding-right:10px;font-size:11px}
+  .gl{position:sticky;left:0;z-index:4;background:#f7f5f0;font-size:13px;font-weight:700;
+    padding:8px 10px;border-right:1.5px solid var(--line);border-bottom:1px solid var(--line);
+    display:flex;align-items:center;white-space:nowrap;min-height:52px}
+  .gc{padding:4px;border-bottom:1px solid #f0ece3;border-right:1px solid #f0ece3;
+    display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:52px;
+    transition:background .15s}
+  .gc:hover{background:#f9f7f2}
   .gc.empty-slot{background:#fafaf7}
   .gc .btime{font-size:10px;color:var(--muted);line-height:1.2}
-  .gc .btrainer{font-size:10px;font-weight:600;margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%;text-align:center}
+  .gc .btrainer{font-size:10px;color:var(--ink);font-weight:600;margin-top:1px;white-space:nowrap;
+    overflow:hidden;text-overflow:ellipsis;max-width:100%;text-align:center}
   .gc .bprice{font-size:10px;color:var(--green-dark);font-weight:700;margin-top:1px}
-  .gc .bblock{width:100%;padding:3px 4px;border-radius:6px;text-align:center;cursor:pointer;margin-bottom:2px;border-left:3px solid transparent;transition:transform .1s}
+  .gc .bblock{width:100%;padding:3px 4px;border-radius:6px;text-align:center;cursor:pointer;
+    margin-bottom:2px;border-left:3px solid transparent;transition:transform .1s}
   .gc .bblock:active{transform:scale(.96)}
-  .gc .bblock.s-wait{background:#fdf6e0}.gc .bblock.s-done{background:#e8f5ea}.gc .bblock.s-cancel{background:#fdeae6;opacity:.6}.gc .bblock.past{opacity:.45}
-  .gc .add-placeholder{width:100%;height:100%;min-height:44px;display:flex;align-items:center;justify-content:center;color:#ccc;font-size:18px;cursor:pointer;border-radius:6px}
+  .gc .bblock.s-wait{background:#fdf6e0;border-left-color:var(--yellow)}
+  .gc .bblock.s-done{background:#e8f5ea;border-left-color:var(--green)}
+  .gc .bblock.s-cancel{background:#fdeae6;border-left-color:var(--red);opacity:.6}
+  .gc .bblock.past{opacity:.45}
+  .gc .add-placeholder{width:100%;height:100%;min-height:44px;display:flex;align-items:center;
+    justify-content:center;color:#ccc;font-size:18px;cursor:pointer;border-radius:6px;
+    transition:background .15s,color .15s}
   .gc .add-placeholder:hover{background:#eef4ec;color:var(--green)}
-  .fab{position:fixed;right:18px;bottom:18px;width:58px;height:58px;border-radius:50%;border:none;background:var(--green);color:#fff;font-size:30px;cursor:pointer;box-shadow:0 4px 14px rgba(0,0,0,.25);z-index:50;display:none}
-  .overlay{position:fixed;inset:0;background:rgba(30,25,15,.5);display:none;align-items:flex-end;justify-content:center;z-index:100}
+  .no-horses{color:#999;text-align:center;padding:40px 0;font-style:italic;
+    border:1.5px dashed var(--line);border-radius:12px}
+
+  .fab{position:fixed;right:18px;bottom:18px;width:58px;height:58px;border-radius:50%;
+    border:none;background:var(--green);color:#fff;font-size:30px;cursor:pointer;
+    box-shadow:0 4px 14px rgba(0,0,0,.25);z-index:50;display:none}
+  .fab:active{transform:scale(.94)}
+  .overlay{position:fixed;inset:0;background:rgba(30,25,15,.5);display:none;
+    align-items:flex-end;justify-content:center;z-index:100}
   .overlay.open{display:flex}
-  .modal{background:var(--card);width:100%;max-width:520px;max-height:92vh;overflow-y:auto;border-radius:18px 18px 0 0;padding:18px}
+  .modal{background:var(--card);width:100%;max-width:520px;max-height:92vh;overflow-y:auto;
+    border-radius:18px 18px 0 0;padding:18px}
   @media(min-width:600px){.overlay{align-items:center}.modal{border-radius:18px}}
   .modal h2{font-size:17px;margin-bottom:8px}
   .modal label{display:block;font-size:12px;font-weight:600;color:var(--muted);margin:12px 0 4px}
-  .modal select,.modal input[type="text"],.modal input[type="number"],.modal input[type="password"],.modal textarea{width:100%;padding:11px 12px;font-size:15px;border:1.5px solid var(--line);border-radius:10px;background:#fbfaf7;color:var(--ink);font-family:inherit}
-  .modal textarea{resize:vertical;min-height:50px}
+  .modal select,.modal input{width:100%;padding:11px 12px;font-size:15px;
+    border:1.5px solid var(--line);border-radius:10px;background:#fbfaf7;color:var(--ink)}
   .chips{display:flex;gap:6px;flex-wrap:wrap}
-  .chip{padding:9px 14px;border:1.5px solid var(--line);border-radius:10px;background:#fbfaf7;font-size:14px;font-weight:600;cursor:pointer}
+  .chip{padding:9px 14px;border:1.5px solid var(--line);border-radius:10px;
+    background:#fbfaf7;font-size:14px;font-weight:600;cursor:pointer}
   .chip.sel{background:var(--green);border-color:var(--green);color:#fff}
-  .pricebox{margin-top:16px;padding:12px;border-radius:10px;background:#eef4ec;border:1.5px solid #d3e2d4;display:flex;justify-content:space-between;align-items:center}
-  .pricebox .lbl{font-size:12px;color:var(--muted)}.pricebox .hint{font-size:11px;color:var(--muted);margin-top:3px}
+  #fStatus .chip.sel[data-s="done"]{background:var(--green);border-color:var(--green);color:#fff}
+  #fStatus .chip.sel[data-s="wait"]{background:var(--yellow-dark);border-color:var(--yellow-dark);color:#fff}
+  #fStatus .chip.sel[data-s="cancel"]{background:var(--red);border-color:var(--red);color:#fff}
+  .pricebox{margin-top:16px;padding:12px;border-radius:10px;background:#eef4ec;
+    border:1.5px solid #d3e2d4;display:flex;justify-content:space-between;align-items:center}
+  .pricebox .lbl{font-size:12px;color:var(--muted)}
+  .pricebox .hint{font-size:11px;color:var(--muted);margin-top:3px}
   .pricebox .sum{font-size:20px;font-weight:800;color:var(--green-dark)}
   .btnrow{display:flex;gap:10px;margin-top:16px}
   .btn{flex:1;padding:13px;border:none;border-radius:10px;font-size:15px;font-weight:700;cursor:pointer}
-  .btn.save{background:var(--green);color:#fff}.btn.cancel{background:#efece4;color:var(--muted)}
+  .btn.save{background:var(--green);color:#fff}
+  .btn.cancel{background:#efece4;color:var(--muted)}
   .err{color:var(--red);font-size:13px;margin-top:10px;display:none}
   .sec{border:1.5px solid var(--line);border-radius:12px;padding:12px;margin-top:12px}
   .sec h3{font-size:13px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px}
-  .namechip{display:inline-flex;align-items:center;gap:6px;padding:7px 8px 7px 12px;border:1.5px solid var(--line);border-radius:10px;background:#fbfaf7;font-size:14px;font-weight:600;margin:0 6px 6px 0}
-  .namechip .rm{border:none;background:#f7e9e6;color:var(--red);width:22px;height:22px;border-radius:7px;font-size:12px;cursor:pointer}
-  .addrow{display:flex;gap:8px;margin-top:6px;align-items:center}
+  .namechip{display:inline-flex;align-items:center;gap:6px;padding:7px 8px 7px 12px;
+    border:1.5px solid var(--line);border-radius:10px;background:#fbfaf7;
+    font-size:14px;font-weight:600;margin:0 6px 6px 0}
+  .namechip .rm{border:none;background:#f7e9e6;color:var(--red);width:22px;height:22px;
+    border-radius:7px;font-size:12px;cursor:pointer;line-height:1}
+  .addrow{display:flex;gap:8px;margin-top:6px}
   .addrow input{flex:1}
-  .addrow button{padding:0 16px;border:none;border-radius:10px;background:var(--green);color:#fff;font-size:15px;font-weight:700;cursor:pointer;white-space:nowrap}
+  .addrow button{padding:0 16px;border:none;border-radius:10px;background:var(--green);
+    color:#fff;font-size:15px;font-weight:700;cursor:pointer}
+  .multrow{display:flex;gap:8px;align-items:center;margin-bottom:6px}
+  .multrow input.lbl-in{flex:2}
+  .multrow input.mult-in{flex:1}
+  .multrow .rm{border:none;background:#f7e9e6;color:var(--red);width:34px;height:40px;
+    border-radius:10px;font-size:14px;cursor:pointer;flex-shrink:0}
   .muted{color:var(--muted);font-size:12px;margin-top:6px}
+
   .detail-card{padding:14px;border-radius:12px;border:1.5px solid var(--line);margin-bottom:12px}
   .detail-card .dc-row{display:flex;justify-content:space-between;padding:4px 0;font-size:14px}
-  .detail-card .dc-label{color:var(--muted);font-size:12px}.detail-card .dc-val{font-weight:600}
+  .detail-card .dc-row .dc-label{color:var(--muted);font-size:12px}
+  .detail-card .dc-row .dc-val{font-weight:600}
   .detail-card .dc-price{font-size:22px;font-weight:800;color:var(--green-dark);text-align:right;margin-top:6px}
   .detail-card .dc-status{display:inline-block;padding:3px 10px;border-radius:8px;font-size:12px;font-weight:700;margin-top:6px}
-  .dc-done{background:#e2f3e5;color:#2e7d43}.dc-wait{background:#fbf0d2;color:#9a7b16}.dc-cancel{background:#fbe4e0;color:var(--red)}
-  .dc-del{margin-top:10px;width:100%;padding:10px;border:1.5px solid var(--red);border-radius:10px;background:#fdf4f2;color:var(--red);font-size:14px;font-weight:700;cursor:pointer}
-  .dc-order-status{margin-top:8px;padding:8px;background:#f9f7f2;border-radius:8px;font-size:13px;color:var(--ink);font-style:italic}
-  .db-stats{font-size:12px;color:var(--muted);text-align:center;margin-top:8px}
-  .db-stats span{font-weight:700;color:var(--ink)}
-  .watch-panel{padding:20px;max-width:600px;margin:20px auto;background:var(--card);border-radius:16px;border:1.5px solid var(--line)}
-  .watch-panel h2{margin-bottom:16px;text-align:center}
-  .wp-online{background:#eef4ec;padding:12px;border-radius:10px;margin-bottom:16px;text-align:center}
-  .wp-online .num{font-size:32px;font-weight:800;color:var(--green-dark)}
-  .wp-logs{max-height:400px;overflow-y:auto;border:1px solid var(--line);border-radius:10px;background:#fdfcfa}
-  .wp-log{padding:10px 12px;border-bottom:1px solid var(--line);font-size:13px}
-  .wp-log .time{color:var(--muted);font-size:11px;display:block;margin-bottom:2px}
-  .wp-log .act{color:var(--red)}.wp-log .act.done{color:var(--green)}
-  
-  /* Настройки */
-  .cfg-row{display:flex;gap:8px;align-items:center;margin-bottom:8px}
-  .cfg-row input{margin:0}
-  .cfg-block{border:1px solid var(--line);border-radius:10px;padding:10px;margin-bottom:10px;background:#fdfcfa}
-  .cfg-top{display:flex;gap:8px;align-items:center;margin-bottom:8px}
-  .cfg-top input{flex:1;margin:0}
-  .cfg-top .rm{border:none;background:#f7e9e6;color:var(--red);width:30px;height:30px;border-radius:8px;font-size:12px;cursor:pointer;flex-shrink:0}
-  .price-grid{display:grid;grid-template-columns:repeat(auto-fill, minmax(100px, 1fr));gap:6px}
-  .price-item{display:flex;flex-direction:column;gap:2px}
-  .price-item span{font-size:11px;color:var(--muted);text-align:center}
-  .price-item input{text-align:center;padding:8px 4px !important;font-size:13px !important}
-  .color-strip{width:100%;height:10px;border-radius:5px;cursor:pointer;border:1px solid var(--line);margin-top:4px}
-  input[type="color"]{position:absolute;opacity:0;width:0;height:0;pointer-events:none}
+  .dc-done{background:#e2f3e5;color:#2e7d43}
+  .dc-wait{background:#fbf0d2;color:#9a7b16}
+  .dc-cancel{background:#fbe4e0;color:var(--red)}
+  .dc-del{margin-top:10px;width:100%;padding:10px;border:1.5px solid var(--red);border-radius:10px;
+    background:#fdf4f2;color:var(--red);font-size:14px;font-weight:700;cursor:pointer}
 </style>
 </head>
 <body>
 
 <header>
-  <h1>🐴 Расписание</h1>
+  <h1>🐴 Расписание и бронирование</h1>
   <div class="msk" id="mskClock">🕐 МСК --:--:--</div>
   <div class="status" id="status">подключение…</div>
   <button class="adminbtn" id="adminBtn" style="display:none">🔒 Войти</button>
-  <button class="adminbtn on" id="adminCfgBtn" style="display:none">⚙️ Настройки</button>
+  <button class="adminbtn on" id="adminCfgBtn" style="display:none">⚙️ Конфигурация</button>
   <button class="adminbtn out" id="adminOutBtn" style="display:none">🚪 Выход</button>
 </header>
 
-<div id="mainUI">
-  <div class="legend"><span><i class="dot dot-done"></i>Выполнено</span><span><i class="dot dot-wait"></i>Ожидание</span><span><i class="dot dot-cancel"></i>Отменена</span></div>
-  <div class="month-label" id="monthLabel"></div>
-  <div class="days" id="days"></div>
-  <div id="sched"></div>
-  <div class="guesthint" id="guestHint" style="display:none">Вход — «🔒 Войти»</div>
-  <div class="db-stats" id="dbStats"></div>
+<div class="legend">
+  <span><i class="dot dot-done"></i>Выполнено</span>
+  <span><i class="dot dot-wait"></i>Ожидание</span>
+  <span><i class="dot dot-cancel"></i>Отменена</span>
+  <span><i class="dot dot-empty"></i>Свободно</span>
+  <span class="tz">· МСК (UTC+3)</span>
 </div>
 
-<div id="watchUI" style="display:none">
-  <div class="watch-panel">
-    <h2>👁️ Панель наблюдателя</h2>
-    <div class="wp-online">Онлайн на сайте: <div class="num" id="wpOnlineNum">0</div></div>
-    <div class="wp-logs" id="wpLogs"></div>
+<div class="month-label" id="monthLabel"></div>
+<div class="days" id="days"></div>
+
+<div id="sched"></div>
+
+<div class="guesthint" id="guestHint" style="display:none">Вход для администратора — кнопка «🔒 Войти» вверху</div>
+
+<button class="fab" id="fab" title="Забронировать">＋</button>
+
+<div class="overlay" id="loginOverlay">
+  <div class="modal">
+    <h2>🔐 Вход администратора</h2>
+    <label>Пароль</label>
+    <input type="password" id="loginPass" placeholder="Пароль админа" autocomplete="current-password">
+    <div class="err" id="loginErr"></div>
+    <div class="btnrow">
+      <button class="btn cancel" id="loginCancel">Отмена</button>
+      <button class="btn save" id="loginGo">Войти</button>
+    </div>
   </div>
 </div>
 
-<button class="fab" id="fab">＋</button>
+<div class="overlay" id="cfgOverlay">
+  <div class="modal">
+    <h2>⚙️ Конфигуратор</h2>
+    <div class="sec">
+      <h3>Цены</h3>
+      <label>Базовая ставка, ₽ за час</label>
+      <input type="number" id="cfgRate" min="0" step="50">
+      <div class="muted">Итог: ставка × длительность + доп.услуга нагрузки (темп не влияет на цену)</div>
+    </div>
+    <div class="sec">
+      <h3>Нагрузки (место занятия)</h3>
+      <div id="cfgLoads"></div>
+      <div class="addrow">
+        <input type="text" id="cfgLoadName" placeholder="Название">
+        <input type="number" id="cfgLoadPrice" placeholder="₽" step="50" min="0" style="max-width:90px">
+        <button id="cfgLoadAdd">＋</button>
+      </div>
+    </div>
+    <div class="sec">
+      <h3>Темп (информация, не влияет на цену)</h3>
+      <div id="cfgTempos"></div>
+      <div class="addrow">
+        <input type="text" id="cfgTempoName" placeholder="Название темпа">
+        <button id="cfgTempoAdd">＋</button>
+      </div>
+    </div>
+    <div class="sec">
+      <h3>Лошади</h3>
+      <div class="chips" id="cfgHorses"></div>
+      <div class="addrow">
+        <input type="text" id="cfgHorseName" placeholder="Кличка лошади">
+        <button id="cfgHorseAdd">＋</button>
+      </div>
+    </div>
+    <div class="sec">
+      <h3>Тренеры</h3>
+      <div class="chips" id="cfgTrainers"></div>
+      <div class="addrow">
+        <input type="text" id="cfgTrainerName" placeholder="Имя тренера">
+        <button id="cfgTrainerAdd">＋</button>
+      </div>
+    </div>
+    <div class="sec">
+      <h3>Безопасность</h3>
+      <label>Новый пароль админа (оставьте пустым, чтобы не менять)</label>
+      <input type="text" id="cfgPass" placeholder="Новый пароль" autocomplete="off">
+    </div>
+    <div class="err" id="cfgErr"></div>
+    <div class="btnrow">
+      <button class="btn cancel" id="cfgCancel">Отмена</button>
+      <button class="btn save" id="cfgSave">Сохранить</button>
+    </div>
+  </div>
+</div>
 
-<div class="overlay" id="loginOverlay"><div class="modal">
-  <h2>🔐 Вход</h2>
-  <label>Логин</label><input type="text" id="loginUser" value="admin">
-  <label>Пароль</label><input type="password" id="loginPass">
-  <div class="err" id="loginErr"></div>
-  <div class="btnrow"><button class="btn cancel" id="loginCancel">Отмена</button><button class="btn save" id="loginGo">Войти</button></div>
-</div></div>
+<div class="overlay" id="detailOverlay">
+  <div class="modal" id="detailModal"></div>
+</div>
 
-<div class="overlay" id="cfgOverlay"><div class="modal" id="cfgModal"></div></div>
-<div class="overlay" id="detailOverlay"><div class="modal" id="detailModal"></div></div>
-<div class="overlay" id="overlay"><div class="modal" id="formModal"></div></div>
+<div class="overlay" id="overlay">
+  <div class="modal">
+    <h2 id="formTitle">Новая бронь</h2>
+    <label>Дата</label>
+    <div id="fDayInfo" style="font-size:16px;font-weight:700;margin-bottom:12px;color:var(--ink)"></div>
+    <label>Время начала</label>
+    <select id="fTime"></select>
+    <label>Длительность</label>
+    <div class="chips" id="fDur">
+      <div class="chip" data-h="1">1 час</div>
+      <div class="chip sel" data-h="1.5">1,5 часа</div>
+      <div class="chip" data-h="2">2 часа</div>
+      <div class="chip" data-h="3">3 часа</div>
+    </div>
+    <label>Лошадь</label>
+    <select id="fHorse"></select>
+    <label>Тренер</label>
+    <input type="text" id="fTrainer" placeholder="Имя тренера" list="trainerList">
+    <datalist id="trainerList"></datalist>
+    <label>Нагрузка (место занятия)</label>
+    <div class="chips" id="fLoad"></div>
+    <label>Темп (для информации)</label>
+    <div class="chips" id="fTempo"></div>
+    <label>Статус записи</label>
+    <div class="chips" id="fStatus">
+      <div class="chip" data-s="done">✓ Выполнено</div>
+      <div class="chip sel" data-s="wait">⏳ Ожидание</div>
+      <div class="chip" data-s="cancel">🚫 Отменена</div>
+    </div>
+    <div class="pricebox">
+      <div>
+        <div class="lbl">Стоимость занятия</div>
+        <div class="hint" id="pHint"></div>
+      </div>
+      <div class="sum" id="pSum">—</div>
+    </div>
+    <div class="err" id="fErr"></div>
+    <div class="btnrow">
+      <button class="btn cancel" id="fCancel">Отмена</button>
+      <button class="btn save" id="fSave">Забронировать</button>
+    </div>
+  </div>
+</div>
 
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
+
 <script>
 'use strict';
+
 const firebaseConfig = {
   apiKey: "AIzaSyB9IaJLOmpUUezSpI6Ie41P1OB2cWanUuY",
   authDomain: "courage-club-46edd.firebaseapp.com",
@@ -163,413 +309,703 @@ const firebaseConfig = {
   measurementId: "G-G1KHG5Z1WR"
 };
 
-function moscowNow(){return new Date(Date.now()+(new Date().getTimezoneOffset()+180)*60000)}
-function mskClockStr(){const d=moscowNow();return String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0')+':'+String(d.getSeconds()).padStart(2,'0')}
-function getDateKey(d){return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')}
-function generateDates(){const m=moscowNow(),d=[];for(let i=0;i<14;i++)d.push(new Date(m.getFullYear(),m.getMonth(),m.getDate()+i));return d}
-const MONTHS=['января','февраля','марта','апреля','мая','июня','июля','августа','сентября','октября','ноября','декабря'];
-const DAYS_SHORT=['Вс','Пн','Вт','Ср','Чт','Пт','Сб'];
-const STATUSES={done:{label:'Выполнено',cls:'done',icon:'✓'},wait:{label:'Ожидание',cls:'wait',icon:'⏳'},cancel:{label:'Отменена',cls:'cancel',icon:'🚫'}};
-const DEFAULT_CONFIG = {
-  rate: 800,
-  loads: [{label:'Плац',durs:'0.5, 1, 1.5, 2, 3',prices:{0.5:1500,1:2500,1.5:3500,2:4500,3:6500}},{label:'Поле',durs:'1, 1.5, 2',prices:{1:1000,1.5:1500,2:2000}},{label:'Лес',durs:'1.5, 2, 3',prices:{1.5:2250,2:3000,3:4500}}],
-  tempos: [{label:'Шаг'},{label:'Рысь'},{label:'Галоп'}],
-  horses: ['Рокки','Изюм','Форсаж'],
-  trainers: [{name:'Анна Соколова',color:'#e91e63'},{name:'Игорь Волков',color:'#2196f3'}],
-  adminPass: 'admin', watcherPass: 'admin123', tgToken: '', tgChat: ''
+/* ================= Время Москвы ================= */
+function moscowNow(){
+  const now = new Date();
+  return new Date(now.getTime() + (now.getTimezoneOffset() + 180) * 60000);
+}
+function mskDayIndex(){
+  const d = moscowNow().getDay();
+  return (d + 6) % 7;
+}
+function mskClockStr(){
+  const d = moscowNow();
+  return String(d.getHours()).padStart(2,'0') + ':' +
+         String(d.getMinutes()).padStart(2,'0') + ':' +
+         String(d.getSeconds()).padStart(2,'0');
+}
+
+/* ================= Генерация дат (реальный месяц) ================= */
+function getWeekDates(){
+  const msk = moscowNow();
+  const dates = [];
+  for(let i = 0; i < 7; i++){
+    const d = new Date(msk.getFullYear(), msk.getMonth(), msk.getDate() + i);
+    dates.push(d);
+  }
+  return dates;
+}
+
+const MONTHS = ['января','февраля','марта','апреля','мая','июня','июля','августа','сентября','октября','ноября','декабря'];
+const DAYS_SHORT = ['Пн','Вт','Ср','Чт','Пт','Сб','Вс'];
+const STATUSES = {
+  done:   {label:'Выполнено', cls:'done',   icon:'✓'},
+  wait:   {label:'Ожидание',  cls:'wait',   icon:'⏳'},
+  cancel: {label:'Отменена',  cls:'cancel', icon:'🚫'}
 };
 
-let db=null, config=JSON.parse(JSON.stringify(DEFAULT_CONFIG)), bookings=[], logs=[];
-let role=localStorage.getItem('hc_role')||'guest';
-let dates=generateDates(), curDateOffset=0, curDur=1.5, curLoadIdx=0, curTempoIdx=0, curStatus='wait';
-let lastMskDateStr='', editingId=null, dbSizeBytes=0;
+const DEFAULT_CONFIG = {
+  rate: 800,
+  loads:  [{label:'Плац', price:0}, {label:'Поле', price:100}, {label:'Лес', price:200}],
+  tempos: [{label:'Шаг', price:0}, {label:'Рысь', price:0}, {label:'Галоп', price:0}],
+  horses: ['Рокки','Изюм','Форсаж','Дон','Былина','Армани','Падуб','Хаммер'],
+  trainers: ['Анна Соколова','Игорь Волков','Мария Лебедева','Пётр Громов'],
+  adminPass: 'admin',
+  startHour: 8,
+  endHour: 21,
+  slotStep: 30
+};
 
-const fmt=n=>Math.round(n).toLocaleString('ru-RU')+' ₽';
-const minToStr=m=>String(Math.floor(m/60)).padStart(2,'0')+':'+String(m%60).padStart(2,'0');
-const esc=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-function formatBytes(b){if(b<1024)return b+' Б';if(b<1048576)return(b/1024).toFixed(1)+' КБ';return(b/1048576).toFixed(2)+' МБ'}
-function getLoadDurs(l){if(!l.durs)return[0.5,1,1.5,2,2.5,3];return l.durs.split(',').map(s=>parseFloat(s.trim())).filter(n=>!isNaN(n)&&n>0).sort((a,b)=>a-b)}
-function getTimeSlots(){const s=[];for(let m=(config.startHour||8)*60;m<(config.endHour||21)*60;m+=(config.slotStep||30))s.push(m);return s}
-function getTrainerColor(n){if(!n)return'transparent';const t=config.trainers.find(x=>x.name===n);return t?t.color:'transparent'}
-function getLoadPricePerHour(l,d){if(!l||!l.prices)return config.rate;if(l.prices[d]&&l.prices[d]>0)return l.prices[d]/d;return config.rate}
-function calcPrice(){return getLoadPricePerHour(config.loads[curLoadIdx],curDur)*curDur}
-function refreshPrice(){document.getElementById('pSum').textContent=fmt(calcPrice());document.getElementById('pHint').textContent=curDur+' ч × '+fmt(getLoadPricePerHour(config.loads[curLoadIdx],curDur))+'/ч'}
+let db = null;
+let config = JSON.parse(JSON.stringify(DEFAULT_CONFIG));
+let bookings = [];
+let isAdmin = localStorage.getItem('hc_admin') === 'true';
+let weekDates = getWeekDates();
+let curDayOffset = 0; // 0 = сегодня, 1 = завтра и т.д.
+let curDur = 1.5, curLoadIdx = 0, curTempoIdx = 0, curStatus = 'wait';
+let lastMskDateStr = '';
+let editingId = null;
 
-function sendTg(t){if(!config.tgToken||!config.tgChat)return;fetch('https://api.telegram.org/bot'+config.tgToken+'/sendMessage',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({chat_id:config.tgChat,text:t,parse_mode:'HTML'})}).catch(()=>{})}
-function addLog(a,d){if(db)db.ref('logs').push({time:new Date().toISOString(),action:a,details:d})}
-function setupPresence(){if(!db)return;const id=Date.now()+'_'+Math.random().toString(36).substr(2,9);db.ref('presence/'+id).set(true);db.ref('presence/'+id).onDisconnect().remove()}
+const fmt = n => Math.round(n).toLocaleString('ru-RU') + ' ₽';
+const minToStr = m => String(Math.floor(m/60)).padStart(2,'0') + ':' + String(m%60).padStart(2,'0');
+const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g,
+  c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 
+// Получить уникальный ключ даты для базы (ГГГГ-ММ-ДД по Москве)
+function getDateKey(dateObj){
+  return dateObj.getFullYear() + '-' +
+    String(dateObj.getMonth() + 1).padStart(2, '0') + '-' +
+    String(dateObj.getDate()).padStart(2, '0');
+}
+
+function getTimeSlots(){
+  const slots = [];
+  const start = (config.startHour || 8) * 60;
+  const end = (config.endHour || 21) * 60;
+  const step = config.slotStep || 30;
+  for(let m = start; m < end; m += step) slots.push(m);
+  return slots;
+}
+
+/* ================= Firebase ================= */
 function initFirebase(){
-  const st=document.getElementById('status');
-  if(!firebaseConfig||typeof firebase==='undefined'){st.textContent='демо';refreshUI();return}
+  const st = document.getElementById('status');
+  if(!firebaseConfig || typeof firebase === 'undefined'){
+    st.textContent = 'демо-режим';
+    refreshUI();
+    return;
+  }
   try{
-    firebase.initializeApp(firebaseConfig);db=firebase.database();setupPresence();
-    db.ref('config').on('value',snap=>{
-      const v=snap.val();
-      if(v){
-        config=Object.assign(JSON.parse(JSON.stringify(DEFAULT_CONFIG)),v);
-        if(!Array.isArray(config.loads))config.loads=DEFAULT_CONFIG.loads;
-        if(!Array.isArray(config.tempos))config.tempos=DEFAULT_CONFIG.tempos;
-        if(!Array.isArray(config.horses))config.horses=[];
-        if(!Array.isArray(config.trainers))config.trainers=[];
-        config.trainers=config.trainers.map(t=>typeof t==='string'?{name:t,color:'#4a7c59'}:t);
-        config.loads.forEach(l=>{if(!l.prices)l.prices={};if(!l.durs)l.durs='0.5, 1, 1.5, 2, 2.5, 3';delete l.mult;delete l.price});
-        config.tempos.forEach(t=>{delete t.mult;delete t.price});
+    firebase.initializeApp(firebaseConfig);
+    db = firebase.database();
+    
+    db.ref('config').on('value', snap => {
+      const val = snap.val();
+      if(val){
+        config = Object.assign(JSON.parse(JSON.stringify(DEFAULT_CONFIG)), val);
+        if(!Array.isArray(config.loads))  config.loads  = DEFAULT_CONFIG.loads;
+        if(!Array.isArray(config.tempos)) config.tempos = DEFAULT_CONFIG.tempos;
+        if(!Array.isArray(config.horses))   config.horses   = [];
+        if(!Array.isArray(config.trainers)) config.trainers = [];
+        // Миграция старых множителей
+        config.loads.forEach(l => {
+          if(l.mult !== undefined && l.price === undefined){ l.price = Math.round(l.mult * config.rate); }
+          delete l.mult;
+        });
+        config.tempos.forEach(t => { delete t.mult; t.price = 0; }); // Темп всегда 0
       }
-      curLoadIdx=Math.min(curLoadIdx,config.loads.length-1);curTempoIdx=Math.min(curTempoIdx,config.tempos.length-1);refreshUI();
+      curLoadIdx  = Math.min(curLoadIdx,  config.loads.length  - 1);
+      curTempoIdx = Math.min(curTempoIdx, config.tempos.length - 1);
+      refreshUI();
     });
-    db.ref('bookings').on('value',snap=>{
-      const v=snap.val();bookings=v?Object.keys(v).map(k=>Object.assign({id:k},v[k])):[];
-      try{dbSizeBytes=new Blob([JSON.stringify(v)]).size}catch(e){dbSizeBytes=0}
-      refreshUI();st.textContent='● онлайн';st.className='status ok';
-    },err=>{st.textContent='ошибка';st.className='status err'});
-    db.ref('logs').orderByChild('time').limitToLast(50).on('value',snap=>{const v=snap.val();logs=v?Object.values(v).sort((a,b)=>b.time.localeCompare(a.time)):[];if(role==='watcher')renderWatchPanel()});
-    db.ref('presence').on('value',snap=>{const v=snap.val();const el=document.getElementById('wpOnlineNum');if(el)el.textContent=v?Object.keys(v).length:0});
-  }catch(e){st.textContent='ошибка';st.className='status err';db=null;refreshUI()}
+
+    db.ref('bookings').on('value', snap => {
+      const val = snap.val();
+      bookings = val ? Object.keys(val).map(k => Object.assign({id:k}, val[k])) : [];
+      refreshUI();
+      st.textContent = '● онлайн';
+      st.className = 'status ok';
+    }, err => {
+      st.textContent = 'ошибка: ' + err.code;
+      st.className = 'status err';
+    });
+  }catch(e){
+    st.textContent = 'ошибка конфига';
+    st.className = 'status err';
+    db = null;
+    refreshUI();
+  }
 }
 
-function saveConfig(){if(db)db.ref('config').set(config);refreshUI()}
+function saveConfig(){ if(db) db.ref('config').set(config); refreshUI(); }
 function saveBookingToCloud(item){
-  if(db)db.ref('bookings').push(item);else{item.id='local_'+Date.now();bookings.push(item);refreshUI()}
-  addLog('CREATE',item.horse+' '+minToStr(item.startMin)+' '+item.trainer);sendTg('✅ <b>Новая бронь</b>\n'+item.dateKey+'\n'+item.horse+' в '+minToStr(item.startMin)+'\nТренер: '+item.trainer+'\n'+fmt(item.price))
+  if(db){ db.ref('bookings').push(item); }
+  else{ item.id = 'local_' + Date.now(); bookings.push(item); refreshUI(); }
 }
-function updateBooking(id,data){
-  if(db)db.ref('bookings/'+id).update(data);else{const b=bookings.find(x=>x.id===id);if(b)Object.assign(b,data);refreshUI()}
-  if(data.status){const b=bookings.find(x=>x.id===id)||{};addLog('STATUS',b.horse+' -> '+data.status);sendTg('🔄 <b>Статус</b>\n'+data.status.toUpperCase()+'\n'+b.horse)}
+function updateBooking(id, data){
+  if(db){ db.ref('bookings/' + id).update(data); }
+  else{ const b = bookings.find(x => x.id === id); if(b) Object.assign(b, data); refreshUI(); }
 }
 function deleteBooking(id){
-  const b=bookings.find(x=>x.id===id);
-  if(db)db.ref('bookings/'+id).remove();else{bookings=bookings.filter(x=>x.id!==id);refreshUI()}
-  if(b){addLog('DELETE',b.horse+' '+minToStr(b.startMin));sendTg('🗑 <b>Удалено</b>\n'+b.horse+' в '+minToStr(b.startMin))}
+  if(db){ db.ref('bookings/' + id).remove(); }
+  else{ bookings = bookings.filter(b => b.id !== id); refreshUI(); }
 }
 
+/* ================= Расчёт цены (БЕЗ темпа) ================= */
+function calcPrice(){
+  const l = config.loads[curLoadIdx] || {price:0};
+  return config.rate * curDur + (l.price || 0);
+}
+
+function refreshPrice(){
+  document.getElementById('pSum').textContent = fmt(calcPrice());
+  const l = config.loads[curLoadIdx], t = config.tempos[curTempoIdx];
+  const parts = ['база ' + fmt(config.rate * curDur)];
+  if(l && l.price) parts.push(l.label + ' +' + fmt(l.price));
+  // Темп упоминается в подсказке, но не в цене
+  document.getElementById('pHint').textContent = parts.join(' · ') + (t ? ' · темп: ' + t.label : '');
+}
+
+/* ================= Отрисовка ================= */
 function renderDays(){
-  const box=document.getElementById('days');box.innerHTML='';const tk=getDateKey(moscowNow()),fd=dates[0],ld=dates[13];
-  document.getElementById('monthLabel').textContent=fd.getDate()+' – '+ld.getDate()+' '+MONTHS[ld.getMonth()]+' '+ld.getFullYear();
-  dates.forEach((d,i)=>{const dk=getDateKey(d),n=bookings.filter(b=>b.dateKey===dk&&(b.status||'wait')!=='cancel').length;const t=document.createElement('div');
-  t.className='day-tab'+(i===curDateOffset?' active':'')+(dk===tk?' today':'')+(d.getMonth()!==fd.getMonth()?' new-month':'');
-  t.innerHTML='<span class="dname">'+DAYS_SHORT[d.getDay()]+'</span><span class="dnum">'+d.getDate()+'</span><span class="cnt">'+n+'</span>';
-  t.onclick=()=>{curDateOffset=i;refreshUI()};box.appendChild(t)})
+  const box = document.getElementById('days');
+  box.innerHTML = '';
+  
+  const todayKey = getDateKey(moscowNow());
+  const firstDate = weekDates[0];
+  const lastDate = weekDates[6];
+  
+  // Подпись месяца
+  let monthText = '';
+  if(firstDate.getMonth() === lastDate.getMonth()){
+    monthText = firstDate.getDate() + ' – ' + lastDate.getDate() + ' ' + MONTHS[firstDate.getMonth()] + ' ' + firstDate.getFullYear();
+  } else {
+    monthText = firstDate.getDate() + ' ' + MONTHS[firstDate.getMonth()].substring(0,3) + ' – ' + 
+                lastDate.getDate() + ' ' + MONTHS[lastDate.getMonth()].substring(0,3) + ' ' + lastDate.getFullYear();
+  }
+  document.getElementById('monthLabel').textContent = monthText;
+
+  weekDates.forEach((dateObj, i) => {
+    const dateKey = getDateKey(dateObj);
+    const n = bookings.filter(b => b.dateKey === dateKey && (b.status || 'wait') !== 'cancel').length;
+    const isToday = dateKey === todayKey;
+    const isNewMonth = dateObj.getMonth() !== firstDate.getMonth();
+    
+    const t = document.createElement('div');
+    t.className = 'day-tab' + 
+      (i === curDayOffset ? ' active' : '') + 
+      (isToday ? ' today' : '') + 
+      (isNewMonth ? ' new-month' : '');
+    
+    if(isToday) t.title = 'Сегодня';
+    
+    t.innerHTML =
+      '<span class="dname">' + DAYS_SHORT[i] + '</span>' +
+      '<span class="dnum">' + dateObj.getDate() + '</span>' +
+      '<span class="cnt">' + n + '</span>';
+      
+    t.addEventListener('click', () => { curDayOffset = i; refreshUI(); });
+    box.appendChild(t);
+  });
 }
 
 function renderSched(){
-  const box=document.getElementById('sched'),horses=config.horses;
-  if(!horses.length){box.innerHTML='<div style="color:#999;text-align:center;padding:40px">Нет лошадей.</div>';return}
-  const ad=dates[curDateOffset],ak=getDateKey(ad),db2=bookings.filter(b=>b.dateKey===ak);
-  const isT=ak===getDateKey(moscowNow()),nm=moscowNow().getHours()*60+moscowNow().getMinutes(),step=config.slotStep||30,slots=getTimeSlots();
-  const grid=document.createElement('div');grid.className='grid';grid.style.gridTemplateColumns='72px repeat('+horses.length+', 1fr)';
-  const c=document.createElement('div');c.className='gh corner';c.textContent='Время';grid.appendChild(c);
-  horses.forEach(h=>{const g=document.createElement('div');g.className='gh';g.textContent=h;grid.appendChild(g)});
-  slots.forEach(sm=>{
-    const tc=document.createElement('div');tc.className='gl';tc.textContent=minToStr(sm);grid.appendChild(tc);
-    horses.forEach(horse=>{
-      const gc=document.createElement('div');gc.className='gc';
-      const m=db2.filter(b=>b.horse===horse&&b.startMin<sm+step&&(b.startMin+b.dur*60)>sm);
-      if(!m.length){gc.classList.add('empty-slot');if(role==='admin'){const p=document.createElement('div');p.className='add-placeholder';p.textContent='＋';p.onclick=()=>openFormFor(curDateOffset,sm,horse);gc.appendChild(p)}}
-      else m.forEach(b=>{
-        const s=STATUSES[b.status]||STATUSES.wait,p=isT&&(b.startMin+b.dur*60)<=nm,col=getTrainerColor(b.trainer);
-        const bl=document.createElement('div');bl.className='bblock s-'+s.cls+(p?' past':'');
-        if(col!=='transparent')bl.style.borderLeftColor=col;
-        bl.innerHTML='<div class="btime">'+minToStr(b.startMin)+'-'+minToStr(b.startMin+b.dur*60)+'</div><div class="btrainer" style="color:'+(col!=='transparent'?col:'inherit')+'">'+esc(b.trainer||'—')+'</div><div class="bprice">'+fmt(b.price)+'</div>';
-        bl.onclick=()=>openDetail(b.id);gc.appendChild(bl)
-      });
-      grid.appendChild(gc)
-    })
-  });
-  const w=document.createElement('div');w.className='grid-wrap';w.appendChild(grid);box.innerHTML='';box.appendChild(w)
-}
+  const box = document.getElementById('sched');
+  const horses = config.horses;
+  if(!horses.length){
+    box.innerHTML = '<div class="no-horses">Нет лошадей. Добавьте их в ⚙️ Конфигуратор.</div>';
+    return;
+  }
+  
+  const activeDate = weekDates[curDayOffset];
+  const activeDateKey = getDateKey(activeDate);
+  const dayBookings = bookings.filter(b => b.dateKey === activeDateKey);
+  
+  const isToday = activeDateKey === getDateKey(moscowNow());
+  const nowMin = moscowNow().getHours() * 60 + moscowNow().getMinutes();
+  const step = config.slotStep || 30;
+  const slots = getTimeSlots();
 
-function renderWatchPanel(){
-  const box=document.getElementById('wpLogs');if(!logs.length){box.innerHTML='<div class="wp-log" style="color:var(--muted);text-align:center;padding:20px">Логов нет</div>';return}
-  box.innerHTML='';
-  logs.forEach(l=>{const d=document.createElement('div');d.className='wp-log';
-  d.innerHTML='<span class="time">'+new Date(l.time).toLocaleString('ru-RU')+'</span><span class="act '+(l.action==='CREATE'?'done':'')+'">'+l.action+': '+esc(l.details)+'</span>';
-  if(l.action==='CREATE'){const b=document.createElement('button');b.className='dc-del';b.style.marginTop='8px';b.textContent='Отменить';b.onclick=()=>{if(confirm('Отменить?')){const p=l.details.split(' '),h=p[0],t=p[1],tg=bookings.find(x=>x.horse===h&&minToStr(x.startMin)===t&&(x.status||'wait')!=='cancel');if(tg)deleteBooking(tg.id)}};d.appendChild(b)}
-  box.appendChild(d)})
+  const grid = document.createElement('div');
+  grid.className = 'grid';
+  grid.style.gridTemplateColumns = '72px repeat(' + horses.length + ', 1fr)';
+
+  const corner = document.createElement('div');
+  corner.className = 'gh corner';
+  corner.textContent = 'Время';
+  grid.appendChild(corner);
+
+  horses.forEach(h => {
+    const gh = document.createElement('div');
+    gh.className = 'gh';
+    gh.textContent = h;
+    grid.appendChild(gh);
+  });
+
+  slots.forEach(slotMin => {
+    const timeCell = document.createElement('div');
+    timeCell.className = 'gl';
+    timeCell.textContent = minToStr(slotMin);
+    grid.appendChild(timeCell);
+
+    horses.forEach(horse => {
+      const gc = document.createElement('div');
+      gc.className = 'gc';
+
+      const slotEnd = slotMin + step;
+      const matched = dayBookings.filter(b =>
+        b.horse === horse &&
+        b.startMin < slotEnd &&
+        (b.startMin + b.dur * 60) > slotMin
+      );
+
+      if(matched.length === 0){
+        gc.classList.add('empty-slot');
+        if(isAdmin){
+          const ph = document.createElement('div');
+          ph.className = 'add-placeholder';
+          ph.textContent = '＋';
+          ph.title = 'Забронировать ' + horse + ' с ' + minToStr(slotMin);
+          ph.addEventListener('click', () => openFormFor(curDayOffset, slotMin, horse));
+          gc.appendChild(ph);
+        }
+      } else {
+        matched.forEach(b => {
+          const st = STATUSES[b.status] || STATUSES.wait;
+          const isPast = isToday && (b.startMin + b.dur * 60) <= nowMin;
+          const block = document.createElement('div');
+          block.className = 'bblock s-' + st.cls + (isPast ? ' past' : '');
+
+          const timeStr = minToStr(b.startMin) + '-' + minToStr(b.startMin + b.dur * 60);
+          let html = '<div class="btime">' + esc(timeStr) + '</div>';
+          html += '<div class="btrainer">' + esc(b.trainer || '—') + '</div>';
+          html += '<div class="bprice">' + fmt(b.price) + '</div>';
+          block.innerHTML = html;
+
+          block.addEventListener('click', () => openDetail(b.id));
+          gc.appendChild(block);
+        });
+      }
+      grid.appendChild(gc);
+    });
+  });
+
+  const wrap = document.createElement('div');
+  wrap.className = 'grid-wrap';
+  wrap.appendChild(grid);
+  box.innerHTML = '';
+  box.appendChild(wrap);
 }
 
 function renderHeaderState(){
-  const isA=role==='admin',isW=role==='watcher';
-  document.getElementById('mainUI').style.display=isW?'none':'block';
-  document.getElementById('watchUI').style.display=isW?'block':'none';
-  document.getElementById('adminBtn').style.display=(!isA&&!isW)?'inline-block':'none';
-  document.getElementById('adminCfgBtn').style.display=isA?'inline-block':'none';
-  document.getElementById('adminOutBtn').style.display=(isA||isW)?'inline-block':'none';
-  document.getElementById('guestHint').style.display=(!isA&&!isW)?'block':'none';
-  document.getElementById('fab').style.display=isA?'block':'none'
+  document.getElementById('adminBtn').style.display = isAdmin ? 'none' : 'inline-block';
+  document.getElementById('adminCfgBtn').style.display = isAdmin ? 'inline-block' : 'none';
+  document.getElementById('adminOutBtn').style.display = isAdmin ? 'inline-block' : 'none';
+  document.getElementById('guestHint').style.display = isAdmin ? 'none' : 'block';
+  document.getElementById('fab').style.display = isAdmin ? 'block' : 'none';
 }
-function renderDbStats(){const el=document.getElementById('dbStats');if(!db){el.innerHTML='';return}el.innerHTML='Хранилище: <span>'+formatBytes(dbSizeBytes)+'</span> из 100 МБ'}
-function refreshUI(){renderHeaderState();if(role!=='watcher'){renderDays();renderSched();renderDbStats();refreshPrice()}else renderWatchPanel()}
 
+function refreshUI(){
+  renderHeaderState();
+  renderDays();
+  renderSched();
+  refreshPrice();
+}
+
+/* ================= Детали брони ================= */
 function openDetail(id){
-  const b=bookings.find(x=>x.id===id);if(!b)return;const m=document.getElementById('detailModal'),s=STATUSES[b.status]||STATUSES.wait,col=getTrainerColor(b.trainer);
-  let h='<h2>'+esc(b.horse)+' · '+minToStr(b.startMin)+'</h2><div class="detail-card">';
-  h+='<div class="dc-row"><span class="dc-label">Дата</span><span class="dc-val">'+b.dateKey+'</span></div>';
-  h+='<div class="dc-row"><span class="dc-label">Время</span><span class="dc-val">'+minToStr(b.startMin)+' – '+minToStr(b.startMin+b.dur*60)+'</span></div>';
-  h+='<div class="dc-row"><span class="dc-label">Тренер</span><span class="dc-val" style="color:'+col+';font-weight:800">'+esc(b.trainer)+'</span></div>';
-  h+='<div class="dc-row"><span class="dc-label">Нагрузка/Темп</span><span class="dc-val">'+esc(b.loadLabel)+' / '+esc(b.tempoLabel)+'</span></div>';
-  h+='<div class="dc-price">'+fmt(b.price)+'</div><span class="dc-status dc-'+s.cls+'">'+s.icon+' '+s.label+'</span>';
-  if(b.orderStatus)h+='<div class="dc-order-status">💬 '+esc(b.orderStatus)+'</div>';
-  h+='</div>';
-  if(role==='admin'){h+='<div class="chips" style="margin-bottom:12px">';Object.keys(STATUSES).forEach(k=>{const st=STATUSES[k];h+='<div class="chip'+((b.status||'wait')===k?' sel':'')+'" data-s="'+k+'" id="ds_'+k+'">'+st.icon+' '+st.label+'</div>'});h+='</div><button class="btn save wide" id="detailEdit">✏️ Ред.</button><button class="dc-del" id="detailDel">🗑 Удалить</button>'}
-  if(role==='watcher')h+='<button class="dc-del" id="detailDel">Отменить бронь</button>';
-  m.innerHTML=h;document.getElementById('detailOverlay').classList.add('open');
-  const del=document.getElementById('detailDel');if(del)del.onclick=()=>{if(confirm('Удалить?')){deleteBooking(id);document.getElementById('detailOverlay').classList.remove('open')}};
-  if(role==='admin'){Object.keys(STATUSES).forEach(k=>{document.getElementById('ds_'+k).onclick=function(){updateBooking(id,{status:k});document.getElementById('detailOverlay').classList.remove('open')}});document.getElementById('detailEdit').onclick=()=>{document.getElementById('detailOverlay').classList.remove('open');openFormEdit(b)}}
-}
-function closeDetail(){document.getElementById('detailOverlay').classList.remove('open')}
+  const b = bookings.find(x => x.id === id);
+  if(!b) return;
+  const modal = document.getElementById('detailModal');
+  const st = STATUSES[b.status] || STATUSES.wait;
 
-function openForm(){editingId=null;document.getElementById('formTitle').textContent='Новая бронь';document.getElementById('fSave').textContent='Забронировать';_fillForm(curDateOffset,480,config.horses[0]||'',1.5,'',0,0,'wait','');document.getElementById('overlay').classList.add('open')}
-function openFormFor(o,t,h){editingId=null;document.getElementById('formTitle').textContent='Новая бронь';_fillForm(o,t,h,1.5,'',curLoadIdx,curTempoIdx,'wait','');document.getElementById('overlay').classList.add('open')}
+  let html = '<h2>' + esc(b.horse) + ' · ' + minToStr(b.startMin) + '</h2>';
+  html += '<div class="detail-card">';
+  html += '<div class="dc-row"><span class="dc-label">Дата</span><span class="dc-val">' + esc(b.dateKey) + '</span></div>';
+  html += '<div class="dc-row"><span class="dc-label">Длительность</span><span class="dc-val">' + b.dur + ' ч</span></div>';
+  html += '<div class="dc-row"><span class="dc-label">Тренер</span><span class="dc-val">' + esc(b.trainer || '—') + '</span></div>';
+  html += '<div class="dc-row"><span class="dc-label">Нагрузка</span><span class="dc-val">' + esc(b.loadLabel || '—') + '</span></div>';
+  html += '<div class="dc-row"><span class="dc-label">Темп</span><span class="dc-val">' + esc(b.tempoLabel || '—') + '</span></div>';
+  html += '<div class="dc-price">' + fmt(b.price) + '</div>';
+  html += '<span class="dc-status dc-' + st.cls + '">' + st.icon + ' ' + st.label + '</span>';
+  html += '</div>';
+
+  if(isAdmin){
+    html += '<div class="chips" style="margin-bottom:12px">';
+    Object.keys(STATUSES).forEach(key => {
+      const s = STATUSES[key];
+      const sel = (b.status || 'wait') === key ? ' sel' : '';
+      html += '<div class="chip' + sel + '" data-s="' + key + '" id="ds_' + key + '">' + s.icon + ' ' + s.label + '</div>';
+    });
+    html += '</div>';
+    html += '<button class="btn save wide" id="detailEdit">✏️ Редактировать</button>';
+    html += '<button class="dc-del" id="detailDel">🗑 Удалить бронь</button>';
+  }
+
+  modal.innerHTML = html;
+  document.getElementById('detailOverlay').classList.add('open');
+
+  if(isAdmin){
+    Object.keys(STATUSES).forEach(key => {
+      document.getElementById('ds_' + key).addEventListener('click', function(){
+        updateBooking(id, {status: key});
+        document.getElementById('detailOverlay').classList.remove('open');
+      });
+    });
+    document.getElementById('detailDel').addEventListener('click', () => {
+      if(confirm('Удалить эту бронь?')){
+        deleteBooking(id);
+        document.getElementById('detailOverlay').classList.remove('open');
+      }
+    });
+    document.getElementById('detailEdit').addEventListener('click', () => {
+      document.getElementById('detailOverlay').classList.remove('open');
+      openFormEdit(b);
+    });
+  }
+}
+function closeDetail(){ document.getElementById('detailOverlay').classList.remove('open'); }
+
+/* ================= Форма брони ================= */
+function openForm(){
+  editingId = null;
+  document.getElementById('formTitle').textContent = 'Новая бронь';
+  document.getElementById('fSave').textContent = 'Забронировать';
+  _fillForm(curDayOffset, 480, config.horses[0] || '', 1.5, '', 0, 0, 'wait');
+  document.getElementById('overlay').classList.add('open');
+}
+
+function openFormFor(dayOffset, startMin, horse){
+  editingId = null;
+  document.getElementById('formTitle').textContent = 'Новая бронь';
+  document.getElementById('fSave').textContent = 'Забронировать';
+  _fillForm(dayOffset, startMin, horse, 1.5, '', curLoadIdx, curTempoIdx, 'wait');
+  document.getElementById('overlay').classList.add('open');
+}
+
 function openFormEdit(b){
-  editingId=b.id;document.getElementById('formTitle').textContent='Ред.';document.getElementById('fSave').textContent='Сохранить';
-  let li=0,ti=0,off=0;config.loads.forEach((l,i)=>{if(l.label===b.loadLabel)li=i});config.tempos.forEach((t,i)=>{if(t.label===b.tempoLabel)ti=i});
-  dates.forEach((d,i)=>{if(getDateKey(d)===b.dateKey)off=i});_fillForm(off,b.startMin,b.horse,b.dur,b.trainer,li,ti,b.status||'wait',b.orderStatus||'');document.getElementById('overlay').classList.add('open')
+  editingId = b.id;
+  document.getElementById('formTitle').textContent = 'Редактирование брони';
+  document.getElementById('fSave').textContent = 'Сохранить';
+  let li = 0, ti = 0;
+  config.loads.forEach((l, i) => { if(l.label === b.loadLabel) li = i; });
+  config.tempos.forEach((t, i) => { if(t.label === b.tempoLabel) ti = i; });
+  
+  // Найти смещение дня для этой брони
+  let off = 0;
+  weekDates.forEach((d, i) => { if(getDateKey(d) === b.dateKey) off = i; });
+  
+  _fillForm(off, b.startMin, b.horse, b.dur, b.trainer, li, ti, b.status || 'wait');
+  document.getElementById('overlay').classList.add('open');
 }
 
-function _fillForm(off,sm,horse,dur,trainer,li,ti,status,os){
-  const d=dates[off];document.getElementById('fDayInfo').textContent=d.getDate()+' '+MONTHS[d.getMonth()]+' '+d.getFullYear()+', '+DAYS_SHORT[d.getDay()];
-  const ts=document.getElementById('fTime');ts.innerHTML='';getTimeSlots().forEach(m=>{const o=document.createElement('option');o.value=m;o.textContent=minToStr(m);if(m===sm)o.selected=true;ts.appendChild(o)});
-  document.getElementById('fHorse').innerHTML=config.horses.map(h=>'<option'+(h===horse?' selected':'')+'>'+esc(h)+'</option>').join('')||'<option>—</option>';
-  document.getElementById('trainerList').innerHTML=config.trainers.map(t=>'<option value="'+esc(t.name)+'">').join('');
-  const ad=getLoadDurs(config.loads[li]),db=document.getElementById('fDur');db.innerHTML='';if(!ad.includes(dur))dur=ad[0]||1;
-  ad.forEach(h=>{db.innerHTML+='<div class="chip'+(h===dur?' sel':'')+'" data-h="'+h+'">'+(h<1?(h*60)+' мин':h+' ч')+'</div>'});
-  document.getElementById('fLoad').innerHTML=config.loads.map((l,i)=>'<div class="chip'+(i===li?' sel':'')+'" data-i="'+i+'">'+esc(l.label)+'</div>').join('');
-  document.getElementById('fTempo').innerHTML=config.tempos.map((t,i)=>'<div class="chip'+(i===ti?' sel':'')+'" data-i="'+i+'">'+esc(t.label)+'</div>').join('');
-  document.querySelectorAll('#fStatus .chip').forEach(c=>c.classList.toggle('sel',c.dataset.s===status));
-  curDur=dur;curStatus=status;curLoadIdx=li;curTempoIdx=ti;curDateOffset=off;
-  document.getElementById('fErr').style.display='none';document.getElementById('fTrainer').value=trainer||'';document.getElementById('fOrderStatus').value=os||'';refreshPrice()
+function _fillForm(dayOffset, startMin, horse, dur, trainer, loadIdx, tempoIdx, status){
+  const activeDate = weekDates[dayOffset];
+  document.getElementById('fDayInfo').textContent = activeDate.getDate() + ' ' + MONTHS[activeDate.getMonth()] + ' ' + activeDate.getFullYear() + ', ' + DAYS_SHORT[dayOffset];
+
+  const tSel = document.getElementById('fTime');
+  tSel.innerHTML = '';
+  const slots = getTimeSlots();
+  slots.forEach(m => {
+    const o = document.createElement('option');
+    o.value = m;
+    o.textContent = minToStr(m);
+    if(m === startMin) o.selected = true;
+    tSel.appendChild(o);
+  });
+
+  document.getElementById('fHorse').innerHTML =
+    config.horses.map(h => '<option' + (h === horse ? ' selected' : '') + '>' + esc(h) + '</option>').join('')
+    || '<option value="">— нет —</option>';
+
+  document.getElementById('trainerList').innerHTML =
+    config.trainers.map(t => '<option value="' + esc(t) + '">').join('');
+
+  document.getElementById('fLoad').innerHTML =
+    config.loads.map((l, i) =>
+      '<div class="chip' + (i === loadIdx ? ' sel' : '') + '" data-i="' + i + '">' +
+      esc(l.label) + (l.price ? ' +' + fmt(l.price) : '') + '</div>'
+    ).join('');
+    
+  // Темп без цены
+  document.getElementById('fTempo').innerHTML =
+    config.tempos.map((t, i) =>
+      '<div class="chip' + (i === tempoIdx ? ' sel' : '') + '" data-i="' + i + '">' +
+      esc(t.label) + '</div>'
+    ).join('');
+
+  document.querySelectorAll('#fDur .chip').forEach(c => {
+    c.classList.toggle('sel', parseFloat(c.dataset.h) === dur);
+  });
+  curDur = dur;
+
+  document.querySelectorAll('#fStatus .chip').forEach(c => {
+    c.classList.toggle('sel', c.dataset.s === status);
+  });
+  curStatus = status;
+  curLoadIdx = loadIdx;
+  curTempoIdx = tempoIdx;
+  curDayOffset = dayOffset;
+
+  document.getElementById('fErr').style.display = 'none';
+  document.getElementById('fTrainer').value = trainer || '';
+  refreshPrice();
 }
 
-function closeForm(){document.getElementById('overlay').classList.remove('open');editingId=null}
-function bindChips(id,cb){document.getElementById(id).addEventListener('click',e=>{const c=e.target.closest('.chip');if(!c)return;c.parentElement.querySelectorAll('.chip').forEach(x=>x.classList.remove('sel'));c.classList.add('sel');cb(c);if(id==='fLoad')refreshUI();else refreshPrice()})}
-bindChips('fDur',c=>curDur=parseFloat(c.dataset.h));bindChips('fLoad',c=>curLoadIdx=parseInt(c.dataset.i,10));bindChips('fTempo',c=>curTempoIdx=parseInt(c.dataset.i,10));bindChips('fStatus',c=>curStatus=c.dataset.s);
+function closeForm(){
+  document.getElementById('overlay').classList.remove('open');
+  editingId = null;
+}
 
-document.getElementById('fSave').addEventListener('click',()=>{
-  const err=document.getElementById('fErr'),dk=getDateKey(dates[curDateOffset]),sm=parseInt(document.getElementById('fTime').value,10),horse=document.getElementById('fHorse').value,trainer=document.getElementById('fTrainer').value.trim(),em=sm+curDur*60,L=config.loads[curLoadIdx]||{label:''},T=config.tempos[curTempoIdx]||{label:''};
-  if(!trainer){err.textContent='⚠ Укажите тренера.';err.style.display='block';return}
-  const cl=bookings.find(b=>b.id!==editingId&&(b.status||'wait')!=='cancel'&&b.dateKey===dk&&b.horse===horse&&b.startMin<em&&sm<b.startMin+b.dur*60);
-  if(cl){err.textContent='⚠ Занято с '+minToStr(cl.startMin)+' до '+minToStr(cl.startMin+cl.dur*60);err.style.display='block';return}
-  err.style.display='none';
-  const data={dateKey:dk,startMin:sm,dur:curDur,horse,trainer,loadLabel:L.label,tempoLabel:T.label,price:calcPrice(),status:curStatus,orderStatus:document.getElementById('fOrderStatus').value.trim()};
-  if(editingId)updateBooking(editingId,data);else saveBookingToCloud(data);closeForm()
+function bindChips(id, cb){
+  document.getElementById(id).addEventListener('click', e => {
+    const c = e.target.closest('.chip');
+    if(!c) return;
+    c.parentElement.querySelectorAll('.chip').forEach(x => x.classList.remove('sel'));
+    c.classList.add('sel');
+    cb(c);
+    refreshPrice();
+  });
+}
+bindChips('fDur',    c => curDur      = parseFloat(c.dataset.h));
+bindChips('fLoad',   c => curLoadIdx  = parseInt(c.dataset.i, 10));
+bindChips('fTempo',  c => curTempoIdx = parseInt(c.dataset.i, 10));
+bindChips('fStatus', c => curStatus   = c.dataset.s);
+
+document.getElementById('fSave').addEventListener('click', () => {
+  const err = document.getElementById('fErr');
+  const activeDate = weekDates[curDayOffset];
+  const dateKey = getDateKey(activeDate);
+  const startMin = parseInt(document.getElementById('fTime').value, 10);
+  const horse    = document.getElementById('fHorse').value;
+  const trainer  = document.getElementById('fTrainer').value.trim();
+  const endMin   = startMin + curDur * 60;
+  const L = config.loads[curLoadIdx] || {label:'', price:0};
+  const T = config.tempos[curTempoIdx] || {label:'', price:0};
+
+  if(!trainer){
+    err.textContent = '⚠ Укажите имя тренера.';
+    err.style.display = 'block';
+    return;
+  }
+
+  const clash = bookings.find(b =>
+    b.id !== editingId &&
+    (b.status || 'wait') !== 'cancel' &&
+    b.dateKey === dateKey && b.horse === horse &&
+    b.startMin < endMin && startMin < b.startMin + b.dur * 60
+  );
+  if(clash){
+    err.textContent = '⚠ «' + horse + '» занята с ' + minToStr(clash.startMin) +
+      ' до ' + minToStr(clash.startMin + clash.dur * 60) + '.';
+    err.style.display = 'block';
+    return;
+  }
+
+  err.style.display = 'none';
+  const data = {
+    dateKey: dateKey,
+    startMin: startMin, dur: curDur,
+    horse: horse, trainer: trainer,
+    loadLabel: L.label, loadPrice: L.price || 0,
+    tempoLabel: T.label, tempoPrice: 0, // Темп всегда 0
+    price: calcPrice(),
+    status: curStatus
+  };
+
+  if(editingId){
+    updateBooking(editingId, data);
+  } else {
+    saveBookingToCloud(data);
+  }
+  closeForm();
 });
 
-document.getElementById('loginGo').addEventListener('click',doLogin);
-document.getElementById('loginPass').addEventListener('keydown',e=>{if(e.key==='Enter')doLogin()});
-function doLogin(){
-  const u=document.getElementById('loginUser').value.trim(),p=document.getElementById('loginPass').value;
-  if(p===config.watcherPass){role='watcher';localStorage.setItem('hc_role','watcher');document.getElementById('loginOverlay').classList.remove('open');refreshUI()}
-  else if(p===config.adminPass){role='admin';localStorage.setItem('hc_role','admin');document.getElementById('loginOverlay').classList.remove('open');refreshUI()}
-  else{const e=document.getElementById('loginErr');e.textContent='⚠ Неверный пароль.';e.style.display='block'}
+/* ================= Вход админа ================= */
+function openLogin(){
+  document.getElementById('loginErr').style.display = 'none';
+  document.getElementById('loginPass').value = '';
+  document.getElementById('loginOverlay').classList.add('open');
+  setTimeout(() => document.getElementById('loginPass').focus(), 50);
 }
-document.getElementById('loginCancel').addEventListener('click',()=>document.getElementById('loginOverlay').classList.remove('open'));
-document.getElementById('adminBtn').addEventListener('click',()=>{document.getElementById('loginErr').style.display='none';document.getElementById('loginOverlay').classList.add('open')});
-document.getElementById('adminCfgBtn').addEventListener('click',()=>{if(role==='admin')openCfg()});
-document.getElementById('adminOutBtn').addEventListener('click',()=>{if(confirm('Выйти?')){role='guest';localStorage.removeItem('hc_role');closeCfg();closeForm();closeDetail();refreshUI()}});
+document.getElementById('loginGo').addEventListener('click', doLogin);
+document.getElementById('loginPass').addEventListener('keydown', e => { if(e.key === 'Enter') doLogin(); });
 
-/* ================= НАСТРОЙКИ (ПОЛНОСТЬЮ ПЕРЕСОБРАННЫЕ) ================= */
+function doLogin(){
+  const pass = document.getElementById('loginPass').value;
+  if(pass === (config.adminPass || 'admin')){
+    isAdmin = true;
+    localStorage.setItem('hc_admin', 'true'); // Сохраняем сессию!
+    document.getElementById('loginOverlay').classList.remove('open');
+    refreshUI();
+  }else{
+    const err = document.getElementById('loginErr');
+    err.textContent = '⚠ Неверный пароль.';
+    err.style.display = 'block';
+  }
+}
+document.getElementById('loginCancel').addEventListener('click', () => {
+  document.getElementById('loginOverlay').classList.remove('open');
+});
+document.getElementById('adminBtn').addEventListener('click', openLogin);
+document.getElementById('adminCfgBtn').addEventListener('click', () => { if(isAdmin) openCfg(); });
+document.getElementById('adminOutBtn').addEventListener('click', () => {
+  if(!isAdmin) return;
+  if(confirm('Выйти из панели администратора?')){
+    isAdmin = false;
+    localStorage.removeItem('hc_admin'); // Удаляем сессию
+    closeCfg(); closeForm(); closeDetail(); refreshUI();
+  }
+});
+
+/* ================= Конфигуратор ================= */
 let cfgDraft = null;
-
 function openCfg(){
-  cfgDraft = JSON.parse(JSON.stringify(config)); // Чистая копия
-  renderCfgModal();
+  cfgDraft = JSON.parse(JSON.stringify(config));
+  document.getElementById('cfgErr').style.display = 'none';
+  document.getElementById('cfgPass').value = '';
+  renderCfg();
   document.getElementById('cfgOverlay').classList.add('open');
 }
-function closeCfg(){document.getElementById('cfgOverlay').classList.remove('open'); cfgDraft = null}
+function closeCfg(){ document.getElementById('cfgOverlay').classList.remove('open'); cfgDraft = null; }
 
-function renderCfgModal(){
-  const d = cfgDraft;
-  let h = '<h2>⚙️ Настройки</h2>';
-  
-  // Ставка
-  h += '<div class="sec"><h3>Базовая ставка</h3><label>Цена за 1 час, ₽</label><input type="number" id="cfgRate" min="0" step="50" value="'+d.rate+'"></div>';
-  
-  // Нагрузки
-  h += '<div class="sec"><h3>Нагрузки</h3><div class="muted" style="margin-top:0;margin-bottom:10px">Введите длительности через запятую (напр: 0.5, 1, 2).</div><div id="cfgLoadsBox"></div>';
-  h += '<div class="addrow"><input type="text" id="cfgLoadName" placeholder="Название"><button id="cfgLoadAdd">＋ Добавить</button></div></div>';
-  
-  // Темп
-  h += '<div class="sec"><h3>Темп</h3><div id="cfgTemposBox"></div>';
-  h += '<div class="addrow"><input type="text" id="cfgTempoName" placeholder="Название"><button id="cfgTempoAdd">＋ Добавить</button></div></div>';
-  
-  // Лошади
-  h += '<div class="sec"><h3>Лошади</h3><div id="cfgHorsesBox"></div>';
-  h += '<div class="addrow"><input type="text" id="cfgHorseName" placeholder="Кличка"><button id="cfgHorseAdd">＋ Добавить</button></div></div>';
-  
-  // Тренеры
-  h += '<div class="sec"><h3>Тренеры</h3><div id="cfgTrainersBox"></div>';
-  h += '<div class="addrow"><input type="text" id="cfgTrainerName" placeholder="Имя">';
-  h += '<input type="color" id="cfgTrainerColor" value="#4a7c59" style="width:40px;height:40px;border:1px solid var(--line);border-radius:8px;padding:2px;cursor:pointer;background:var(--card)">';
-  h += '<button id="cfgTrainerAdd">＋ Добавить</button></div></div>';
-  
-  // Скрытые от наблюдателя
-  h += '<div class="sec"><h3>Интеграции (только для админа)</h3>';
-  h += '<label>Пароль наблюдателя</label><input type="text" id="cfgWPass" value="'+(d.watcherPass||'')+'">';
-  h += '<label>Telegram Bot Token</label><input type="text" id="cfgTgToken" value="'+(d.tgToken||'')+'">';
-  h += '<label>Telegram Chat ID</label><input type="text" id="cfgTgChat" value="'+(d.tgChat||'')+'"></div>';
-  
-  h += '<div class="err" id="cfgErr"></div>';
-  h += '<div class="btnrow"><button class="btn cancel" id="cfgCancelBtn">Отмена</button><button class="btn save" id="cfgSaveBtn">Сохранить настройки</button></div>';
-  
-  document.getElementById('cfgModal').innerHTML = h;
-  bindCfgEvents();
-  renderCfgLists();
-}
-
-function renderCfgLists(){
+function renderCfg(){
   if(!cfgDraft) return;
-  
-  // Нагрузки
-  const lBox = document.getElementById('cfgLoadsBox'); lBox.innerHTML = '';
+  document.getElementById('cfgRate').value = cfgDraft.rate;
+
+  // Нагрузки (с ценой)
+  const loadBox = document.getElementById('cfgLoads');
+  loadBox.innerHTML = '';
   cfgDraft.loads.forEach((it, i) => {
-    let block = '<div class="cfg-block">';
-    block += '<div class="cfg-top"><input type="text" value="'+esc(it.label)+'" placeholder="Название" data-load-name="'+i+'"><button class="rm" data-rm-load="'+i+'">✕</button></div>';
-    block += '<input type="text" value="'+esc(it.durs)+'" placeholder="0.5, 1, 2" data-load-durs="'+i+'" style="margin-bottom:8px">';
-    block += '<div class="price-grid">';
-    getLoadDurs(it).forEach(dur => {
-      const label = dur < 1 ? (dur*60)+' мин' : dur+' ч';
-      block += '<div class="price-item"><span>'+label+'</span><input type="number" step="50" min="0" value="'+(it.prices[dur]||0)+'" data-load-price="'+i+'_'+dur+'" placeholder="₽"></div>';
-    });
-    block += '</div></div>';
-    lBox.innerHTML += block;
+    const row = document.createElement('div');
+    row.className = 'multrow';
+    const li = document.createElement('input');
+    li.className = 'lbl-in'; li.type = 'text'; li.value = it.label; li.placeholder = 'Название';
+    li.addEventListener('input', () => cfgDraft.loads[i].label = li.value);
+    const mi = document.createElement('input');
+    mi.className = 'mult-in'; mi.type = 'number'; mi.step = '50'; mi.min = '0'; mi.value = it.price || 0;
+    mi.placeholder = '₽';
+    mi.addEventListener('input', () => { cfgDraft.loads[i].price = parseFloat(mi.value) || 0; });
+    const rm = document.createElement('button');
+    rm.className = 'rm'; rm.textContent = '✕'; rm.title = 'Удалить';
+    rm.addEventListener('click', () => { if(cfgDraft.loads.length <= 1) return; cfgDraft.loads.splice(i, 1); renderCfg(); });
+    row.appendChild(li); row.appendChild(mi); row.appendChild(rm);
+    loadBox.appendChild(row);
   });
-  
-  // Темпы
-  const tBox = document.getElementById('cfgTemposBox'); tBox.innerHTML = '';
+
+  // Темп (без цены!)
+  const tempoBox = document.getElementById('cfgTempos');
+  tempoBox.innerHTML = '';
   cfgDraft.tempos.forEach((it, i) => {
-    tBox.innerHTML += '<div class="cfg-row"><input type="text" value="'+esc(it.label)+'" placeholder="Темп" data-tempo-name="'+i+'"><button class="rm" data-rm-tempo="'+i+'">✕</button></div>';
+    const row = document.createElement('div');
+    row.className = 'multrow';
+    const li = document.createElement('input');
+    li.className = 'lbl-in'; li.type = 'text'; li.value = it.label; li.placeholder = 'Название темпа';
+    li.addEventListener('input', () => cfgDraft.tempos[i].label = li.value);
+    const rm = document.createElement('button');
+    rm.className = 'rm'; rm.textContent = '✕'; rm.title = 'Удалить';
+    rm.addEventListener('click', () => { if(cfgDraft.tempos.length <= 1) return; cfgDraft.tempos.splice(i, 1); renderCfg(); });
+    row.appendChild(li); row.appendChild(rm);
+    tempoBox.appendChild(row);
   });
-  
-  // Лошади
-  const hBox = document.getElementById('cfgHorsesBox'); hBox.innerHTML = '';
-  cfgDraft.horses.forEach((it, i) => {
-    hBox.innerHTML += '<span class="namechip">'+esc(it)+' <button class="rm" data-rm-horse="'+i+'">✕</button></span>';
-  });
-  
-  // Тренеры
-  const trBox = document.getElementById('cfgTrainersBox'); trBox.innerHTML = '';
-  cfgDraft.trainers.forEach((it, i) => {
-    trBox.innerHTML += '<div class="cfg-block" style="padding:8px"><div style="display:flex;align-items:center;gap:8px"><span style="flex:1;font-weight:600;font-size:14px">'+esc(it.name)+'</span><button class="rm" data-rm-trainer="'+i+'">✕</button></div><div class="color-strip" style="background:'+it.color+'" data-color-strip="'+i+'"></div><input type="color" value="'+it.color+'" data-color-input="'+i+'"></div>';
-  });
-}
 
-function bindCfgEvents(){
-  if(!cfgDraft) return;
-  
-  // Живое обновление нагрузок (без перерисовки всего модалки)
-  document.querySelectorAll('[data-load-name]').forEach(el => {
-    el.oninput = function(){ cfgDraft.loads[this.dataset.loadName].label = this.value; }
-  });
-  document.querySelectorAll('[data-load-durs]').forEach(el => {
-    el.oninput = function(){
-      cfgDraft.loads[this.dataset.loadDurs].durs = this.value;
-      // Перерисовываем только цены для этой нагрузки
-      const i = this.dataset.loadDurs;
-      const grid = this.nextElementSibling;
-      grid.innerHTML = '';
-      getLoadDurs(cfgDraft.loads[i]).forEach(dur => {
-        const label = dur < 1 ? (dur*60)+' мин' : dur+' ч';
-        grid.innerHTML += '<div class="price-item"><span>'+label+'</span><input type="number" step="50" min="0" value="'+(cfgDraft.loads[i].prices[dur]||0)+'" data-load-price="'+i+'_'+dur+'" placeholder="₽"></div>';
-      });
-      bindCfgEvents(); // Ребинд для новых инпутов цен
-    }
-  });
-  document.querySelectorAll('[data-load-price]').forEach(el => {
-    el.oninput = function(){
-      const [i, dur] = this.dataset.loadPrice.split('_');
-      if(!cfgDraft.loads[i].prices) cfgDraft.loads[i].prices = {};
-      cfgDraft.loads[i].prices[parseFloat(dur)] = parseFloat(this.value) || 0;
-    }
-  });
-  document.querySelectorAll('[data-rm-load]').forEach(el => {
-    el.onclick = function(){ if(cfgDraft.loads.length<=1) return; cfgDraft.loads.splice(this.dataset.rmLoad, 1); renderCfgLists(); bindCfgEvents(); }
-  });
-  
-  document.querySelectorAll('[data-tempo-name]').forEach(el => {
-    el.oninput = function(){ cfgDraft.tempos[this.dataset.tempoName].label = this.value; }
-  });
-  document.querySelectorAll('[data-rm-tempo]').forEach(el => {
-    el.onclick = function(){ if(cfgDraft.tempos.length<=1) return; cfgDraft.tempos.splice(this.dataset.rmTempo, 1); renderCfgLists(); bindCfgEvents(); }
-  });
-  document.querySelectorAll('[data-rm-horse]').forEach(el => {
-    el.onclick = function(){ cfgDraft.horses.splice(this.dataset.rmHorse, 1); renderCfgLists(); bindCfgEvents(); }
-  });
-  document.querySelectorAll('[data-rm-trainer]').forEach(el => {
-    el.onclick = function(){ cfgDraft.trainers.splice(this.dataset.rmTrainer, 1); renderCfgLists(); bindCfgEvents(); }
-  });
-  
-  // Цвета тренеров
-  document.querySelectorAll('[data-color-strip]').forEach(el => {
-    el.onclick = function(){ this.nextElementSibling.click(); }
-  });
-  document.querySelectorAll('[data-color-input]').forEach(el => {
-    el.oninput = function(){
-      const i = this.dataset.colorInput;
-      cfgDraft.trainers[i].color = this.value;
-      this.previousElementSibling.style.background = this.value;
-    }
-  });
-  
-  // Кнопки добавления
-  document.getElementById('cfgLoadAdd').onclick = function(){
-    const n = document.getElementById('cfgLoadName').value.trim(); if(!n) return;
-    cfgDraft.loads.push({label:n, durs:'1, 1.5, 2', prices:{1:0, 1.5:0, 2:0}});
-    document.getElementById('cfgLoadName').value=''; renderCfgLists(); bindCfgEvents();
-  };
-  document.getElementById('cfgTempoAdd').onclick = function(){
-    const n = document.getElementById('cfgTempoName').value.trim(); if(!n) return;
-    cfgDraft.tempos.push({label:n}); document.getElementById('cfgTempoName').value=''; renderCfgLists(); bindCfgEvents();
-  };
-  document.getElementById('cfgHorseAdd').onclick = function(){
-    const n = document.getElementById('cfgHorseName').value.trim(); if(!n) return;
-    cfgDraft.horses.push(n); document.getElementById('cfgHorseName').value=''; renderCfgLists(); bindCfgEvents();
-  };
-  document.getElementById('cfgTrainerAdd').onclick = function(){
-    const n = document.getElementById('cfgTrainerName').value.trim(), c = document.getElementById('cfgTrainerColor').value;
-    if(!n) return;
-    cfgDraft.trainers.push({name:n, color:c}); document.getElementById('cfgTrainerName').value=''; renderCfgLists(); bindCfgEvents();
-  };
-  
-  // Кнопки закрытия и сохранения
-  document.getElementById('cfgCancelBtn').onclick = closeCfg;
-  document.getElementById('cfgSaveBtn').onclick = function(){
-    const err = document.getElementById('cfgErr');
-    const rate = parseFloat(document.getElementById('cfgRate').value);
-    if(isNaN(rate)||rate<0){err.textContent='⚠ Укажите ставку.';err.style.display='block';return}
-    
-    cfgDraft.rate = rate;
-    cfgDraft.loads = cfgDraft.loads.filter(l=>l.label&&l.label.trim()).map(l=>{
-      const p={}; getLoadDurs(l).forEach(k=>{p[k]=l.prices?l.prices[k]||0:0}); return{label:l.label.trim(), durs:l.durs, prices:p}
+  ['cfgHorses','cfgTrainers'].forEach(boxId => {
+    const key = boxId === 'cfgHorses' ? 'horses' : 'trainers';
+    const box = document.getElementById(boxId);
+    box.innerHTML = '';
+    cfgDraft[key].forEach((item, i) => {
+      const c = document.createElement('span');
+      c.className = 'namechip';
+      c.innerHTML = esc(item) + ' <button class="rm" title="Удалить">✕</button>';
+      c.querySelector('.rm').addEventListener('click', () => { cfgDraft[key].splice(i, 1); renderCfg(); });
+      box.appendChild(c);
     });
-    cfgDraft.tempos = cfgDraft.tempos.filter(t=>t.label&&t.label.trim()).map(t=>({label:t.label.trim()}));
-    if(!cfgDraft.loads.length||!cfgDraft.tempos.length){err.textContent='⚠ Добавьте варианты.';err.style.display='block';return}
-    cfgDraft.horses = cfgDraft.horses.map(h=>h.trim()).filter(Boolean);
-    cfgDraft.trainers = cfgDraft.trainers.map(t=>typeof t==='string'?{name:t.trim(),color:'#4a7c59'}:{name:t.name.trim(),color:t.color||'#4a7c59'}).filter(t=>t.name);
-    cfgDraft.watcherPass = document.getElementById('cfgWPass').value.trim() || 'admin123';
-    cfgDraft.tgToken = document.getElementById('cfgTgToken').value.trim();
-    cfgDraft.tgChat = document.getElementById('cfgTgChat').value.trim();
-    
-    config = JSON.parse(JSON.stringify(cfgDraft));
-    curLoadIdx=0; curTempoIdx=0;
-    saveConfig(); closeCfg();
-  };
+  });
 }
 
-// Остальные кликеры
-document.getElementById('fCancel').addEventListener('click',closeForm);
-document.getElementById('fab').addEventListener('click',()=>{if(role==='admin')openForm()});
-document.getElementById('overlay').addEventListener('click',e=>{if(e.target===e.currentTarget)closeForm()});
-document.getElementById('cfgOverlay').addEventListener('click',e=>{if(e.target===e.currentTarget)closeCfg()});
-document.getElementById('loginOverlay').addEventListener('click',e=>{if(e.target===e.currentTarget)document.getElementById('loginOverlay').classList.remove('open')});
-document.getElementById('detailOverlay').addEventListener('click',e=>{if(e.target===e.currentTarget)closeDetail()});
+function addSimple(inputId, arr, render){
+  const inp = document.getElementById(inputId);
+  const v = inp.value.trim();
+  if(!v) return;
+  if(arr.some(x => x.toLowerCase() === v.toLowerCase())){ inp.value=''; return; }
+  arr.push(v); inp.value = ''; render();
+}
+document.getElementById('cfgHorseAdd').addEventListener('click', () => { if(cfgDraft) addSimple('cfgHorseName', cfgDraft.horses, renderCfg); });
+document.getElementById('cfgTrainerAdd').addEventListener('click', () => { if(cfgDraft) addSimple('cfgTrainerName', cfgDraft.trainers, renderCfg); });
+document.getElementById('cfgLoadAdd').addEventListener('click', () => {
+  if(!cfgDraft) return;
+  const name = document.getElementById('cfgLoadName').value.trim();
+  const price = parseFloat(document.getElementById('cfgLoadPrice').value) || 0;
+  if(!name) return;
+  cfgDraft.loads.push({label:name, price:price});
+  document.getElementById('cfgLoadName').value = '';
+  document.getElementById('cfgLoadPrice').value = '';
+  renderCfg();
+});
+document.getElementById('cfgTempoAdd').addEventListener('click', () => {
+  if(!cfgDraft) return;
+  const name = document.getElementById('cfgTempoName').value.trim();
+  if(!name) return;
+  cfgDraft.tempos.push({label:name, price:0}); // Цена всегда 0
+  document.getElementById('cfgTempoName').value = '';
+  renderCfg();
+});
 
+document.getElementById('cfgSave').addEventListener('click', () => {
+  if(!cfgDraft) return;
+  const err = document.getElementById('cfgErr');
+  const rate = parseFloat(document.getElementById('cfgRate').value);
+  if(isNaN(rate) || rate < 0){
+    err.textContent = '⚠ Укажите корректную ставку.'; err.style.display = 'block'; return;
+  }
+  cfgDraft.rate = rate;
+  cfgDraft.loads  = cfgDraft.loads.filter(l => l.label && l.label.trim()).map(l => ({label:l.label.trim(), price:l.price||0}));
+  cfgDraft.tempos = cfgDraft.tempos.filter(t => t.label && t.label.trim()).map(t => ({label:t.label.trim(), price:0}));
+  if(!cfgDraft.loads.length || !cfgDraft.tempos.length){
+    err.textContent = '⚠ Нужен хотя бы один вариант.'; err.style.display = 'block'; return;
+  }
+  cfgDraft.horses   = cfgDraft.horses.map(h => h.trim()).filter(Boolean);
+  cfgDraft.trainers = cfgDraft.trainers.map(t => t.trim()).filter(Boolean);
+  const newPass = document.getElementById('cfgPass').value.trim();
+  if(newPass) cfgDraft.adminPass = newPass;
+  config = cfgDraft;
+  curLoadIdx = 0; curTempoIdx = 0;
+  saveConfig(); closeCfg();
+});
+document.getElementById('cfgCancel').addEventListener('click', closeCfg);
+
+/* ================= Обработчики кликов ================= */
+document.getElementById('fCancel').addEventListener('click', closeForm);
+document.getElementById('fab').addEventListener('click', () => { if(isAdmin) openForm(); });
+document.getElementById('overlay').addEventListener('click', e => { if(e.target === e.currentTarget) closeForm(); });
+document.getElementById('cfgOverlay').addEventListener('click', e => { if(e.target === e.currentTarget) closeCfg(); });
+document.getElementById('loginOverlay').addEventListener('click', e => { if(e.target === e.currentTarget) document.getElementById('loginOverlay').classList.remove('open'); });
+document.getElementById('detailOverlay').addEventListener('click', e => { if(e.target === e.currentTarget) closeDetail(); });
+
+/* ================= Часы и смена суток ================= */
 function startMskClock(){
-  const tick=()=>{document.getElementById('mskClock').textContent='🕐 МСК '+mskClockStr();const cd=getDateKey(moscowNow());if(cd!==lastMskDateStr){lastMskDateStr=cd;dates=generateDates();if(curDateOffset>0)curDateOffset--;refreshUI()}};
-  tick();setInterval(tick,1000)
+  const tick = () => {
+    const el = document.getElementById('mskClock');
+    if(el) el.textContent = '🕐 МСК ' + mskClockStr();
+    
+    const currentDateStr = getDateKey(moscowNow());
+    if(currentDateStr !== lastMskDateStr){
+      lastMskDateStr = currentDateStr;
+      // Сдвигаем неделю вперед, если наступил новый день
+      weekDates = getWeekDates();
+      if(curDayOffset > 0) curDayOffset--; // Сдвигаем выделение назад, чтобы "сегодня" оставалось на месте
+      refreshUI();
+    }
+  };
+  tick();
+  setInterval(tick, 1000);
 }
 
-lastMskDateStr=getDateKey(moscowNow());initFirebase();refreshUI();startMskClock();
+/* ================= Запуск ================= */
+lastMskDateStr = getDateKey(moscowNow());
+initFirebase();
+refreshUI();
+startMskClock();
 </script>
 </body>
 </html>

@@ -41,10 +41,11 @@
   .trainer-legend .tl-item{display:inline-flex;align-items:center;gap:4px}
   .trainer-legend .tl-dot{width:10px;height:10px;border-radius:3px;flex-shrink:0}
   .month-label{font-size:14px;font-weight:700;color:var(--ink);text-align:center;margin-bottom:8px}
-  .days{display:flex;gap:6px;overflow-x:auto;padding-bottom:6px;margin-bottom:12px;-webkit-overflow-scrolling:touch}
+  .days{display:flex;gap:6px;overflow-x:auto;padding-bottom:6px;margin-bottom:12px;-webkit-overflow-scrolling:touch;
+    scroll-snap-type:x proximity}
   .day-tab{flex:0 0 auto;padding:10px 14px;border-radius:12px;border:1.5px solid var(--line);
     background:var(--card);font-size:14px;font-weight:600;color:var(--muted);cursor:pointer;
-    text-align:center;min-width:62px}
+    text-align:center;min-width:62px;scroll-snap-align:start}
   .day-tab .dname{display:block;font-size:12px;font-weight:600}
   .day-tab .dnum{display:block;font-size:18px;font-weight:800;margin-top:2px;line-height:1.2}
   .day-tab .cnt{display:inline-block;margin-top:3px;font-size:11px;background:var(--line);
@@ -56,6 +57,8 @@
   .day-tab.active .dnum{color:#fff}
   .day-tab.new-month .dnum{color:var(--muted);font-size:15px}
   .day-tab.active.new-month .dnum{color:#fff;font-size:18px}
+  .day-tab.past-day{opacity:.55}
+  .day-tab.active.past-day{opacity:1}
   .guesthint{font-size:12px;color:var(--muted);text-align:center;margin-top:14px}
 
   .grid-wrap{overflow-x:auto;margin-top:12px;border-radius:12px;border:1.5px solid var(--line);background:var(--card)}
@@ -291,7 +294,7 @@
 <script>
 'use strict';
 
-const firebaseConfig = {
+var firebaseConfig = {
   apiKey: "AIzaSyB9IaJLOmpUUezSpI6Ie41P1OB2cWanUuY",
   authDomain: "courage-club-46edd.firebaseapp.com",
   databaseURL: "https://courage-club-46edd-default-rtdb.europe-west1.firebasedatabase.app",
@@ -302,53 +305,48 @@ const firebaseConfig = {
   measurementId: "G-G1KHG5Z1WR"
 };
 
-/* Палитра по умолчанию для новых тренеров */
-const TRAINER_PALETTE = [
+var TRAINER_PALETTE = [
   '#4a7c59','#c0533e','#e0b73f','#5b7fb5','#9b59b6',
   '#e67e22','#1abc9c','#e84393','#2d6a4f','#d4a373'
 ];
 
-/* ================= Время Москвы ================= */
 function moscowNow(){
-  const now = new Date();
+  var now = new Date();
   return new Date(now.getTime() + (now.getTimezoneOffset() + 180) * 60000);
 }
 function mskClockStr(){
-  const d = moscowNow();
+  var d = moscowNow();
   return String(d.getHours()).padStart(2,'0') + ':' +
          String(d.getMinutes()).padStart(2,'0') + ':' +
          String(d.getSeconds()).padStart(2,'0');
 }
 
-/* ================= Генерация дат — 14 дней вперёд ================= */
-function getDates(){
-  const msk = moscowNow();
-  const dates = [];
-  for(let i = 0; i < 14; i++){
-    const d = new Date(msk.getFullYear(), msk.getMonth(), msk.getDate() + i);
-    dates.push(d);
+function getInitialDates(){
+  var msk = moscowNow();
+  var arr = [];
+  for(var i = 0; i < 14; i++){
+    arr.push(new Date(msk.getFullYear(), msk.getMonth(), msk.getDate() + i));
   }
-  return dates;
+  return arr;
 }
 
-const MONTHS = ['января','февраля','марта','апреля','мая','июня','июля','августа','сентября','октября','ноября','декабря'];
-const DAYS_SHORT = ['Пн','Вт','Ср','Чт','Пт','Сб','Вс'];
-const STATUSES = {
+var MONTHS = ['января','февраля','марта','апреля','мая','июня','июля','августа','сентября','октября','ноября','декабря'];
+var DAYS_SHORT = ['Пн','Вт','Ср','Чт','Пт','Сб','Вс'];
+var STATUSES = {
   done:   {label:'Выполнено', cls:'done',   icon:'✓'},
   wait:   {label:'Ожидание',  cls:'wait',   icon:'⏳'},
   cancel: {label:'Отменена',  cls:'cancel', icon:'🚫'}
 };
 
-const DEFAULT_CONFIG = {
+var DEFAULT_CONFIG = {
   loads:    [{label:'Плац'},{label:'Поле'},{label:'Лес'}],
   tempos:   [{label:'Шаг'},{label:'Рысь'},{label:'Галоп'}],
   horses:   ['Рокки','Изюм','Форсаж','Дон','Былина','Армани','Падуб','Хаммер'],
   trainers: [
-    {name:'Ольга (тренер)', color:'#4a7c59'},
-    {name:'Алиса (тренер)', color:'#4a7c59'},
-    {name:'Наталья (тренер)',   color:'#c0533e'},
-    {name:'Ангелина (тренер)', color:'#e0b73f'},
-    {name:'Эльвира (берейтор)',    color:'#5b7fb5'}
+    {name:'Анна Соколова', color:'#4a7c59'},
+    {name:'Игорь Волков',   color:'#c0533e'},
+    {name:'Мария Лебедева', color:'#e0b73f'},
+    {name:'Пётр Громов',    color:'#5b7fb5'}
   ],
   adminPass: 'admin',
   startHour: 8,
@@ -356,19 +354,18 @@ const DEFAULT_CONFIG = {
   slotStep: 30
 };
 
-let db = null;
-let config = JSON.parse(JSON.stringify(DEFAULT_CONFIG));
-let bookings = [];
-let isAdmin = localStorage.getItem('hc_admin') === 'true';
-let dates = getDates();
-let curDayOffset = 0;
-let curDur = 1.5, curLoadIdx = 0, curTempoIdx = 0, curStatus = 'wait';
-let lastMskDateStr = '';
-let editingId = null;
+var db = null;
+var config = JSON.parse(JSON.stringify(DEFAULT_CONFIG));
+var bookings = [];
+var isAdmin = localStorage.getItem('hc_admin') === 'true';
+var dates = getInitialDates();
+var curDayOffset = 0;
+var curDur = 1.5, curLoadIdx = 0, curTempoIdx = 0, curStatus = 'wait';
+var lastMskDateStr = '';
+var editingId = null;
 
-const minToStr = m => String(Math.floor(m/60)).padStart(2,'0') + ':' + String(m%60).padStart(2,'0');
-const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g,
-  c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+var minToStr = function(m){ return String(Math.floor(m/60)).padStart(2,'0') + ':' + String(m%60).padStart(2,'0'); };
+var esc = function(s){ return String(s == null ? '' : s).replace(/[&<>"']/g, function(c){ return ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c]; }); };
 
 function getDateKey(dateObj){
   return dateObj.getFullYear() + '-' +
@@ -377,24 +374,22 @@ function getDateKey(dateObj){
 }
 
 function getTimeSlots(){
-  const slots = [];
-  const start = (config.startHour || 8) * 60;
-  const end = (config.endHour || 21) * 60;
-  const step = config.slotStep || 30;
-  for(let m = start; m < end; m += step) slots.push(m);
+  var slots = [];
+  var start = (config.startHour || 8) * 60;
+  var end = (config.endHour || 21) * 60;
+  var step = config.slotStep || 30;
+  for(var m = start; m < end; m += step) slots.push(m);
   return slots;
 }
 
-/* Найти цвет тренера по имени */
 function getTrainerColor(name){
   if(!name) return null;
-  const t = config.trainers.find(tr => tr.name === name);
+  var t = config.trainers.find(function(tr){ return tr.name === name; });
   return t ? (t.color || null) : null;
 }
 
-/* ================= Firebase ================= */
 function initFirebase(){
-  const st = document.getElementById('status');
+  var st = document.getElementById('status');
   if(!firebaseConfig || typeof firebase === 'undefined'){
     st.textContent = 'демо-режим';
     refreshUI();
@@ -404,8 +399,8 @@ function initFirebase(){
     firebase.initializeApp(firebaseConfig);
     db = firebase.database();
 
-    db.ref('config').on('value', snap => {
-      const val = snap.val();
+    db.ref('config').on('value', function(snap){
+      var val = snap.val();
       if(val){
         config = Object.assign(JSON.parse(JSON.stringify(DEFAULT_CONFIG)), val);
         if(!Array.isArray(config.loads))    config.loads    = DEFAULT_CONFIG.loads;
@@ -413,26 +408,19 @@ function initFirebase(){
         if(!Array.isArray(config.horses))   config.horses   = [];
         if(!Array.isArray(config.trainers)) config.trainers = [];
 
-        /* Миграция нагрузок: убрать price/mult, оставить только label */
-        config.loads = config.loads.map(l => {
+        config.loads = config.loads.map(function(l){
           if(typeof l === 'string') return {label: l};
           return {label: l.label || ''};
         });
-
-        /* Миграция темпов: убрать price/mult */
-        config.tempos = config.tempos.map(t => {
+        config.tempos = config.tempos.map(function(t){
           if(typeof t === 'string') return {label: t};
           return {label: t.label || ''};
         });
-
-        /* Миграция тренеров: строки → объекты с цветом */
-        config.trainers = config.trainers.map((t, i) => {
+        config.trainers = config.trainers.map(function(t, i){
           if(typeof t === 'string') return {name: t, color: TRAINER_PALETTE[i % TRAINER_PALETTE.length]};
           if(!t.color) t.color = TRAINER_PALETTE[i % TRAINER_PALETTE.length];
           return {name: t.name || '', color: t.color};
         });
-
-        /* Удалить старые поля */
         delete config.rate;
       }
       curLoadIdx  = Math.min(curLoadIdx,  Math.max(0, config.loads.length  - 1));
@@ -440,13 +428,13 @@ function initFirebase(){
       refreshUI();
     });
 
-    db.ref('bookings').on('value', snap => {
-      const val = snap.val();
-      bookings = val ? Object.keys(val).map(k => Object.assign({id:k}, val[k])) : [];
+    db.ref('bookings').on('value', function(snap){
+      var val = snap.val();
+      bookings = val ? Object.keys(val).map(function(k){ return Object.assign({id:k}, val[k]); }) : [];
       refreshUI();
       st.textContent = '● онлайн';
       st.className = 'status ok';
-    }, err => {
+    }, function(err){
       st.textContent = 'ошибка: ' + err.code;
       st.className = 'status err';
     });
@@ -465,34 +453,30 @@ function saveBookingToCloud(item){
 }
 function updateBooking(id, data){
   if(db){ db.ref('bookings/' + id).update(data); }
-  else{ const b = bookings.find(x => x.id === id); if(b) Object.assign(b, data); refreshUI(); }
+  else{ var b = bookings.find(function(x){ return x.id === id; }); if(b) Object.assign(b, data); refreshUI(); }
 }
 function deleteBooking(id){
   if(db){ db.ref('bookings/' + id).remove(); }
-  else{ bookings = bookings.filter(b => b.id !== id); refreshUI(); }
+  else{ bookings = bookings.filter(function(b){ return b.id !== id; }); refreshUI(); }
 }
 
-/* ================= Отрисовка ================= */
-
-/* Легенда тренеров с цветами */
 function renderTrainerLegend(){
-  const box = document.getElementById('trainerLegend');
+  var box = document.getElementById('trainerLegend');
   if(!config.trainers.length){ box.innerHTML = ''; return; }
-  box.innerHTML = config.trainers.map(t =>
-    '<span class="tl-item"><span class="tl-dot" style="background:' + esc(t.color) + '"></span>' + esc(t.name) + '</span>'
-  ).join('');
+  box.innerHTML = config.trainers.map(function(t){
+    return '<span class="tl-item"><span class="tl-dot" style="background:' + esc(t.color) + '"></span>' + esc(t.name) + '</span>';
+  }).join('');
 }
 
 function renderDays(){
-  const box = document.getElementById('days');
+  var box = document.getElementById('days');
   box.innerHTML = '';
 
-  const todayKey = getDateKey(moscowNow());
-  const firstDate = dates[0];
-  const lastDate = dates[dates.length - 1];
+  var todayKey = getDateKey(moscowNow());
+  var firstDate = dates[0];
+  var lastDate = dates[dates.length - 1];
 
-  /* Подпись диапазона */
-  let monthText;
+  var monthText;
   if(firstDate.getMonth() === lastDate.getMonth()){
     monthText = firstDate.getDate() + ' – ' + lastDate.getDate() + ' ' +
                 MONTHS[firstDate.getMonth()] + ' ' + firstDate.getFullYear();
@@ -503,17 +487,19 @@ function renderDays(){
   }
   document.getElementById('monthLabel').textContent = monthText;
 
-  dates.forEach((dateObj, i) => {
-    const dateKey = getDateKey(dateObj);
-    const n = bookings.filter(b => b.dateKey === dateKey && (b.status || 'wait') !== 'cancel').length;
-    const isToday = dateKey === todayKey;
-    const isNewMonth = dateObj.getMonth() !== firstDate.getMonth();
+  dates.forEach(function(dateObj, i){
+    var dateKey = getDateKey(dateObj);
+    var n = bookings.filter(function(b){ return b.dateKey === dateKey && (b.status || 'wait') !== 'cancel'; }).length;
+    var isToday = dateKey === todayKey;
+    var isNewMonth = dateObj.getMonth() !== firstDate.getMonth();
+    var isPast = dateKey < todayKey;
 
-    const t = document.createElement('div');
+    var t = document.createElement('div');
     t.className = 'day-tab' +
       (i === curDayOffset ? ' active' : '') +
       (isToday ? ' today' : '') +
-      (isNewMonth ? ' new-month' : '');
+      (isNewMonth ? ' new-month' : '') +
+      (isPast && !isToday ? ' past-day' : '');
 
     if(isToday) t.title = 'Сегодня';
 
@@ -522,88 +508,104 @@ function renderDays(){
       '<span class="dnum">' + dateObj.getDate() + '</span>' +
       '<span class="cnt">' + n + '</span>';
 
-    t.addEventListener('click', () => { curDayOffset = i; refreshUI(); });
+    t.addEventListener('click', function(){
+      curDayOffset = i;
+      trimOldDates();
+      refreshUI();
+    });
     box.appendChild(t);
+  });
+
+  requestAnimationFrame(function(){
+    var activeTab = box.querySelector('.day-tab.active');
+    if(activeTab) activeTab.scrollIntoView({behavior:'smooth', block:'nearest', inline:'center'});
   });
 }
 
+function trimOldDates(){
+  while(dates.length > 14 && curDayOffset > 0){
+    dates.shift();
+    curDayOffset--;
+  }
+}
+
 function renderSched(){
-  const box = document.getElementById('sched');
-  const horses = config.horses;
+  var box = document.getElementById('sched');
+  var horses = config.horses;
   if(!horses.length){
     box.innerHTML = '<div class="no-horses">Нет лошадей. Добавьте их в ⚙️ Конфигуратор.</div>';
     return;
   }
 
-  const activeDate = dates[curDayOffset];
-  const activeDateKey = getDateKey(activeDate);
-  const dayBookings = bookings.filter(b => b.dateKey === activeDateKey);
+  var activeDate = dates[curDayOffset];
+  if(!activeDate) return;
+  var activeDateKey = getDateKey(activeDate);
+  var dayBookings = bookings.filter(function(b){ return b.dateKey === activeDateKey; });
 
-  const isToday = activeDateKey === getDateKey(moscowNow());
-  const nowMin = moscowNow().getHours() * 60 + moscowNow().getMinutes();
-  const step = config.slotStep || 30;
-  const slots = getTimeSlots();
+  var isToday = activeDateKey === getDateKey(moscowNow());
+  var nowMin = moscowNow().getHours() * 60 + moscowNow().getMinutes();
+  var step = config.slotStep || 30;
+  var slots = getTimeSlots();
 
-  const grid = document.createElement('div');
+  var grid = document.createElement('div');
   grid.className = 'grid';
   grid.style.gridTemplateColumns = '72px repeat(' + horses.length + ', 1fr)';
 
-  const corner = document.createElement('div');
+  var corner = document.createElement('div');
   corner.className = 'gh corner';
   corner.textContent = 'Время';
   grid.appendChild(corner);
 
-  horses.forEach(h => {
-    const gh = document.createElement('div');
+  horses.forEach(function(h){
+    var gh = document.createElement('div');
     gh.className = 'gh';
     gh.textContent = h;
     grid.appendChild(gh);
   });
 
-  slots.forEach(slotMin => {
-    const timeCell = document.createElement('div');
+  slots.forEach(function(slotMin){
+    var timeCell = document.createElement('div');
     timeCell.className = 'gl';
     timeCell.textContent = minToStr(slotMin);
     grid.appendChild(timeCell);
 
-    horses.forEach(horse => {
-      const gc = document.createElement('div');
+    horses.forEach(function(horse){
+      var gc = document.createElement('div');
       gc.className = 'gc';
 
-      const slotEnd = slotMin + step;
-      const matched = dayBookings.filter(b =>
-        b.horse === horse &&
-        b.startMin < slotEnd &&
-        (b.startMin + b.dur * 60) > slotMin
-      );
+      var slotEnd = slotMin + step;
+      var matched = dayBookings.filter(function(b){
+        return b.horse === horse &&
+          b.startMin < slotEnd &&
+          (b.startMin + b.dur * 60) > slotMin;
+      });
 
       if(matched.length === 0){
         gc.classList.add('empty-slot');
         if(isAdmin){
-          const ph = document.createElement('div');
+          var ph = document.createElement('div');
           ph.className = 'add-placeholder';
           ph.textContent = '＋';
           ph.title = 'Забронировать ' + horse + ' с ' + minToStr(slotMin);
-          ph.addEventListener('click', () => openFormFor(curDayOffset, slotMin, horse));
+          ph.addEventListener('click', function(){ openFormFor(curDayOffset, slotMin, horse); });
           gc.appendChild(ph);
         }
       } else {
-        matched.forEach(b => {
-          const st = STATUSES[b.status] || STATUSES.wait;
-          const isPast = isToday && (b.startMin + b.dur * 60) <= nowMin;
-          const block = document.createElement('div');
-          block.className = 'bblock s-' + st.cls + (isPast ? ' past' : '');
+        matched.forEach(function(b){
+          var st = STATUSES[b.status] || STATUSES.wait;
+          var isPastSlot = isToday && (b.startMin + b.dur * 60) <= nowMin;
+          var block = document.createElement('div');
+          block.className = 'bblock s-' + st.cls + (isPastSlot ? ' past' : '');
 
-          /* Цвет тренера — левая полоска */
-          const tColor = getTrainerColor(b.trainer);
+          var tColor = getTrainerColor(b.trainer);
           if(tColor) block.style.borderLeftColor = tColor;
 
-          const timeStr = minToStr(b.startMin) + '-' + minToStr(b.startMin + b.dur * 60);
-          let html = '<div class="btime">' + esc(timeStr) + '</div>';
+          var timeStr = minToStr(b.startMin) + '-' + minToStr(b.startMin + b.dur * 60);
+          var html = '<div class="btime">' + esc(timeStr) + '</div>';
           html += '<div class="btrainer">' + esc(b.trainer || '—') + '</div>';
           block.innerHTML = html;
 
-          block.addEventListener('click', () => openDetail(b.id));
+          block.addEventListener('click', function(){ openDetail(b.id); });
           gc.appendChild(block);
         });
       }
@@ -611,7 +613,7 @@ function renderSched(){
     });
   });
 
-  const wrap = document.createElement('div');
+  var wrap = document.createElement('div');
   wrap.className = 'grid-wrap';
   wrap.appendChild(grid);
   box.innerHTML = '';
@@ -633,15 +635,14 @@ function refreshUI(){
   renderSched();
 }
 
-/* ================= Детали брони ================= */
 function openDetail(id){
-  const b = bookings.find(x => x.id === id);
+  var b = bookings.find(function(x){ return x.id === id; });
   if(!b) return;
-  const modal = document.getElementById('detailModal');
-  const st = STATUSES[b.status] || STATUSES.wait;
-  const tColor = getTrainerColor(b.trainer);
+  var modal = document.getElementById('detailModal');
+  var st = STATUSES[b.status] || STATUSES.wait;
+  var tColor = getTrainerColor(b.trainer);
 
-  let html = '<h2>' + esc(b.horse) + ' · ' + minToStr(b.startMin) + '</h2>';
+  var html = '<h2>' + esc(b.horse) + ' · ' + minToStr(b.startMin) + '</h2>';
   html += '<div class="detail-card">';
   html += '<div class="dc-row"><span class="dc-label">Дата</span><span class="dc-val">' + esc(b.dateKey) + '</span></div>';
   html += '<div class="dc-row"><span class="dc-label">Длительность</span><span class="dc-val">' + b.dur + ' ч</span></div>';
@@ -655,9 +656,9 @@ function openDetail(id){
 
   if(isAdmin){
     html += '<div class="chips" style="margin-bottom:12px">';
-    Object.keys(STATUSES).forEach(key => {
-      const s = STATUSES[key];
-      const sel = (b.status || 'wait') === key ? ' sel' : '';
+    Object.keys(STATUSES).forEach(function(key){
+      var s = STATUSES[key];
+      var sel = (b.status || 'wait') === key ? ' sel' : '';
       html += '<div class="chip' + sel + '" data-s="' + key + '" id="ds_' + key + '">' + s.icon + ' ' + s.label + '</div>';
     });
     html += '</div>';
@@ -669,19 +670,19 @@ function openDetail(id){
   document.getElementById('detailOverlay').classList.add('open');
 
   if(isAdmin){
-    Object.keys(STATUSES).forEach(key => {
+    Object.keys(STATUSES).forEach(function(key){
       document.getElementById('ds_' + key).addEventListener('click', function(){
         updateBooking(id, {status: key});
         document.getElementById('detailOverlay').classList.remove('open');
       });
     });
-    document.getElementById('detailDel').addEventListener('click', () => {
+    document.getElementById('detailDel').addEventListener('click', function(){
       if(confirm('Удалить эту бронь?')){
         deleteBooking(id);
         document.getElementById('detailOverlay').classList.remove('open');
       }
     });
-    document.getElementById('detailEdit').addEventListener('click', () => {
+    document.getElementById('detailEdit').addEventListener('click', function(){
       document.getElementById('detailOverlay').classList.remove('open');
       openFormEdit(b);
     });
@@ -689,7 +690,6 @@ function openDetail(id){
 }
 function closeDetail(){ document.getElementById('detailOverlay').classList.remove('open'); }
 
-/* ================= Форма брони ================= */
 function openForm(){
   editingId = null;
   document.getElementById('formTitle').textContent = 'Новая бронь';
@@ -710,28 +710,35 @@ function openFormEdit(b){
   editingId = b.id;
   document.getElementById('formTitle').textContent = 'Редактирование брони';
   document.getElementById('fSave').textContent = 'Сохранить';
-  let li = 0, ti = 0;
-  config.loads.forEach((l, i) => { if(l.label === b.loadLabel) li = i; });
-  config.tempos.forEach((t, i) => { if(t.label === b.tempoLabel) ti = i; });
+  var li = 0, ti = 0;
+  config.loads.forEach(function(l, i){ if(l.label === b.loadLabel) li = i; });
+  config.tempos.forEach(function(t, i){ if(t.label === b.tempoLabel) ti = i; });
 
-  let off = 0;
-  dates.forEach((d, i) => { if(getDateKey(d) === b.dateKey) off = i; });
+  var off = 0;
+  dates.forEach(function(d, i){ if(getDateKey(d) === b.dateKey) off = i; });
+  if(off === 0 && getDateKey(dates[0]) !== b.dateKey){
+    var parts = b.dateKey.split('-');
+    var extra = new Date(parseInt(parts[0]), parseInt(parts[1])-1, parseInt(parts[2]));
+    dates.unshift(extra);
+    off = 0;
+  }
 
   _fillForm(off, b.startMin, b.horse, b.dur, b.trainer, li, ti, b.status || 'wait');
   document.getElementById('overlay').classList.add('open');
 }
 
 function _fillForm(dayOffset, startMin, horse, dur, trainer, loadIdx, tempoIdx, status){
-  const activeDate = dates[dayOffset];
+  var activeDate = dates[dayOffset];
+  if(!activeDate) return;
   document.getElementById('fDayInfo').textContent =
     activeDate.getDate() + ' ' + MONTHS[activeDate.getMonth()] + ' ' +
     activeDate.getFullYear() + ', ' + DAYS_SHORT[dayOffset % 7];
 
-  const tSel = document.getElementById('fTime');
+  var tSel = document.getElementById('fTime');
   tSel.innerHTML = '';
-  const slots = getTimeSlots();
-  slots.forEach(m => {
-    const o = document.createElement('option');
+  var slots = getTimeSlots();
+  slots.forEach(function(m){
+    var o = document.createElement('option');
     o.value = m;
     o.textContent = minToStr(m);
     if(m === startMin) o.selected = true;
@@ -739,30 +746,28 @@ function _fillForm(dayOffset, startMin, horse, dur, trainer, loadIdx, tempoIdx, 
   });
 
   document.getElementById('fHorse').innerHTML =
-    config.horses.map(h => '<option' + (h === horse ? ' selected' : '') + '>' + esc(h) + '</option>').join('')
+    config.horses.map(function(h){ return '<option' + (h === horse ? ' selected' : '') + '>' + esc(h) + '</option>'; }).join('')
     || '<option value="">— нет —</option>';
 
   document.getElementById('trainerList').innerHTML =
-    config.trainers.map(t => '<option value="' + esc(t.name) + '">').join('');
+    config.trainers.map(function(t){ return '<option value="' + esc(t.name) + '">'; }).join('');
 
   document.getElementById('fLoad').innerHTML =
-    config.loads.map((l, i) =>
-      '<div class="chip' + (i === loadIdx ? ' sel' : '') + '" data-i="' + i + '">' +
-      esc(l.label) + '</div>'
-    ).join('');
+    config.loads.map(function(l, i){
+      return '<div class="chip' + (i === loadIdx ? ' sel' : '') + '" data-i="' + i + '">' + esc(l.label) + '</div>';
+    }).join('');
 
   document.getElementById('fTempo').innerHTML =
-    config.tempos.map((t, i) =>
-      '<div class="chip' + (i === tempoIdx ? ' sel' : '') + '" data-i="' + i + '">' +
-      esc(t.label) + '</div>'
-    ).join('');
+    config.tempos.map(function(t, i){
+      return '<div class="chip' + (i === tempoIdx ? ' sel' : '') + '" data-i="' + i + '">' + esc(t.label) + '</div>';
+    }).join('');
 
-  document.querySelectorAll('#fDur .chip').forEach(c => {
+  document.querySelectorAll('#fDur .chip').forEach(function(c){
     c.classList.toggle('sel', parseFloat(c.dataset.h) === dur);
   });
   curDur = dur;
 
-  document.querySelectorAll('#fStatus .chip').forEach(c => {
+  document.querySelectorAll('#fStatus .chip').forEach(function(c){
     c.classList.toggle('sel', c.dataset.s === status);
   });
   curStatus = status;
@@ -780,29 +785,30 @@ function closeForm(){
 }
 
 function bindChips(id, cb){
-  document.getElementById(id).addEventListener('click', e => {
-    const c = e.target.closest('.chip');
+  document.getElementById(id).addEventListener('click', function(e){
+    var c = e.target.closest('.chip');
     if(!c) return;
-    c.parentElement.querySelectorAll('.chip').forEach(x => x.classList.remove('sel'));
+    c.parentElement.querySelectorAll('.chip').forEach(function(x){ x.classList.remove('sel'); });
     c.classList.add('sel');
     cb(c);
   });
 }
-bindChips('fDur',    c => curDur      = parseFloat(c.dataset.h));
-bindChips('fLoad',   c => curLoadIdx  = parseInt(c.dataset.i, 10));
-bindChips('fTempo',  c => curTempoIdx = parseInt(c.dataset.i, 10));
-bindChips('fStatus', c => curStatus   = c.dataset.s);
+bindChips('fDur',    function(c){ curDur      = parseFloat(c.dataset.h); });
+bindChips('fLoad',   function(c){ curLoadIdx  = parseInt(c.dataset.i, 10); });
+bindChips('fTempo',  function(c){ curTempoIdx = parseInt(c.dataset.i, 10); });
+bindChips('fStatus', function(c){ curStatus   = c.dataset.s; });
 
-document.getElementById('fSave').addEventListener('click', () => {
-  const err = document.getElementById('fErr');
-  const activeDate = dates[curDayOffset];
-  const dateKey = getDateKey(activeDate);
-  const startMin = parseInt(document.getElementById('fTime').value, 10);
-  const horse    = document.getElementById('fHorse').value;
-  const trainer  = document.getElementById('fTrainer').value.trim();
-  const endMin   = startMin + curDur * 60;
-  const L = config.loads[curLoadIdx] || {label:''};
-  const T = config.tempos[curTempoIdx] || {label:''};
+document.getElementById('fSave').addEventListener('click', function(){
+  var err = document.getElementById('fErr');
+  var activeDate = dates[curDayOffset];
+  if(!activeDate) return;
+  var dateKey = getDateKey(activeDate);
+  var startMin = parseInt(document.getElementById('fTime').value, 10);
+  var horse    = document.getElementById('fHorse').value;
+  var trainer  = document.getElementById('fTrainer').value.trim();
+  var endMin   = startMin + curDur * 60;
+  var L = config.loads[curLoadIdx] || {label:''};
+  var T = config.tempos[curTempoIdx] || {label:''};
 
   if(!trainer){
     err.textContent = '⚠ Укажите имя тренера.';
@@ -810,12 +816,12 @@ document.getElementById('fSave').addEventListener('click', () => {
     return;
   }
 
-  const clash = bookings.find(b =>
-    b.id !== editingId &&
-    (b.status || 'wait') !== 'cancel' &&
-    b.dateKey === dateKey && b.horse === horse &&
-    b.startMin < endMin && startMin < b.startMin + b.dur * 60
-  );
+  var clash = bookings.find(function(b){
+    return b.id !== editingId &&
+      (b.status || 'wait') !== 'cancel' &&
+      b.dateKey === dateKey && b.horse === horse &&
+      b.startMin < endMin && startMin < b.startMin + b.dur * 60;
+  });
   if(clash){
     err.textContent = '⚠ «' + horse + '» занята с ' + minToStr(clash.startMin) +
       ' до ' + minToStr(clash.startMin + clash.dur * 60) + '.';
@@ -824,7 +830,7 @@ document.getElementById('fSave').addEventListener('click', () => {
   }
 
   err.style.display = 'none';
-  const data = {
+  var data = {
     dateKey: dateKey,
     startMin: startMin, dur: curDur,
     horse: horse, trainer: trainer,
@@ -841,35 +847,34 @@ document.getElementById('fSave').addEventListener('click', () => {
   closeForm();
 });
 
-/* ================= Вход админа ================= */
 function openLogin(){
   document.getElementById('loginErr').style.display = 'none';
   document.getElementById('loginPass').value = '';
   document.getElementById('loginOverlay').classList.add('open');
-  setTimeout(() => document.getElementById('loginPass').focus(), 50);
+  setTimeout(function(){ document.getElementById('loginPass').focus(); }, 50);
 }
 document.getElementById('loginGo').addEventListener('click', doLogin);
-document.getElementById('loginPass').addEventListener('keydown', e => { if(e.key === 'Enter') doLogin(); });
+document.getElementById('loginPass').addEventListener('keydown', function(e){ if(e.key === 'Enter') doLogin(); });
 
 function doLogin(){
-  const pass = document.getElementById('loginPass').value;
+  var pass = document.getElementById('loginPass').value;
   if(pass === (config.adminPass || 'admin')){
     isAdmin = true;
     localStorage.setItem('hc_admin', 'true');
     document.getElementById('loginOverlay').classList.remove('open');
     refreshUI();
   }else{
-    const err = document.getElementById('loginErr');
+    var err = document.getElementById('loginErr');
     err.textContent = '⚠ Неверный пароль.';
     err.style.display = 'block';
   }
 }
-document.getElementById('loginCancel').addEventListener('click', () => {
+document.getElementById('loginCancel').addEventListener('click', function(){
   document.getElementById('loginOverlay').classList.remove('open');
 });
 document.getElementById('adminBtn').addEventListener('click', openLogin);
-document.getElementById('adminCfgBtn').addEventListener('click', () => { if(isAdmin) openCfg(); });
-document.getElementById('adminOutBtn').addEventListener('click', () => {
+document.getElementById('adminCfgBtn').addEventListener('click', function(){ if(isAdmin) openCfg(); });
+document.getElementById('adminOutBtn').addEventListener('click', function(){
   if(!isAdmin) return;
   if(confirm('Выйти из панели администратора?')){
     isAdmin = false;
@@ -878,8 +883,7 @@ document.getElementById('adminOutBtn').addEventListener('click', () => {
   }
 });
 
-/* ================= Конфигуратор ================= */
-let cfgDraft = null;
+var cfgDraft = null;
 function openCfg(){
   cfgDraft = JSON.parse(JSON.stringify(config));
   document.getElementById('cfgErr').style.display = 'none';
@@ -892,68 +896,64 @@ function closeCfg(){ document.getElementById('cfgOverlay').classList.remove('ope
 function renderCfg(){
   if(!cfgDraft) return;
 
-  /* Нагрузки — только название */
-  const loadBox = document.getElementById('cfgLoads');
+  var loadBox = document.getElementById('cfgLoads');
   loadBox.innerHTML = '';
-  cfgDraft.loads.forEach((it, i) => {
-    const row = document.createElement('div');
+  cfgDraft.loads.forEach(function(it, i){
+    var row = document.createElement('div');
     row.className = 'multrow';
-    const li = document.createElement('input');
+    var li = document.createElement('input');
     li.className = 'lbl-in'; li.type = 'text'; li.value = it.label; li.placeholder = 'Название';
-    li.addEventListener('input', () => cfgDraft.loads[i].label = li.value);
-    const rm = document.createElement('button');
+    li.addEventListener('input', function(){ cfgDraft.loads[i].label = li.value; });
+    var rm = document.createElement('button');
     rm.className = 'rm'; rm.textContent = '✕'; rm.title = 'Удалить';
-    rm.addEventListener('click', () => { if(cfgDraft.loads.length <= 1) return; cfgDraft.loads.splice(i, 1); renderCfg(); });
+    rm.addEventListener('click', function(){ if(cfgDraft.loads.length <= 1) return; cfgDraft.loads.splice(i, 1); renderCfg(); });
     row.appendChild(li); row.appendChild(rm);
     loadBox.appendChild(row);
   });
 
-  /* Темп — только название */
-  const tempoBox = document.getElementById('cfgTempos');
+  var tempoBox = document.getElementById('cfgTempos');
   tempoBox.innerHTML = '';
-  cfgDraft.tempos.forEach((it, i) => {
-    const row = document.createElement('div');
+  cfgDraft.tempos.forEach(function(it, i){
+    var row = document.createElement('div');
     row.className = 'multrow';
-    const li = document.createElement('input');
+    var li = document.createElement('input');
     li.className = 'lbl-in'; li.type = 'text'; li.value = it.label; li.placeholder = 'Название темпа';
-    li.addEventListener('input', () => cfgDraft.tempos[i].label = li.value);
-    const rm = document.createElement('button');
+    li.addEventListener('input', function(){ cfgDraft.tempos[i].label = li.value; });
+    var rm = document.createElement('button');
     rm.className = 'rm'; rm.textContent = '✕'; rm.title = 'Удалить';
-    rm.addEventListener('click', () => { if(cfgDraft.tempos.length <= 1) return; cfgDraft.tempos.splice(i, 1); renderCfg(); });
+    rm.addEventListener('click', function(){ if(cfgDraft.tempos.length <= 1) return; cfgDraft.tempos.splice(i, 1); renderCfg(); });
     row.appendChild(li); row.appendChild(rm);
     tempoBox.appendChild(row);
   });
 
-  /* Лошади — чипсы */
-  const horseBox = document.getElementById('cfgHorses');
+  var horseBox = document.getElementById('cfgHorses');
   horseBox.innerHTML = '';
-  cfgDraft.horses.forEach((item, i) => {
-    const c = document.createElement('span');
+  cfgDraft.horses.forEach(function(item, i){
+    var c = document.createElement('span');
     c.className = 'namechip';
     c.innerHTML = esc(item) + ' <button class="rm" title="Удалить">✕</button>';
-    c.querySelector('.rm').addEventListener('click', () => { cfgDraft.horses.splice(i, 1); renderCfg(); });
+    c.querySelector('.rm').addEventListener('click', function(){ cfgDraft.horses.splice(i, 1); renderCfg(); });
     horseBox.appendChild(c);
   });
 
-  /* Тренеры — с цветом */
-  const trainerBox = document.getElementById('cfgTrainers');
+  var trainerBox = document.getElementById('cfgTrainers');
   trainerBox.innerHTML = '';
-  cfgDraft.trainers.forEach((item, i) => {
-    const row = document.createElement('div');
+  cfgDraft.trainers.forEach(function(item, i){
+    var row = document.createElement('div');
     row.className = 'trainer-row';
 
-    const colorInput = document.createElement('input');
+    var colorInput = document.createElement('input');
     colorInput.type = 'color';
     colorInput.value = item.color || TRAINER_PALETTE[i % TRAINER_PALETTE.length];
     colorInput.title = 'Цвет тренера';
-    colorInput.addEventListener('input', () => { cfgDraft.trainers[i].color = colorInput.value; });
+    colorInput.addEventListener('input', function(){ cfgDraft.trainers[i].color = colorInput.value; });
 
-    const nameSpan = document.createElement('span');
+    var nameSpan = document.createElement('span');
     nameSpan.textContent = item.name;
 
-    const rm = document.createElement('button');
+    var rm = document.createElement('button');
     rm.className = 'rm'; rm.textContent = '✕'; rm.title = 'Удалить';
-    rm.addEventListener('click', () => { cfgDraft.trainers.splice(i, 1); renderCfg(); });
+    rm.addEventListener('click', function(){ cfgDraft.trainers.splice(i, 1); renderCfg(); });
 
     row.appendChild(colorInput);
     row.appendChild(nameSpan);
@@ -963,63 +963,61 @@ function renderCfg(){
 }
 
 function addSimple(inputId, arr, render){
-  const inp = document.getElementById(inputId);
-  const v = inp.value.trim();
+  var inp = document.getElementById(inputId);
+  var v = inp.value.trim();
   if(!v) return;
-  if(arr.some(x => (typeof x === 'string' ? x : x.name).toLowerCase() === v.toLowerCase())){ inp.value = ''; return; }
+  if(arr.some(function(x){ return (typeof x === 'string' ? x : x.name).toLowerCase() === v.toLowerCase(); })){ inp.value = ''; return; }
   arr.push(v); inp.value = ''; render();
 }
-document.getElementById('cfgHorseAdd').addEventListener('click', () => {
+document.getElementById('cfgHorseAdd').addEventListener('click', function(){
   if(cfgDraft) addSimple('cfgHorseName', cfgDraft.horses, renderCfg);
 });
-document.getElementById('cfgTrainerAdd').addEventListener('click', () => {
+document.getElementById('cfgTrainerAdd').addEventListener('click', function(){
   if(!cfgDraft) return;
-  const name = document.getElementById('cfgTrainerName').value.trim();
+  var name = document.getElementById('cfgTrainerName').value.trim();
   if(!name) return;
-  if(cfgDraft.trainers.some(t => t.name.toLowerCase() === name.toLowerCase())){
+  if(cfgDraft.trainers.some(function(t){ return t.name.toLowerCase() === name.toLowerCase(); })){
     document.getElementById('cfgTrainerName').value = '';
     return;
   }
-  const color = document.getElementById('cfgTrainerColor').value || TRAINER_PALETTE[cfgDraft.trainers.length % TRAINER_PALETTE.length];
+  var color = document.getElementById('cfgTrainerColor').value || TRAINER_PALETTE[cfgDraft.trainers.length % TRAINER_PALETTE.length];
   cfgDraft.trainers.push({name: name, color: color});
   document.getElementById('cfgTrainerName').value = '';
-  /* Следующий цвет из палитры */
   document.getElementById('cfgTrainerColor').value = TRAINER_PALETTE[cfgDraft.trainers.length % TRAINER_PALETTE.length];
   renderCfg();
 });
-document.getElementById('cfgLoadAdd').addEventListener('click', () => {
+document.getElementById('cfgLoadAdd').addEventListener('click', function(){
   if(!cfgDraft) return;
-  const name = document.getElementById('cfgLoadName').value.trim();
+  var name = document.getElementById('cfgLoadName').value.trim();
   if(!name) return;
   cfgDraft.loads.push({label: name});
   document.getElementById('cfgLoadName').value = '';
   renderCfg();
 });
-document.getElementById('cfgTempoAdd').addEventListener('click', () => {
+document.getElementById('cfgTempoAdd').addEventListener('click', function(){
   if(!cfgDraft) return;
-  const name = document.getElementById('cfgTempoName').value.trim();
+  var name = document.getElementById('cfgTempoName').value.trim();
   if(!name) return;
   cfgDraft.tempos.push({label: name});
   document.getElementById('cfgTempoName').value = '';
   renderCfg();
 });
 
-document.getElementById('cfgSave').addEventListener('click', () => {
+document.getElementById('cfgSave').addEventListener('click', function(){
   if(!cfgDraft) return;
-  const err = document.getElementById('cfgErr');
+  var err = document.getElementById('cfgErr');
 
-  cfgDraft.loads  = cfgDraft.loads.filter(l => l.label && l.label.trim()).map(l => ({label: l.label.trim()}));
-  cfgDraft.tempos = cfgDraft.tempos.filter(t => t.label && t.label.trim()).map(t => ({label: t.label.trim()}));
+  cfgDraft.loads  = cfgDraft.loads.filter(function(l){ return l.label && l.label.trim(); }).map(function(l){ return {label: l.label.trim()}; });
+  cfgDraft.tempos = cfgDraft.tempos.filter(function(t){ return t.label && t.label.trim(); }).map(function(t){ return {label: t.label.trim()}; });
   if(!cfgDraft.loads.length || !cfgDraft.tempos.length){
     err.textContent = '⚠ Нужен хотя бы один вариант нагрузки и темпа.'; err.style.display = 'block'; return;
   }
-  cfgDraft.horses   = cfgDraft.horses.map(h => (h || '').trim()).filter(Boolean);
-  cfgDraft.trainers = cfgDraft.trainers.map(t => ({
-    name: (t.name || '').trim(),
-    color: t.color || '#4a7c59'
-  })).filter(t => t.name);
+  cfgDraft.horses   = cfgDraft.horses.map(function(h){ return (h || '').trim(); }).filter(Boolean);
+  cfgDraft.trainers = cfgDraft.trainers.map(function(t){
+    return {name: (t.name || '').trim(), color: t.color || '#4a7c59'};
+  }).filter(function(t){ return t.name; });
 
-  const newPass = document.getElementById('cfgPass').value.trim();
+  var newPass = document.getElementById('cfgPass').value.trim();
   if(newPass) cfgDraft.adminPass = newPass;
 
   config = cfgDraft;
@@ -1028,25 +1026,30 @@ document.getElementById('cfgSave').addEventListener('click', () => {
 });
 document.getElementById('cfgCancel').addEventListener('click', closeCfg);
 
-/* ================= Обработчики кликов ================= */
 document.getElementById('fCancel').addEventListener('click', closeForm);
-document.getElementById('fab').addEventListener('click', () => { if(isAdmin) openForm(); });
-document.getElementById('overlay').addEventListener('click', e => { if(e.target === e.currentTarget) closeForm(); });
-document.getElementById('cfgOverlay').addEventListener('click', e => { if(e.target === e.currentTarget) closeCfg(); });
-document.getElementById('loginOverlay').addEventListener('click', e => { if(e.target === e.currentTarget) document.getElementById('loginOverlay').classList.remove('open'); });
-document.getElementById('detailOverlay').addEventListener('click', e => { if(e.target === e.currentTarget) closeDetail(); });
+document.getElementById('fab').addEventListener('click', function(){ if(isAdmin) openForm(); });
+document.getElementById('overlay').addEventListener('click', function(e){ if(e.target === e.currentTarget) closeForm(); });
+document.getElementById('cfgOverlay').addEventListener('click', function(e){ if(e.target === e.currentTarget) closeCfg(); });
+document.getElementById('loginOverlay').addEventListener('click', function(e){ if(e.target === e.currentTarget) document.getElementById('loginOverlay').classList.remove('open'); });
+document.getElementById('detailOverlay').addEventListener('click', function(e){ if(e.target === e.currentTarget) closeDetail(); });
 
-/* ================= Часы и смена суток ================= */
 function startMskClock(){
-  const tick = () => {
-    const el = document.getElementById('mskClock');
+  var tick = function(){
+    var el = document.getElementById('mskClock');
     if(el) el.textContent = '🕐 МСК ' + mskClockStr();
 
-    const currentDateStr = getDateKey(moscowNow());
+    var currentDateStr = getDateKey(moscowNow());
     if(currentDateStr !== lastMskDateStr){
       lastMskDateStr = currentDateStr;
-      dates = getDates();
-      if(curDayOffset > 0) curDayOffset--;
+
+      var lastD = dates[dates.length - 1];
+      dates.push(new Date(lastD.getFullYear(), lastD.getMonth(), lastD.getDate() + 1));
+
+      if(curDayOffset > 0){
+        dates.shift();
+        curDayOffset--;
+      }
+
       refreshUI();
     }
   };
@@ -1054,7 +1057,6 @@ function startMskClock(){
   setInterval(tick, 1000);
 }
 
-/* ================= Запуск ================= */
 lastMskDateStr = getDateKey(moscowNow());
 initFirebase();
 refreshUI();

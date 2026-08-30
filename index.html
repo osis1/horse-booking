@@ -49,10 +49,10 @@
   .gh{position:sticky;top:0;z-index:5;background:#f0ece3;font-size:12px;font-weight:700;
     color:var(--muted);padding:10px 6px;text-align:center;border-bottom:1.5px solid var(--line);
     display:flex;align-items:center;justify-content:center;min-height:42px}
-  .gh.corner{background:#e8e3d8;justify-content:flex-end;padding-right:10px;font-size:11px}
+  .gh.corner{background:#e8e3d8;justify-content:center;padding-right:10px;font-size:11px}
   .gl{position:sticky;left:0;z-index:4;background:#f7f5f0;font-size:13px;font-weight:700;
     padding:8px 10px;border-right:1.5px solid var(--line);border-bottom:1px solid var(--line);
-    display:flex;align-items:center;white-space:nowrap;min-height:52px}
+    display:flex;align-items:center;justify-content:center;white-space:nowrap;min-height:52px}
   .gc{padding:4px;border-bottom:1px solid #f0ece3;border-right:1px solid #f0ece3;
     display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:52px;transition:background .15s}
   .gc:hover{background:#f9f7f2} .gc.empty-slot{background:#fafaf7}
@@ -102,10 +102,10 @@
   .namechip .rm{border:none;background:#f7e9e6;color:var(--red);width:22px;height:22px;border-radius:7px;font-size:12px;cursor:pointer;line-height:1}
   .addrow{display:flex;gap:8px;margin-top:6px} .addrow input{flex:1}
   .addrow button{padding:0 16px;border:none;border-radius:10px;background:var(--green);color:#fff;font-size:15px;font-weight:700;cursor:pointer}
-  .multrow{display:flex;gap:8px;align-items:center;margin-bottom:6px;flex-wrap:wrap}
+  .multrow{display:flex;gap:8px;align-items:center;margin-bottom:8px;flex-wrap:wrap;padding:8px;border:1px solid var(--line);border-radius:8px;background:#fdfcfa}
   .multrow input.lbl-in{flex:1;min-width:120px}
-  .multrow input.price-in{width:80px;flex:none}
-  .multrow .rm{border:none;background:#f7e9e6;color:var(--red);width:34px;height:40px;border-radius:10px;font-size:14px;cursor:pointer;flex-shrink:0}
+  .multrow input.price-in{width:70px;flex:none;text-align:center}
+  .multrow .rm{border:none;background:#f7e9e6;color:var(--red);width:30px;height:30px;border-radius:8px;font-size:12px;cursor:pointer;flex-shrink:0}
   .muted{color:var(--muted);font-size:12px;margin-top:6px}
   .detail-card{padding:14px;border-radius:12px;border:1.5px solid var(--line);margin-bottom:12px}
   .detail-card .dc-row{display:flex;justify-content:space-between;padding:4px 0;font-size:14px}
@@ -115,6 +115,8 @@
   .dc-done{background:#e2f3e5;color:#2e7d43} .dc-wait{background:#fbf0d2;color:#9a7b16} .dc-cancel{background:#fbe4e0;color:var(--red)}
   .dc-del{margin-top:10px;width:100%;padding:10px;border:1.5px solid var(--red);border-radius:10px;background:#fdf4f2;color:var(--red);font-size:14px;font-weight:700;cursor:pointer}
   .dc-order-status{margin-top:8px;padding:8px;background:#f9f7f2;border-radius:8px;font-size:13px;color:var(--ink);font-style:italic}
+  .db-stats{font-size:12px;color:var(--muted);text-align:center;margin-top:8px}
+  .db-stats span{font-weight:700;color:var(--ink)}
 </style>
 </head>
 <body>
@@ -139,6 +141,7 @@
 <div class="days" id="days"></div>
 <div id="sched"></div>
 <div class="guesthint" id="guestHint" style="display:none">Вход для администратора — кнопка «🔒 Войти»</div>
+<div class="db-stats" id="dbStats"></div>
 
 <button class="fab" id="fab" title="Забронировать">＋</button>
 
@@ -155,10 +158,10 @@
   <div class="sec"><h3>Базовая ставка</h3>
     <label>Цена за 1 час по умолчанию, ₽</label>
     <input type="number" id="cfgRate" min="0" step="50">
-    <div class="muted">Используется, если у нагрузки не задана своя цена для выбранной длительности.</div>
+    <div class="muted">Используется, если у нагрузки не задана своя цена для длительности.</div>
   </div>
   <div class="sec"><h3>Нагрузки (место занятия)</h3>
-    <div class="muted" style="margin-top:0;margin-bottom:8px">Укажите цену для каждой длительности. Оставьте 0, чтобы взять базовую ставку. Доплата складывается за каждый час (напр. 2ч = цена 1ч × 2).</div>
+    <div class="muted" style="margin-top:0;margin-bottom:8px">Задайте цены для разных интервалов. Доплата берется за каждый час (напр. 2ч = цена 1ч × 2).</div>
     <div id="cfgLoads"></div>
     <div class="addrow"><input type="text" id="cfgLoadName" placeholder="Название нагрузки"><button id="cfgLoadAdd">＋</button></div>
   </div>
@@ -187,6 +190,7 @@
   <label>Время начала</label><select id="fTime"></select>
   <label>Длительность</label>
   <div class="chips" id="fDur">
+    <div class="chip" data-h="0.5">30 мин</div>
     <div class="chip" data-h="1">1 час</div>
     <div class="chip sel" data-h="1.5">1,5 часа</div>
     <div class="chip" data-h="2">2 часа</div>
@@ -204,7 +208,7 @@
     <div class="chip" data-s="cancel">🚫 Отменена</div>
   </div>
   <label>Статус заказа (опционально)</label>
-  <textarea id="fOrderStatus" placeholder="Например: Предоплата получена, Ожидает подтверждения..."></textarea>
+  <textarea id="fOrderStatus" placeholder="Например: Предоплата получена..."></textarea>
   <div class="pricebox">
     <div><div class="lbl">Стоимость занятия</div><div class="hint" id="pHint"></div></div>
     <div class="sum" id="pSum">—</div>
@@ -233,7 +237,6 @@ function moscowNow(){ const n=new Date(); return new Date(n.getTime()+(n.getTime
 function mskClockStr(){ const d=moscowNow(); return String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0')+':'+String(d.getSeconds()).padStart(2,'0'); }
 function getDateKey(d){ return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
 
-// Генерируем 14 дней начиная с сегодняшнего
 function generateDates(){
   const msk = moscowNow(); const dates = [];
   for(let i=0; i<14; i++){ dates.push(new Date(msk.getFullYear(), msk.getMonth(), msk.getDate()+i)); }
@@ -241,15 +244,15 @@ function generateDates(){
 }
 
 const MONTHS=['января','февраля','марта','апреля','мая','июня','июля','августа','сентября','октября','ноября','декабря'];
-const DAYS_SHORT=['Вс','Пн','Вт','Ср','Чт','Пт','Сб']; // getDay() возвращает 0=Вс
+const DAYS_SHORT=['Вс','Пн','Вт','Ср','Чт','Пт','Сб'];
 const STATUSES={done:{label:'Выполнено',cls:'done',icon:'✓'},wait:{label:'Ожидание',cls:'wait',icon:'⏳'},cancel:{label:'Отменена',cls:'cancel',icon:'🚫'}};
 
 const DEFAULT_CONFIG = {
   rate: 800,
   loads: [
-    {label:'Плац', prices:{1:2500, 1.5:3500, 2:4500, 2.5:5500, 3:6500}},
-    {label:'Поле', prices:{1:1000, 1.5:1500, 2:2000, 2.5:2500, 3:3000}},
-    {label:'Лес', prices:{1:1500, 1.5:2250, 2:3000, 2.5:3750, 3:4500}}
+    {label:'Плац', prices:{0.5:1500, 1:2500, 1.5:3500, 2:4500, 2.5:5500, 3:6500}},
+    {label:'Поле', prices:{0.5:500, 1:1000, 1.5:1500, 2:2000, 2.5:2500, 3:3000}},
+    {label:'Лес', prices:{0.5:750, 1:1500, 1.5:2250, 2:3000, 2.5:3750, 3:4500}}
   ],
   tempos: [{label:'Шаг'}, {label:'Рысь'}, {label:'Галоп'}],
   horses: ['Рокки','Изюм','Форсаж','Дон','Былина','Армани','Падуб','Хаммер'],
@@ -261,31 +264,25 @@ let db=null, config=JSON.parse(JSON.stringify(DEFAULT_CONFIG)), bookings=[];
 let isAdmin=localStorage.getItem('hc_admin')==='true';
 let dates=generateDates(), curDateOffset=0, curDur=1.5, curLoadIdx=0, curTempoIdx=0, curStatus='wait';
 let lastMskDateStr='', editingId=null;
+let dbSizeBytes = 0;
 
 const fmt=n=>Math.round(n).toLocaleString('ru-RU')+' ₽';
 const minToStr=m=>String(Math.floor(m/60)).padStart(2,'0')+':'+String(m%60).padStart(2,'0');
 const esc=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+function formatBytes(b){if(b<1024)return b+' Б';if(b<1048576)return (b/1024).toFixed(1)+' КБ';return (b/1048576).toFixed(2)+' МБ';}
 
 function getTimeSlots(){ const s=[]; for(let m=(config.startHour||8)*60; m<(config.endHour||21)*60; m+=(config.slotStep||30)) s.push(m); return s; }
 
 /* ================= Логика цен ================= */
-// Получить цену за 1 час для текущей нагрузки (для расчета скалирования)
 function getLoadPricePerHour(loadObj, dur){
   if(!loadObj || !loadObj.prices) return config.rate;
-  // Ищем точное совпадение по длительности
-  if(loadObj.prices[dur] && loadObj.prices[dur] > 0) {
-    // Возвращаем цену за 1 час пропорционально (чтобы можно было умножать на часы)
-    return loadObj.prices[dur] / dur;
-  }
-  // Иначе базовая ставка
+  if(loadObj.prices[dur] && loadObj.prices[dur] > 0) return loadObj.prices[dur] / dur;
   return config.rate;
 }
 
 function calcPrice(){
   const l = config.loads[curLoadIdx] || {prices:{}};
-  // Скалирование: берем стоимость 1 часа для этой нагрузки и умножаем на длительность
-  const pricePerHour = getLoadPricePerHour(l, curDur);
-  return pricePerHour * curDur;
+  return getLoadPricePerHour(l, curDur) * curDur;
 }
 
 function refreshPrice(){
@@ -302,6 +299,7 @@ function initFirebase(){
   if(!firebaseConfig||typeof firebase==='undefined'){st.textContent='демо-режим';refreshUI();return;}
   try{
     firebase.initializeApp(firebaseConfig); db=firebase.database();
+    
     db.ref('config').on('value',snap=>{
       const v=snap.val();
       if(v){
@@ -310,11 +308,11 @@ function initFirebase(){
         if(!Array.isArray(config.tempos))config.tempos=DEFAULT_CONFIG.tempos;
         if(!Array.isArray(config.horses))config.horses=[];
         if(!Array.isArray(config.trainers))config.trainers=[];
-        // Миграция старых форматов цен
+        // Миграция старых форматов
         config.loads.forEach(l=>{
           if(!l.prices) l.prices={};
-          if(l.price!==undefined && !Object.keys(l.prices).length){ // старый формат (ед. цена)
-             [1, 1.5, 2, 2.5, 3].forEach(h => l.prices[h] = l.price * h);
+          if(l.price!==undefined && !Object.keys(l.prices).length){
+             [0.5, 1, 1.5, 2, 2.5, 3].forEach(h => l.prices[h] = l.price * h);
              delete l.price;
           }
           delete l.mult; delete l.price;
@@ -325,9 +323,19 @@ function initFirebase(){
       curTempoIdx=Math.min(curTempoIdx,config.tempos.length-1);
       refreshUI();
     });
+    
     db.ref('bookings').on('value',snap=>{
-      const v=snap.val(); bookings=v?Object.keys(v).map(k=>Object.assign({id:k},v[k])):[];
-      refreshUI(); st.textContent='● онлайн'; st.className='status ok';
+      const v=snap.val(); 
+      bookings=v?Object.keys(v).map(k=>Object.assign({id:k},v[k])):[];
+      
+      // Подсчет размера хранилища
+      try {
+        const jsonStr = JSON.stringify(v);
+        dbSizeBytes = new Blob([jsonStr]).size;
+      } catch(e) { dbSizeBytes = 0; }
+      
+      refreshUI(); 
+      st.textContent='● онлайн'; st.className='status ok';
     },err=>{st.textContent='ошибка';st.className='status.err';});
   }catch(e){st.textContent='ошибка конфига';st.className='status.err';db=null;refreshUI();}
 }
@@ -369,7 +377,12 @@ function renderSched(){
 
   const grid=document.createElement('div'); grid.className='grid';
   grid.style.gridTemplateColumns='72px repeat('+horses.length+', 1fr)';
-  const corner=document.createElement('div'); corner.className='gh corner'; corner.textContent='Время'; grid.appendChild(corner);
+  
+  const corner=document.createElement('div'); 
+  corner.className='gh corner'; 
+  corner.textContent='Время'; 
+  grid.appendChild(corner);
+  
   horses.forEach(h=>{const gh=document.createElement('div');gh.className='gh';gh.textContent=h;grid.appendChild(gh);});
 
   slots.forEach(slotMin=>{
@@ -395,6 +408,14 @@ function renderSched(){
   const wrap=document.createElement('div');wrap.className='grid-wrap';wrap.appendChild(grid);box.innerHTML='';box.appendChild(wrap);
 }
 
+function renderDbStats(){
+  const el = document.getElementById('dbStats');
+  if(!db) { el.innerHTML = ''; return; }
+  const limit = 104857600; // 100 МБ лимит бесплатного тарифа Firebase
+  const pct = ((dbSizeBytes / limit) * 100).toFixed(4);
+  el.innerHTML = 'Хранилище Firebase: занято <span>' + formatBytes(dbSizeBytes) + '</span> из 100 МБ (' + pct + '%)';
+}
+
 function renderHeaderState(){
   document.getElementById('adminBtn').style.display=isAdmin?'none':'inline-block';
   document.getElementById('adminCfgBtn').style.display=isAdmin?'inline-block':'none';
@@ -402,7 +423,7 @@ function renderHeaderState(){
   document.getElementById('guestHint').style.display=isAdmin?'none':'block';
   document.getElementById('fab').style.display=isAdmin?'block':'none';
 }
-function refreshUI(){renderHeaderState();renderDays();renderSched();refreshPrice();}
+function refreshUI(){renderHeaderState();renderDays();renderSched();renderDbStats();refreshPrice();}
 
 /* ================= Детали ================= */
 function openDetail(id){
@@ -450,13 +471,10 @@ function _fillForm(off,startMin,horse,dur,trainer,loadIdx,tempoIdx,status,orderS
   getTimeSlots().forEach(m=>{const o=document.createElement('option');o.value=m;o.textContent=minToStr(m);if(m===startMin)o.selected=true;tSel.appendChild(o);});
   document.getElementById('fHorse').innerHTML=config.horses.map(h=>'<option'+(h===horse?' selected':'')+'>'+esc(h)+'</option>').join('')||'<option>—</option>';
   document.getElementById('trainerList').innerHTML=config.trainers.map(t=>'<option value="'+esc(t)+'">').join('');
-  
   document.getElementById('fLoad').innerHTML=config.loads.map((l,i)=>'<div class="chip'+(i===loadIdx?' sel':'')+'" data-i="'+i+'">'+esc(l.label)+'</div>').join('');
   document.getElementById('fTempo').innerHTML=config.tempos.map((t,i)=>'<div class="chip'+(i===tempoIdx?' sel':'')+'" data-i="'+i+'">'+esc(t.label)+'</div>').join('');
-  
   document.querySelectorAll('#fDur .chip').forEach(c=>c.classList.toggle('sel',parseFloat(c.dataset.h)===dur));
   document.querySelectorAll('#fStatus .chip').forEach(c=>c.classList.toggle('sel',c.dataset.s===status));
-  
   curDur=dur; curStatus=status; curLoadIdx=loadIdx; curTempoIdx=tempoIdx; curDateOffset=off;
   document.getElementById('fErr').style.display='none';
   document.getElementById('fTrainer').value=trainer||'';
@@ -481,7 +499,7 @@ document.getElementById('fSave').addEventListener('click',()=>{
   const clash=bookings.find(b=>b.id!==editingId&&(b.status||'wait')!=='cancel'&&b.dateKey===dk&&b.horse===horse&&b.startMin<endMin&&startMin<b.startMin+b.dur*60);
   if(clash){err.textContent='⚠ «'+horse+'» занята с '+minToStr(clash.startMin)+' до '+minToStr(clash.startMin+clash.dur*60)+'.';err.style.display='block';return;}
   err.style.display='none';
-  const data={dateKey:dk,startMin,startMin,dur:curDur,horse,trainer,loadLabel:L.label,tempoLabel:T.label,price:calcPrice(),status:curStatus,orderStatus:document.getElementById('fOrderStatus').value.trim()};
+  const data={dateKey:dk,startMin:startMin,dur:curDur,horse,trainer,loadLabel:L.label,tempoLabel:T.label,price:calcPrice(),status:curStatus,orderStatus:document.getElementById('fOrderStatus').value.trim()};
   if(editingId) updateBooking(editingId,data); else saveBookingToCloud(data);
   closeForm();
 });
@@ -504,11 +522,12 @@ function closeCfg(){document.getElementById('cfgOverlay').classList.remove('open
 function renderCfg(){
   if(!cfgDraft)return;
   document.getElementById('cfgRate').value=cfgDraft.rate;
-  const durKeys=[1, 1.5, 2, 2.5, 3];
+  const durKeys=[0.5, 1, 1.5, 2, 2.5, 3];
+  const durLabels={'0.5':'30м','1':'1ч','1.5':'1.5ч','2':'2ч','2.5':'2.5ч','3':'3ч'};
   
   const loadBox=document.getElementById('cfgLoads'); loadBox.innerHTML='';
   cfgDraft.loads.forEach((it,i)=>{
-    const row=document.createElement('div'); row.className='multrow'; row.style.flexDirection='column'; row.style.alignItems='stretch'; row.style.gap='6px';
+    const row=document.createElement('div'); row.className='multrow'; row.style.flexDirection='column'; row.style.alignItems='stretch'; row.style.gap='8px';
     const topRow=document.createElement('div'); topRow.style.display='flex'; topRow.style.gap='8px'; topRow.style.alignItems='center';
     const li=document.createElement('input');li.className='lbl-in';li.type='text';li.value=it.label;li.placeholder='Нагрузка';
     li.addEventListener('input',()=>cfgDraft.loads[i].label=li.value);
@@ -519,7 +538,7 @@ function renderCfg(){
     const priceRow=document.createElement('div'); priceRow.style.display='flex'; priceRow.style.gap='6px'; priceRow.style.flexWrap='wrap';
     durKeys.forEach(dur=>{
       const wrap=document.createElement('div'); wrap.style.display='flex'; wrap.style.alignItems='center'; wrap.style.gap='4px';
-      wrap.innerHTML='<span style="font-size:11px;color:var(--muted);width:30px">'+dur+'ч</span>';
+      wrap.innerHTML='<span style="font-size:11px;color:var(--muted);width:28px">'+durLabels[dur]+'</span>';
       const inp=document.createElement('input');inp.className='price-in';inp.type='number';inp.step='50';inp.min='0';
       inp.value=it.prices[dur]||0; inp.placeholder='₽';
       inp.addEventListener('input',()=>{if(!cfgDraft.loads[i].prices)cfgDraft.loads[i].prices={};cfgDraft.loads[i].prices[dur]=parseFloat(inp.value)||0;});
@@ -547,21 +566,43 @@ function renderCfg(){
 function addSimple(iId,arr){const inp=document.getElementById(iId),v=inp.value.trim();if(!v)return;if(arr.some(x=>x.toLowerCase()===v.toLowerCase())){inp.value='';return;}arr.push(v);inp.value='';renderCfg();}
 document.getElementById('cfgHorseAdd').addEventListener('click',()=>{if(cfgDraft)addSimple('cfgHorseName',cfgDraft.horses);});
 document.getElementById('cfgTrainerAdd').addEventListener('click',()=>{if(cfgDraft)addSimple('cfgTrainerName',cfgDraft.trainers);});
-document.getElementById('cfgLoadAdd').addEventListener('click',()=>{if(!cfgDraft)return;const n=document.getElementById('cfgLoadName').value.trim();if(!n)return;cfgDraft.loads.push({label:n,prices:{1:0,1.5:0,2:0,2.5:0,3:0}});document.getElementById('cfgLoadName').value='';renderCfg();});
+document.getElementById('cfgLoadAdd').addEventListener('click',()=>{if(!cfgDraft)return;const n=document.getElementById('cfgLoadName').value.trim();if(!n)return;cfgDraft.loads.push({label:n,prices:{0.5:0,1:0,1.5:0,2:0,2.5:0,3:0}});document.getElementById('cfgLoadName').value='';renderCfg();});
 document.getElementById('cfgTempoAdd').addEventListener('click',()=>{if(!cfgDraft)return;const n=document.getElementById('cfgTempoName').value.trim();if(!n)return;cfgDraft.tempos.push({label:n});document.getElementById('cfgTempoName').value='';renderCfg();});
 
 document.getElementById('cfgSave').addEventListener('click',()=>{
-  if(!cfgDraft)return;const err=document.getElementById('cfgErr'),rate=parseFloat(document.getElementById('cfgRate').value);
-  if(isNaN(rate)||rate<0){err.textContent='⚠ Ставка error';err.style.display='block';return;}
+  if(!cfgDraft)return; 
+  const err=document.getElementById('cfgErr');
+  const rate=parseFloat(document.getElementById('cfgRate').value);
+  if(isNaN(rate)||rate<0){err.textContent='⚠ Укажите корректную ставку.';err.style.display='block';return;}
+  
   cfgDraft.rate=rate;
-  cfgDraft.loads=cfgDraft.loads.filter(l=>l.label&&l.label.trim()).map(l=>{const p={};[1,1.5,2,2.5,3].forEach(k=>{if(l.prices) p[k]=l.prices[k]||0; else p[k]=0;});return{label:l.label.trim(),prices:p};});
-  cfgDraft.tempos=cfgDraft.tempos.filter(t=>t.label&&t.label.trim()).map(t=>({label:t.label.trim()}));
-  if(!cfgDraft.loads.length||!cfgDraft.tempos.length){err.textContent='⚠ Добавьте варианты';err.style.display='block';return;}
-  cfgDraft.horses=cfgDraft.horses.map(h=>h.trim()).filter(Boolean);
-  cfgDraft.trainers=cfgDraft.trainers.map(t=>t.trim()).filter(Boolean);
-  const np=document.getElementById('cfgPass').value.trim();if(np)cfgDraft.adminPass=np;
-  config=cfgDraft;curLoadIdx=0;curTempoIdx=0;saveConfig();closeCfg();
+  
+  // Правильная сборка цен нагрузок
+  cfgDraft.loads = cfgDraft.loads.filter(l => l.label && l.label.trim()).map(l => {
+    const p = {};
+    [0.5, 1, 1.5, 2, 2.5, 3].forEach(k => { p[k] = (l.prices ? l.prices[k] : 0) || 0; });
+    return { label: l.label.trim(), prices: p };
+  });
+  
+  cfgDraft.tempos = cfgDraft.tempos.filter(t => t.label && t.label.trim()).map(t => ({label: t.label.trim()}));
+  
+  if(!cfgDraft.loads.length || !cfgDraft.tempos.length){err.textContent='⚠ Добавьте варианты нагрузок и темпов.';err.style.display='block';return;}
+  
+  cfgDraft.horses = cfgDraft.horses.map(h => h.trim()).filter(Boolean);
+  cfgDraft.trainers = cfgDraft.trainers.map(t => t.trim()).filter(Boolean);
+  
+  const np = document.getElementById('cfgPass').value.trim();
+  if(np) cfgDraft.adminPass = np;
+  
+  // ФИНАЛЬНОЕ ПРИСВОЕНИЕ И СОХРАНЕНИЕ
+  config = JSON.parse(JSON.stringify(cfgDraft));
+  curLoadIdx = 0; 
+  curTempoIdx = 0;
+  
+  saveConfig();
+  closeCfg();
 });
+
 document.getElementById('cfgCancel').addEventListener('click',closeCfg);
 
 /* ================= Кликеры ================= */
@@ -574,9 +615,12 @@ document.getElementById('detailOverlay').addEventListener('click',e=>{if(e.targe
 
 /* ================= Часы ================= */
 function startMskClock(){
-  const tick=()=>{document.getElementById('mskClock').textContent='🕐 МСК '+mskClockStr();
-    const cd=getDateKey(moscowNow());if(cd!==lastMskDateStr){lastMskDateStr=cd;dates=generateDates();if(curDateOffset>0)curDateOffset--;refreshUI();}
-  };tick();setInterval(tick,1000);
+  const tick=()=>{
+    document.getElementById('mskClock').textContent='🕐 МСК '+mskClockStr();
+    const cd=getDateKey(moscowNow());
+    if(cd!==lastMskDateStr){lastMskDateStr=cd;dates=generateDates();if(curDateOffset>0)curDateOffset--;refreshUI();}
+  };
+  tick();setInterval(tick,1000);
 }
 
 lastMskDateStr=getDateKey(moscowNow());initFirebase();refreshUI();startMskClock();

@@ -53,40 +53,6 @@ function showBrowserPopup(text) {
 }
 
 // ==========================================
-// 2. ЭКРАН-ЗАГЛУШКА (Темный)
-// ==========================================
-var SITE_PASSWORD = "admin"; // Поменяйте на свой пароль
-
-var wall = document.createElement('div');
-wall.id = 'authWall';
-wall.innerHTML = '<div style="font-size:60px;opacity:0.8;">🐴</div>' +
-    '<div style="font-size:20px;font-weight:700;color:#e0ddd6;text-align:center;padding:0 20px;">Расписание Конного клуба</div>' +
-    '<input type="password" id="sitePass" placeholder="Введите пароль" style="padding:14px 20px;font-size:16px;border:1.5px solid #3a3a42;border-radius:12px;width:260px;background:#25252b;color:#e0ddd6;outline:none;text-align:center;margin-top:10px;">' +
-    '<button id="wallBtn" style="padding:14px 30px;font-size:16px;cursor:pointer;border:none;border-radius:12px;background:#4a7c59;color:#fff;font-weight:700;">Войти</button>' +
-    '<div id="passErr" style="color:#e06050;font-size:13px;display:none;">Неверный пароль</div>';
-wall.style.cssText = 'position:fixed;inset:0;z-index:99999;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:10px;font-family:-apple-system,BlinkMacSystemFont,sans-serif;background:#1a1a1e;';
-document.body.prepend(wall);
-
-var wallStyle = document.createElement('style');
-wallStyle.textContent = 'body>*:not(#authWall){display:none!important}body.unlocked>*:not(#authWall){display:initial!important}body.unlocked header,body.unlocked .legend,body.unlocked .trainer-legend,body.unlocked .days,body.unlocked .chips,body.unlocked .btnrow,body.unlocked .addrow,body.unlocked .multrow,body.unlocked .trainer-row,body.unlocked .stat-row,body.unlocked .dc-row,body.unlocked .who-item,body.unlocked .grid{display:flex!important}#sitePass:focus{border-color:#4a7c59!important}';
-document.head.appendChild(wallStyle);
-
-function checkSitePass() {
-    if (document.getElementById('sitePass').value === SITE_PASSWORD) {
-        document.getElementById('authWall').remove();
-        document.body.classList.add('unlocked');
-        if (typeof initFB === 'function') initFB();
-        addTestButton(); 
-        addWhoButtonToCfg(); // Добавляем кнопку в настройки
-    } else {
-        document.getElementById('passErr').style.display = 'block';
-    }
-}
-
-document.getElementById('wallBtn').addEventListener('click', checkSitePass);
-document.getElementById('sitePass').addEventListener('keydown', function(e) { if(e.key==='Enter') checkSitePass(); });
-
-// ==========================================
 // 3. ТЕСТОВАЯ КНОПКА УВЕДОМЛЕНИЙ (10 сек)
 // ==========================================
 function addTestButton() {

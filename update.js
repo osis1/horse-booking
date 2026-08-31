@@ -36,7 +36,7 @@ self.addEventListener('message', function(e) {
     } else if (e.data.cmd === 'check_time') {
         checkTime();
     } else if (e.data.cmd === 'test') {
-        self.registration.showNotification('🔔 Тестовое уведомление', {
+        self.registration.showNotification('🔔 Тестовое уведомление!', {
             body: 'Если вы это видите — уведомления работают!',
             vibrate: [200, 100, 200],
             tag: 'test-' + Date.now()

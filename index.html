@@ -550,15 +550,32 @@ document.getElementById('tgSendBtn').addEventListener('click', function() {
   });
 });
 
-
 /* ===== Кто вы ===== */
 function showWhoSelect(){
   var list=document.getElementById('whoList');list.innerHTML='';
+  
+  // Показываем настройку времени, если тренер уже выбран
+  var wrap = document.getElementById('remindWrap');
+  if(myTrainer) {
+    wrap.style.display = 'block';
+    document.getElementById('remindSelect').value = localStorage.getItem('hc_remind_'+myTrainer) || '15';
+  }
+
   config.trainers.forEach(function(t){
     var d=document.createElement('div');d.className='who-item'+(myTrainer===t.name?' sel':'');
     var role=t.name.match(/\(([^)]+)\)/);role=role?role[1]:'';
     d.innerHTML='<span class="stat-dot" style="background:'+esc(t.color)+'"></span><span>'+esc(t.name)+'</span><span class="who-role">'+esc(role)+'</span>';
-    d.addEventListener('click',function(){myTrainer=t.name;localStorage.setItem('hc_me',myTrainer);document.getElementById('whoOverlay').classList.remove('open');schedRefresh()});
+    d.addEventListener('click',function(){
+      myTrainer=t.name;localStorage.setItem('hc_me',myTrainer);
+      
+      // Сохраняем выбранное время напоминания лично для этого тренера
+      var selRemind = document.getElementById('remindSelect').value;
+      localStorage.setItem('hc_remind_'+myTrainer, selRemind);
+      
+      document.getElementById('whoOverlay').classList.remove('open');
+      syncSW(); // Обновляем фоновый скрипт с новым временем
+      schedRefresh();
+    });
     list.appendChild(d)});
   document.getElementById('whoOverlay').classList.add('open');
 }

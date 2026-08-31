@@ -53,7 +53,7 @@ function showBrowserPopup(text) {
 }
 
 // ==========================================
-// 3. ТЕСТОВАЯ КНОПКА УВЕДОМЛЕНИЙ (10 сек)
+// 2. ТЕСТОВАЯ КНОПКА УВЕДОМЛЕНИЙ (10 сек)
 // ==========================================
 function addTestButton() {
     var header = document.querySelector('header');
@@ -75,38 +75,36 @@ function addTestButton() {
     else { header.appendChild(btn); }
 }
 
-// ==========================================
-// 4. УБИРАЕМ АВТО-ВСПЛЫТИЕ "КТО ВЫ" + КНОПКА В НАСТРОЙКАХ
-// ==========================================
+// Запуск при загрузке
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', addTestButton);
+} else {
+    addTestButton();
+}
 
-// Блокируем автоматическое появление окна
+// ==========================================
+// 3. УБИРАЕМ АВТО-ВСПЛЫТИЕ "КТО ВЫ" + КНОПКА В НАСТРОЙКАХ
+// ==========================================
 var origShowWho = window.showWhoSelect;
 window.showWhoSelect = function() {
     // Ничего не делаем. Окно не откроется само.
-    // Функция просто "молчит", когда её вызывает основной код при входе.
 };
 
-// Функция для ручного вызова (без блокировки)
 function forceShowWho() {
     var whoOv = document.getElementById('whoOverlay');
     if (whoOv) {
-        // Закрываем настройки, чтобы они не мешали
         document.getElementById('cfgOverlay').classList.remove('open');
-        // Поднимаем окно "Кто вы" над всеми
         whoOv.style.zIndex = '10001';
         whoOv.classList.add('open');
     }
 }
 
-// Добавляем кнопку в конфигуратор (настройки)
 function addWhoButtonToCfg() {
     var cfgOverlay = document.getElementById('cfgOverlay');
     if (!cfgOverlay) return;
     
-    // Следим за открытием настроек, чтобы вставить кнопку
     var observer = new MutationObserver(function() {
         if (cfgOverlay.classList.contains('open')) {
-            // Проверяем, не вставили ли мы кнопку уже
             if (!document.getElementById('myWhoBtn')) {
                 var errDiv = document.getElementById('cfgErr');
                 var parent = errDiv ? errDiv.parentNode : cfgOverlay.querySelector('.modal');
@@ -115,12 +113,10 @@ function addWhoButtonToCfg() {
                     btn.id = 'myWhoBtn';
                     btn.className = 'btn save';
                     btn.style.marginTop = '12px';
-                    btn.style.background = 'var(--surface-alt)'; // Другой цвет, чтобы не путать с "Сохранить"
+                    btn.style.background = 'var(--surface-alt)';
                     btn.style.color = 'var(--ink)';
                     btn.textContent = '👤 Выбрать «Кто я» (для уведомлений)';
                     btn.addEventListener('click', forceShowWho);
-                    
-                    // Вставляем кнопку перед строкой ошибок
                     parent.insertBefore(btn, errDiv);
                 }
             }
@@ -128,4 +124,11 @@ function addWhoButtonToCfg() {
     });
     
     observer.observe(cfgOverlay, { attributes: true, attributeFilter: ['class'] });
+}
+
+// Запуск наблюдателя за настройками
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', addWhoButtonToCfg);
+} else {
+    addWhoButtonToCfg();
 }

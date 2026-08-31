@@ -1,4 +1,8 @@
+// ==========================================
+// 0. РЕГИСТРАЦИЯ ФОНОВОГО СКРИПТА
+// ==========================================
 if ('serviceWorker' in navigator) { navigator.serviceWorker.register('sw.js'); }
+
 // ==========================================
 // 1. ПРОВЕРКА РАСПИСАНИЯ (Каждые 30 сек)
 // ==========================================
@@ -64,4 +68,50 @@ function showBrowserPopup(text) {
         popup.style.transform = 'translateY(20px)'; popup.style.opacity = '0';
         setTimeout(function() { popup.remove(); }, 300);
     }, 5000);
+}
+
+// ==========================================
+// 4. КНОПКА ТЕСТА СИСТЕМНОГО ПУША (5 сек)
+// ==========================================
+function addTestButton() {
+    var header = document.querySelector('header');
+    if (!header) return;
+    
+    var btn = document.createElement('button');
+    btn.className = 'hdr-btn';
+    btn.textContent = '🧪 Тест Пуша';
+    btn.title = 'Проверка системного уведомления через 5 сек';
+    
+    btn.addEventListener('click', function() {
+        if (navigator.serviceWorker && navigator.serviceWorker.controller) {
+            btn.disabled = true; 
+            btn.style.opacity = '0.5'; 
+            btn.textContent = '⏳ Жди 5 сек...';
+            
+            // Отправляем команду в sw.js
+            navigator.serviceWorker.controller.postMessage({ type: 'TEST_PUSH' });
+            
+            setTimeout(function() {
+                btn.textContent = '🧪 Тест Пуша'; 
+                btn.disabled = false; 
+                btn.style.opacity = '1';
+            }, 6000);
+        } else {
+            alert('Фоновой скрипт не загружен. Обновите страницу (F5).');
+        }
+    });
+    
+    var mskClock = document.getElementById('mskClock');
+    if (mskClock && mskClock.nextSibling) { 
+        header.insertBefore(btn, mskClock.nextSibling); 
+    } else { 
+        header.appendChild(btn); 
+    }
+}
+
+// Запуск кнопки после загрузки
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', addTestButton);
+} else {
+    addTestButton();
 }

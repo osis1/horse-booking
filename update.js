@@ -1,7 +1,9 @@
 // ==========================================
-// 0. РЕГИСТРАЦИЯ ФОНОВОГО СКРИПТА
+// 0. РЕГИСТРАЦИЯ ФОНОВОГО СКРИПТА (С умным ожиданием)
 // ==========================================
-if ('serviceWorker' in navigator) { navigator.serviceWorker.register('sw.js'); }
+if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('sw.js');
+}
 
 // ==========================================
 // 1. ПРОВЕРКА РАСПИСАНИЯ (Каждые 30 сек)
@@ -11,7 +13,7 @@ setInterval(function() {
 }, 30000);
 
 // ==========================================
-// 2. ЗВУК
+// 2. ЗВУК (Двойной писк)
 // ==========================================
 var originalPlayBeep = window.playBeep;
 window.playBeep = function() {
@@ -35,14 +37,11 @@ window.playBeep = function() {
 // ==========================================
 var originalShowBadge = window.showBadge;
 window.showBadge = function(text) {
-    // 1. Зеленый баннер сверху (из основного кода)
     if (originalShowBadge) originalShowBadge(text);
-    // 2. Звук
     if (typeof playBeep === 'function') playBeep();
 
     var notifSent = false;
 
-    // 3. Пытаемся отправить НА ПРЯМУЮ в систему телефона (если есть HTTPS и разрешение)
     if ('Notification' in window && Notification.permission === 'granted') {
         if (location.protocol === 'https:') {
             try { 
@@ -52,7 +51,6 @@ window.showBadge = function(text) {
         }
     }
 
-    // 4. Если система не приняла (нет HTTPS, нет разрешения или просто вкладка) — показываем красивую плашку внизу экрана
     if (!notifSent) {
         showBrowserPopup(text);
     }
@@ -71,7 +69,7 @@ function showBrowserPopup(text) {
 }
 
 // ==========================================
-// 4. КНОПКА ТЕСТА СИСТЕМНОГО ПУША (5 сек)
+// 4. КНОПКА ТЕСТА СИСТЕМНОГО ПУША (С ожиданием)
 // ==========================================
 function addTestButton() {
     var header = document.querySelector('header');
@@ -79,26 +77,22 @@ function addTestButton() {
     
     var btn = document.createElement('button');
     btn.className = 'hdr-btn';
-    btn.textContent = '🧪 Тест Пуша';
-    btn.title = 'Проверка системного уведомления через 5 сек';
+    btn.textContent = '⏳ Загрузка...';
+    btn.title = 'Проверка системного уведомления';
+    btn.disabled = true;
     
     btn.addEventListener('click', function() {
-        if (navigator.serviceWorker && navigator.serviceWorker.controller) {
-            btn.disabled = true; 
-            btn.style.opacity = '0.5'; 
-            btn.textContent = '⏳ Жди 5 сек...';
-            
-            // Отправляем команду в sw.js
-            navigator.serviceWorker.controller.postMessage({ type: 'TEST_PUSH' });
-            
-            setTimeout(function() {
-                btn.textContent = '🧪 Тест Пуша'; 
-                btn.disabled = false; 
-                btn.style.opacity = '1';
-            }, 6000);
-        } else {
-            alert('Фоновой скрипт не загружен. Обновите страницу (F5).');
-        }
+        btn.disabled = true; 
+        btn.style.opacity = '0.5'; 
+        btn.textContent = '⏳ Жди 5 сек...';
+        
+        navigator.serviceWorker.controller.postMessage({ type: 'TEST_PUSH' });
+        
+        setTimeout(function() {
+            btn.textContent = '🧪 Тест Пуша'; 
+            btn.disabled = false; 
+            btn.style.opacity = '1';
+        }, 6000);
     });
     
     var mskClock = document.getElementById('mskClock');
@@ -107,9 +101,20 @@ function addTestButton() {
     } else { 
         header.appendChild(btn); 
     }
+
+    // Ждем, пока sw.js активируется
+    function waitServiceWorker() {
+        if (navigator.serviceWorker && navigator.serviceWorker.controller) {
+            btn.textContent = '🧪 Тест Пуша';
+            btn.disabled = false;
+        } else {
+            setTimeout(waitServiceWorker, 500); // Проверяем каждые полсекунды
+        }
+    }
+    waitServiceWorker();
 }
 
-// Запуск кнопки после загрузки
+// Запуск
 if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', addTestButton);
 } else {

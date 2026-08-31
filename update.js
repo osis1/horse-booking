@@ -1,35 +1,14 @@
-// ==========================================
-// 1. РЕГИСТРАЦИЯ И ПЕРЕДАЧА РАСПИСАНИЯ В sw.js
-// ==========================================
-if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('sw.js?v=4').then(function(reg) {
-        // Функция отправки данных в фоновый скрипт
-        function sendSchedule() {
-            if (navigator.serviceWorker.controller && typeof bookings !== 'undefined') {
-                navigator.serviceWorker.controller.postMessage({
-                    cmd: 'update_schedule',
-                    list: bookings
-                });
-            }
-        }
-        // Отправляем расписание при первой загрузке
-        sendSchedule();
+// Обязательно обнови версию файла (v=4), чтобы браузер скачал новый sw.js без таймеров
+if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js?v=4');
 
-        // СЛЕДИМ ЗА ИЗМЕНЕНИЯМИ В БАЗЕ и обновляем sw.js
-        var origRefresh = window.schedRefresh;
-        if (origRefresh) {
-            window.schedRefresh = function() {
-                if (origRefresh) origRefresh();
-                sendSchedule(); // Каждое изменение расписания летит в фоновый скрипт
-            };
-        }
-    }).catch(function(){});
-}
-
-// ==========================================
-// 2. ПРОВЕРКА И ЗВУК (Для открытого сайта)
-// ==========================================
-setInterval(function(){ if(typeof checkRemind==='function') checkRemind(); }, 30000);
+setInterval(function(){ 
+    if(typeof checkRemind==='function') checkRemind();
+    
+    // Каждые 30 секунд будим Service Worker и заставляем его проверять расписание
+    if(navigator.serviceWorker && navigator.serviceWorker.controller) {
+        navigator.serviceWorker.controller.postMessage({cmd: 'check_time'});
+    }
+}, 30000);
 
 var origBeep = window.playBeep;
 window.playBeep = function() {
@@ -58,41 +37,3 @@ window.showBadge = function(t) {
         setTimeout(function(){p.style.transform='translateY(20px)';p.style.opacity='0';setTimeout(function(){p.remove()},300)},5000);
     }
 };
-
-// ==========================================
-// 3. КНОПКА ТЕСТА В НАСТРОЙКАХ
-// ==========================================
-function addTestButtonToCfg() {
-    var cfgOverlay = document.getElementById('cfgOverlay');
-    if (!cfgOverlay) return;
-    var observer = new MutationObserver(function() {
-        if (cfgOverlay.classList.contains('open') && !document.getElementById('myTestPushBtn')) {
-            var errDiv = document.getElementById('cfgErr');
-            var parent = errDiv ? errDiv.parentNode : cfgOverlay.querySelector('.modal');
-            if (parent) {
-                var btn = document.createElement('button');
-                btn.id = 'myTestPushBtn';
-                btn.className = 'btn save';
-                btn.style.cssText = 'margin-top:12px; background:var(--surface-alt); color:var(--ink);';
-                btn.textContent = '🧪 Тест системного Пуша (5 сек)';
-                btn.onclick = function(e) {
-                    e.preventDefault();
-                    if (navigator.serviceWorker && navigator.serviceWorker.controller) {
-                        navigator.serviceWorker.controller.postMessage('test');
-                        btn.textContent = '⏳ Закройте приложение и ждите...';
-                        btn.disabled = true;
-                        setTimeout(function(){ btn.textContent = '🧪 Тест системного Пуша (5 сек)'; btn.disabled = false; }, 6000);
-                    } else { alert('sw.js не загружен. Обновите страницу.'); }
-                };
-                parent.insertBefore(btn, errDiv);
-            }
-        }
-    });
-    observer.observe(cfgOverlay, { attributes: true, attributeFilter: ['class'] });
-}
-
-if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', addTestButtonToCfg);
-} else {
-    addTestButtonToCfg();
-}

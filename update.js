@@ -1,10 +1,11 @@
 // ==========================================
-// 1. УВЕДОМЛЕНИЯ ДЛЯ PWA
+// 1. УВЕДОМЛЕНИЯ ДЛЯ PWA И ПРОСТОГО БРАУЗЕРА
 // ==========================================
 setInterval(function() {
     if (typeof checkRemind === 'function') checkRemind();
 }, 30000);
 
+// Улучшенный звук
 var originalPlayBeep = window.playBeep;
 window.playBeep = function() {
     try {
@@ -23,24 +24,62 @@ window.playBeep = function() {
     } catch(e) {}
 };
 
+// Умная система показа уведомлений
 var originalShowBadge = window.showBadge;
 window.showBadge = function(text) {
+    // 1. Сначала всегда показываем встроенный зеленый баннер вверху сайта
     if (originalShowBadge) originalShowBadge(text);
+    
+    var notifSent = false;
+
+    // 2. Пытаемся отправить СИСТЕМНОЕ уведомление (только для PWA / HTTPS)
     if ('Notification' in window && Notification.permission === 'granted') {
-        try {
-            if (navigator.serviceWorker && navigator.serviceWorker.controller) {
-                navigator.serviceWorker.ready.then(function(reg) {
-                    reg.showNotification('Конный клуб', { body: text, icon: window.icon64, vibrate: [200, 100, 200] });
-                });
-            } else {
+        if (navigator.serviceWorker && navigator.serviceWorker.controller) {
+            // Если это установленное PWA приложение
+            navigator.serviceWorker.ready.then(function(reg) {
+                reg.showNotification('Конный клуб', { body: text, icon: window.icon64, vibrate: [200, 100, 200] });
+                notifSent = true;
+            }).catch(function(){});
+        } else if (location.protocol === 'https:') {
+            // Если это просто вкладка, но по защищенному протоколу HTTPS
+            try {
                 new Notification('Конный клуб', { body: text, icon: window.icon64 });
-            }
-        } catch(e) {}
+                notifSent = true;
+            } catch(e) {}
+        }
+    }
+
+    // 3. Если системное уведомление НЕ сработало (обычный HTTP компьютер/телефон),
+    // показываем красивое всплывающее окошко в правом нижнем углу экрана.
+    if (!notifSent) {
+        showBrowserPopup(text);
     }
 };
 
+// Функция красивого окошка для обычного браузера
+function showBrowserPopup(text) {
+    var popup = document.createElement('div');
+    popup.innerHTML = '<div style="font-weight:700;margin-bottom:4px;font-size:14px;">🐴 Конный клуб</div><div style="font-size:13px;opacity:0.9;">' + text.replace(/\n/g, '<br>') + '</div>';
+    popup.style.cssText = 'position:fixed;bottom:20px;right:20px;left:20px;max-width:360px;margin-left:auto;background:#25252b;color:#e0ddd6;padding:16px;border-radius:14px;box-shadow:0 8px 30px rgba(0,0,0,0.4);z-index:99998;font-family:-apple-system,sans-serif;border:1px solid #3a3a42;transform:translateY(20px);opacity:0;transition:all 0.3s ease;';
+    
+    document.body.appendChild(popup);
+    
+    // Анимация появления
+    requestAnimationFrame(function() {
+        popup.style.transform = 'translateY(0)';
+        popup.style.opacity = '1';
+    });
+    
+    // Автоматическое скрытие через 5 секунд
+    setTimeout(function() {
+        popup.style.transform = 'translateY(20px)';
+        popup.style.opacity = '0';
+        setTimeout(function() { popup.remove(); }, 300); // Удаляем из кода после исчезновения
+    }, 5000);
+}
+
 // ==========================================
-// 2. ЭКРАН-ЗАГЛУШКА (Темный, не выжигает глаза)
+// 2. ЭКРАН-ЗАГЛУШКА (Темный)
 // ==========================================
 var SITE_PASSWORD = "admin"; // Поменяйте на свой пароль
 
@@ -63,7 +102,7 @@ function checkSitePass() {
         document.getElementById('authWall').remove();
         document.body.classList.add('unlocked');
         if (typeof initFB === 'function') initFB();
-        addTestButton(); // Добавляем тестовую кнопку после входа
+        addTestButton(); 
     } else {
         document.getElementById('passErr').style.display = 'block';
     }
@@ -90,7 +129,6 @@ function addTestButton() {
         btn.textContent = '⏳ Ожидайте...';
         
         setTimeout(function() {
-            // Вызываем те же функции, что и при реальном уведомлении
             if (typeof showBadge === 'function') {
                 showBadge('🐴 ТЕСТ: Рокки через 15 мин!\nОльга · Плац');
             }
@@ -101,10 +139,9 @@ function addTestButton() {
             btn.textContent = '🧪 Тест (10с)';
             btn.disabled = false;
             btn.style.opacity = '1';
-        }, 10000); // 10000 миллисекунд = 10 секунд
+        }, 10000); 
     });
     
-    // Вставляем кнопку в шапку после часов МСК
     var mskClock = document.getElementById('mskClock');
     if (mskClock && mskClock.nextSibling) {
         header.insertBefore(btn, mskClock.nextSibling);

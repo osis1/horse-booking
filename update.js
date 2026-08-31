@@ -1,4 +1,4 @@
-if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js?v=2');
+if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js?v=3');
 
 setInterval(function(){ if(typeof checkRemind==='function') checkRemind(); }, 30000);
 

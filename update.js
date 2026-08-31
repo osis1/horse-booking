@@ -1,17 +1,15 @@
 // ==========================================
-// 1. УМНАЯ ЭКРАН-ЗАГЛУШКА (Один пароль, не вылезает если вошел)
+// 1. УМНАЯ ЭКРАН-ЗАГЛУШКА
 // ==========================================
 var wallForm = null;
 var sitePassInput = null;
 
 function createWall() {
-    // Проверяем, не вошел ли человек уже (как админ)
     if (localStorage.getItem('hc_admin') === 'true') {
-        initUpdates(); // Сразу запускаем кнопки, заглушку не рисуем
+        initUpdates(); 
         return;
     }
 
-    // Создаем форму
     wallForm = document.createElement('form');
     wallForm.style.cssText = 'position:fixed;inset:0;z-index:99999;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:12px;font-family:-apple-system,BlinkMacSystemFont,sans-serif;background:#1a1a1e;margin:0;padding:0;border:none;';
     wallForm.onsubmit = function(e) { e.preventDefault(); checkSitePass(); };
@@ -27,30 +25,23 @@ function createWall() {
     sitePassInput = document.getElementById('sitePass');
 }
 
-// Логика проверки пароля
 function checkSitePass() {
     if (!sitePassInput) return;
-    
     var enteredPass = sitePassInput.value;
-    // Берем пароль из конфигурации сайта (он скачивается из Firebase)
     var correctPass = (typeof config !== 'undefined') ? config.adminPass : 'admin';
 
     if (enteredPass === correctPass) {
-        // Запрашиваем разрешение на уведомления сразу при входе
         if ('Notification' in window && Notification.permission === 'default') {
             Notification.requestPermission();
         }
-
-        wallForm.remove(); // Удаляем заглушку
-        initUpdates();     // Запускаем тестовую кнопку
+        wallForm.remove(); 
+        initUpdates();     
     } else {
         document.getElementById('passErr').style.display = 'block';
     }
 }
 
-// Запускаем проверку при загрузке
 createWall();
-
 
 // ==========================================
 // 2. ТЕСТОВАЯ КНОПКА (10 секунд)
@@ -75,14 +66,20 @@ function addTestButton() {
     else { header.appendChild(btn); }
 }
 
+// ==========================================
+// 3. РЕАЛЬНЫЕ УВЕДОМЛЕНИЯ НА ТЕЛЕФОН (PWA)
+// ==========================================
+// Регистрируем фоновый процесс для разблокированного экрана
+if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('sw.js').catch(function() {});
+}
 
-// ==========================================
-// 3. УВЕДОМЛЕНИЯ (PWA и обычный браузер)
-// ==========================================
+// Проверка времени
 setInterval(function() {
     if (typeof checkRemind === 'function') checkRemind();
 }, 30000);
 
+// Звук
 var originalPlayBeep = window.playBeep;
 window.playBeep = function() {
     try {
@@ -91,7 +88,6 @@ window.playBeep = function() {
         o1.connect(g1); g1.connect(c.destination);
         o1.frequency.value = 880; g1.gain.value = 0.3;
         o1.start(c.currentTime); o1.stop(c.currentTime + 0.2);
-        
         var o2 = c.createOscillator(); var g2 = c.createGain();
         o2.connect(g2); g2.connect(c.destination);
         o2.frequency.value = 1100; g2.gain.value = 0;
@@ -101,34 +97,24 @@ window.playBeep = function() {
     } catch(e) {}
 };
 
+// Отправка на телефон
 var originalShowBadge = window.showBadge;
 window.showBadge = function(text) {
     if (originalShowBadge) originalShowBadge(text);
-    var notifSent = false;
+    if (typeof playBeep === 'function') playBeep();
+
     if ('Notification' in window && Notification.permission === 'granted') {
         if (navigator.serviceWorker && navigator.serviceWorker.controller) {
-            navigator.serviceWorker.ready.then(function(reg) {
-                reg.showNotification('Конный клуб', { body: text, icon: window.icon64, vibrate: [200, 100, 200] });
-                notifSent = true;
-            }).catch(function(){});
+            // Отправляем команду в sw.js, чтобы он разбудил телефон
+            navigator.serviceWorker.controller.postMessage({
+                type: 'SHOW_NOTIFICATION',
+                payload: { title: '🐴 Конный клуб', body: text, icon: window.icon64 || '' }
+            });
         } else if (location.protocol === 'https:') {
-            try { new Notification('Конный клуб', { body: text, icon: window.icon64 }); notifSent = true; } catch(e) {}
+            try { new Notification('🐴 Конный клуб', { body: text }); } catch(e) {}
         }
     }
-    if (!notifSent) showBrowserPopup(text);
 };
-
-function showBrowserPopup(text) {
-    var popup = document.createElement('div');
-    popup.innerHTML = '<div style="font-weight:700;margin-bottom:4px;font-size:14px;">🐴 Конный клуб</div><div style="font-size:13px;opacity:0.9;">' + text.replace(/\n/g, '<br>') + '</div>';
-    popup.style.cssText = 'position:fixed;bottom:20px;right:20px;left:20px;max-width:360px;margin-left:auto;background:#25252b;color:#e0ddd6;padding:16px;border-radius:14px;box-shadow:0 8px 30px rgba(0,0,0,0.4);z-index:99998;font-family:-apple-system,sans-serif;border:1px solid #3a3a42;transform:translateY(20px);opacity:0;transition:all 0.3s ease;';
-    document.body.appendChild(popup);
-    requestAnimationFrame(function() { popup.style.transform = 'translateY(0)'; popup.style.opacity = '1'; });
-    setTimeout(function() {
-        popup.style.transform = 'translateY(20px)'; popup.style.opacity = '0';
-        setTimeout(function() { popup.remove(); }, 300);
-    }, 5000);
-}
 
 // ==========================================
 // 4. ЗАПУСК

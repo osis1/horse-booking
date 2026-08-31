@@ -302,6 +302,13 @@
     <div class="addrow">
       <input type="color" id="cfgTrainerColor" value="#4a7c59" style="width:48px;height:44px;padding:3px;border:1.5px solid var(--line);border-radius:10px;cursor:pointer;flex:none;background:var(--card)">
       <input type="text" id="cfgTrainerName" placeholder="Имя, напр: Ольга (тренер)"><button id="cfgTrainerAdd">＋</button></div></div>
+      
+  <!-- НОВОЕ МЕНЮ УВЕДОМЛЕНИЙ -->
+  <div class="sec"><h3>Уведомления</h3>
+    <p style="font-size:13px;color:var(--ink);margin-bottom:8px">Текущий профиль: <b id="cfgMeName">Не выбран</b></p>
+    <button class="btn-tg-csv" id="cfgChangeWho">👤 Сменить профиль / Время уведомления</button>
+  </div>
+
   <div class="sec"><h3>Безопасность</h3>
     <label>Новый пароль (пусто = не менять)</label>
     <input type="text" id="cfgPass" placeholder="Новый пароль" autocomplete="off"></div>
@@ -311,7 +318,6 @@
     <button class="btn save" id="cfgSave">Сохранить</button>
   </div>
 </div></div>
-
 <div class="overlay" id="statsOverlay"><div class="modal" id="statsModal"></div></div>
 <div class="overlay" id="detailOverlay"><div class="modal" id="detailModal"></div></div>
 
@@ -470,7 +476,7 @@ function openStats(){
       document.getElementById('statTo').value='';
       renderStatsContent(parseInt(c.dataset.d));
     });
-  });
+  }); // ВОТ ЭТА СКОБКА БЫЛА ПОТЕРЯНА У ТЕБЯ
   
   ['statFrom','statTo'].forEach(function(id){
     document.getElementById(id).addEventListener('change',function(){
@@ -549,7 +555,7 @@ document.getElementById('adminBtn').addEventListener('click',openLogin);document
 
 /* ===== Конфигуратор ===== */
 var cfgD=null;
-function openCfg(){cfgD=JSON.parse(JSON.stringify(config));document.getElementById('cfgErr').style.display='none';document.getElementById('cfgPass').value='';populateExportMonths();renderCfg();document.getElementById('cfgOverlay').classList.add('open')}
+function openCfg(){cfgD=JSON.parse(JSON.stringify(config));document.getElementById('cfgErr').style.display='none';document.getElementById('cfgPass').value='';document.getElementById('cfgMeName').textContent = myTrainer || 'Не выбран';populateExportMonths();renderCfg();document.getElementById('cfgOverlay').classList.add('open')}
 function closeCfg(){document.getElementById('cfgOverlay').classList.remove('open');cfgD=null}
 function renderCfg(){if(!cfgD)return;var lb=document.getElementById('cfgLoads');lb.innerHTML='';cfgD.loads.forEach(function(it,i){var r=document.createElement('div');r.className='multrow';var li=document.createElement('input');li.className='lbl-in';li.type='text';li.value=it.label;li.placeholder='Название';li.addEventListener('input',function(){cfgD.loads[i].label=li.value});var rm=document.createElement('button');rm.className='rm';rm.textContent='\u2715';rm.addEventListener('click',function(){if(cfgD.loads.length<=1)return;cfgD.loads.splice(i,1);renderCfg()});r.appendChild(li);r.appendChild(rm);lb.appendChild(r)});var tb=document.getElementById('cfgTempos');tb.innerHTML='';cfgD.tempos.forEach(function(it,i){var r=document.createElement('div');r.className='multrow';var li=document.createElement('input');li.className='lbl-in';li.type='text';li.value=it.label;li.placeholder='Название';li.addEventListener('input',function(){cfgD.tempos[i].label=li.value});var rm=document.createElement('button');rm.className='rm';rm.textContent='\u2715';rm.addEventListener('click',function(){if(cfgD.tempos.length<=1)return;cfgD.tempos.splice(i,1);renderCfg()});r.appendChild(li);r.appendChild(rm);tb.appendChild(r)});var hb=document.getElementById('cfgHorses');hb.innerHTML='';cfgD.horses.forEach(function(h,i){var d=document.createElement('div');d.className='namechip';d.innerHTML=esc(h)+'<button class="rm">\u2715</button>';d.querySelector('.rm').addEventListener('click',function(){cfgD.horses.splice(i,1);renderCfg()});hb.appendChild(d)});var trb=document.getElementById('cfgTrainers');trb.innerHTML='';cfgD.trainers.forEach(function(t,i){var r=document.createElement('div');r.className='trainer-row';var ci=document.createElement('input');ci.type='color';ci.value=t.color;ci.addEventListener('input',function(){cfgD.trainers[i].color=ci.value});var sp=document.createElement('span');sp.textContent=t.name;var rm=document.createElement('button');rm.className='rm';rm.textContent='\u2715';rm.addEventListener('click',function(){cfgD.trainers.splice(i,1);renderCfg()});r.appendChild(ci);r.appendChild(sp);r.appendChild(rm);trb.appendChild(r)})}
 document.getElementById('cfgLoadAdd').addEventListener('click',function(){var v=document.getElementById('cfgLoadName').value.trim();if(v){cfgD.loads.push({label:v});document.getElementById('cfgLoadName').value='';renderCfg()}});
@@ -558,6 +564,7 @@ document.getElementById('cfgHorseAdd').addEventListener('click',function(){var v
 document.getElementById('cfgTrainerAdd').addEventListener('click',function(){var n=document.getElementById('cfgTrainerName').value.trim();if(n){cfgD.trainers.push({name:n,color:document.getElementById('cfgTrainerColor').value});document.getElementById('cfgTrainerName').value='';renderCfg()}});
 document.getElementById('cfgSave').addEventListener('click',function(){var np=document.getElementById('cfgPass').value.trim();if(np)cfgD.adminPass=np;config=cfgD;saveCfg();closeCfg()});
 document.getElementById('cfgCancel').addEventListener('click',closeCfg);
+document.getElementById('cfgChangeWho').addEventListener('click', function(){ closeCfg(); showWhoSelect(); });
 
 /* ===== SW Sync ===== */
 function syncSW(){if(navigator.serviceWorker&&navigator.serviceWorker.controller){var swRemindMin=parseInt(localStorage.getItem('hc_remind_'+myTrainer))||15;var swList=bookings.map(function(b){return{dateKey:b.dateKey,startMin:b.startMin,horse:b.horse,trainer:b.trainer,loadLabel:b.loadLabel,status:b.status,sent:false}});navigator.serviceWorker.controller.postMessage({cmd:'update_schedule',list:swList,remindMin:swRemindMin})}}

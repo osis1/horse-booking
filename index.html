@@ -176,8 +176,6 @@
   .dc-cancel{background:var(--cancel-bg);color:var(--red)}
   .dc-del{margin-top:10px;width:100%;padding:10px;border:1.5px solid var(--red);border-radius:10px;
     background:var(--cancel-bg);color:var(--red);font-size:14px;font-weight:700;cursor:pointer;transition:background .3s,color .3s}
-
-  /* Кто вы */
   .who-item{display:flex;align-items:center;gap:10px;padding:14px;
     border:1.5px solid var(--line);border-radius:12px;margin-bottom:8px;cursor:pointer;
     background:var(--input-bg);transition:background .2s,border-color .2s}
@@ -187,8 +185,6 @@
   .who-skip{display:block;text-align:center;margin-top:12px;font-size:12px;color:var(--muted);
     cursor:pointer;padding:8px;border-radius:8px;transition:color .2s}
   .who-skip:hover{color:var(--red)}
-
-  /* Аккордеон */
   .acc-item{border-bottom:1px solid var(--line)}
   .acc-item:last-child{border-bottom:none}
   .acc-head{display:flex;justify-content:space-between;align-items:center;padding:14px 0;
@@ -202,8 +198,6 @@
   .acc-body ul{padding:6px 0 6px 18px}.acc-body li{margin-bottom:4px}
   .acc-body strong{color:var(--ink)}
   .acc-body code{background:var(--surface);padding:1px 5px;border-radius:4px;font-size:12px}
-
-  /* Статистика */
   .stat-row{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--line)}
   .stat-row:last-child{border-bottom:none}
   .stat-dot{width:12px;height:12px;border-radius:3px;flex-shrink:0}
@@ -213,13 +207,13 @@
   .stat-bar-wrap{flex:1;height:8px;background:var(--bar-bg);border-radius:4px;overflow:hidden;min-width:50px}
   .stat-bar{height:100%;background:var(--green);border-radius:4px;transition:width .4s}
   .stat-total{font-size:12px;color:var(--muted);text-align:center;margin-top:8px}
-
-  /* Уведомление-баннер */
   .notif-badge{position:fixed;top:12px;left:50%;transform:translateX(-50%);z-index:200;
     padding:10px 18px;border-radius:12px;background:var(--green);color:#fff;font-size:13px;
     font-weight:600;box-shadow:0 4px 20px rgba(0,0,0,.3);opacity:0;
     transition:opacity .3s;pointer-events:none;top:calc(12px + env(safe-area-inset-top,0px))}
   .notif-badge.show{opacity:1}
+  .btn-tg-csv{width:100%;padding:12px;border:1.5px solid var(--line);border-radius:10px;background:var(--surface);color:var(--ink);font-size:14px;font-weight:600;cursor:pointer;margin-bottom:8px;transition: background .2s, border-color .2s}
+  .btn-tg-csv:hover{border-color:var(--green); background: var(--done-bg)}
 </style>
 </head>
 <body>
@@ -251,7 +245,6 @@
 <button class="fab" id="fab" title="Забронировать">＋</button>
 <div class="notif-badge" id="notifBadge"></div>
 
-<!-- Кто вы -->
 <div class="overlay" id="whoOverlay"><div class="modal">
   <h2>👤 Кто вы?</h2>
   <p style="font-size:13px;color:var(--muted);margin-bottom:14px">Выберите себя — уведомления будут приходить только о ваших занятиях</p>
@@ -259,14 +252,12 @@
   <div class="who-skip" id="whoSkip">Пропустить (уведомления отключены)</div>
 </div></div>
 
-<!-- Справка -->
 <div class="overlay" id="infoOverlay"><div class="modal">
   <h2>❓ Справка</h2>
   <div id="accList"></div>
   <div class="btnrow" style="margin-top:16px"><button class="btn cancel" id="infoClose">Закрыть</button></div>
 </div></div>
 
-<!-- Логин -->
 <div class="overlay" id="loginOverlay"><div class="modal">
   <h2>🔐 Вход администратора</h2>
   <label>Пароль</label>
@@ -281,6 +272,11 @@
 <!-- Конфигуратор -->
 <div class="overlay" id="cfgOverlay"><div class="modal">
   <h2>⚙️ Конфигуратор</h2>
+  
+  <!-- НОВЫЕ КНОПКИ ТУТ -->
+  <button class="btn-tg-csv" id="csvDownBtn">📥 Скачать всю таблицу (CSV для Excel)</button>
+  <button class="btn-tg-csv" id="tgSendBtn">📨 Отправить таблицу в Телеграм</button>
+
   <div class="sec"><h3>Нагрузки</h3><div id="cfgLoads"></div>
     <div class="addrow"><input type="text" id="cfgLoadName" placeholder="Название"><button id="cfgLoadAdd">＋</button></div></div>
   <div class="sec"><h3>Темп</h3><div id="cfgTempos"></div>
@@ -301,11 +297,8 @@
   </div>
 </div></div>
 
-<!-- Статистика -->
 <div class="overlay" id="statsOverlay"><div class="modal" id="statsModal"></div></div>
-<!-- Детали -->
 <div class="overlay" id="detailOverlay"><div class="modal" id="detailModal"></div></div>
-<!-- Форма -->
 <div class="overlay" id="overlay"><div class="modal">
   <h2 id="formTitle">Новая бронь</h2>
   <label>Дата</label>
@@ -339,6 +332,7 @@
 
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
+<script src="update.js"></script>
 <script>
 'use strict';
 
@@ -383,13 +377,46 @@ var notifiedSet={},refreshTmr=null,wasOnline=false;
 /* ===== Утилиты ===== */
 function mskNow(){var n=new Date();return new Date(n.getTime()+(n.getTimezoneOffset()+180)*60000)}
 function mskStr(){var d=mskNow();return String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0')+':'+String(d.getSeconds()).padStart(2,'0')}
-function getInitDates(){var m=mskNow(),a=[];for(var i=0;i<14;i++)a.push(new Date(m.getFullYear(),m.getMonth(),m.getDate()+i));return a}
+function getInitDates(){
+  var m=mskNow(), a=[];
+  // Текущий месяц
+  var firstDay = new Date(m.getFullYear(), m.getMonth(), 1);
+  var lastDay = new Date(m.getFullYear(), m.getMonth() + 1, 0);
+  for(var d = new Date(firstDay); d <= lastDay; d.setDate(d.getDate() + 1)) a.push(new Date(d));
+  // Следующий месяц
+  var nextFirst = new Date(m.getFullYear(), m.getMonth() + 1, 1);
+  var nextLast = new Date(m.getFullYear(), m.getMonth() + 2, 0);
+  for(var d = new Date(nextFirst); d <= nextLast; d.setDate(d.getDate() + 1)) a.push(new Date(d));
+  return a;
+}
 function dk(d){return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')}
 function m2s(m){return String(Math.floor(m/60)).padStart(2,'0')+':'+String(m%60).padStart(2,'0')}
 function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})}
 function tColor(n){if(!n)return null;var t=config.trainers.find(function(x){return x.name===n});return t?t.color:null}
 function getSlots(){var a=[],s=(config.startHour||8)*60,e=(config.endHour||21)*60,st=config.slotStep||30;for(var m=s;m<e;m+=st)a.push(m);return a}
 function schedRefresh(){if(refreshTmr)return;refreshTmr=setTimeout(function(){refreshTmr=null;refreshUI()},250)}
+
+/* ===== Автоочистка старых данных (3-го числа удаляем прошлый месяц) ===== */
+function cleanOldBookings() {
+  if (!db) return;
+  var m = mskNow();
+  if (m.getDate() < 3) return; // До 3-го числа храним всё
+  
+  var cutoffStr = m.getFullYear() + '-' + String(m.getMonth()+1).padStart(2,'0') + '-01';
+  var toDelete = {};
+  var hasOld = false;
+  
+  bookings.forEach(function(b) {
+    if (b.dateKey < cutoffStr) {
+      toDelete[b.id] = null; // null в Firebase означает удаление
+      hasOld = true;
+    }
+  });
+  
+  if (hasOld) {
+    db.ref('bookings').update(toDelete);
+  }
+}
 
 /* ===== Firebase (тихий) ===== */
 function initFB(){
@@ -408,6 +435,14 @@ function initFB(){
     db.ref('bookings').on('value',function(sn){
       var v=sn.val();bookings=v?Object.keys(v).map(function(k){return Object.assign({id:k},v[k])}):[];
       if(!wasOnline){wasOnline=true;st.textContent='\u25CF онлайн';st.className='status ok'}
+      
+      // Отправляем расписание в Service Worker для фоновых пушей
+      if(navigator.serviceWorker && navigator.serviceWorker.controller) {
+        var swList = bookings.map(function(b){ return { dateKey:b.dateKey, startMin:b.startMin, horse:b.horse, trainer:b.trainer, loadLabel:b.loadLabel, status:b.status, sent:false }; });
+        navigator.serviceWorker.controller.postMessage({cmd: 'update_schedule', list: swList});
+      }
+      
+      cleanOldBookings(); // Проверяем, не нужно ли удалить старый месяц
       schedRefresh()},function(e){
         if(wasOnline){st.textContent='переподключение\u2026';st.className='status err'}
         wasOnline=false});
@@ -440,6 +475,66 @@ function checkRemind(){
 }
 function reqNotif(){if('Notification' in window&&Notification.permission==='default')Notification.requestPermission()}
 
+/* ===== Экспорт CSV и Телеграм ===== */
+document.getElementById('csvDownBtn').addEventListener('click', function() {
+  if(!bookings.length) return alert("Нет записей для выгрузки");
+  let csv = 'Дата;Время;Длительность(ч);Лошадь;Тренер;Нагрузка;Темп;Статус\n';
+  bookings.sort((a,b) => a.dateKey.localeCompare(b.dateKey) || a.startMin - b.startMin).forEach(b => {
+    let timeStr = m2s(b.startMin) + ' - ' + m2s(b.startMin + b.dur*60);
+    csv += `${b.dateKey};${timeStr};${b.dur};${b.horse};${b.trainer};${b.loadLabel||''};${b.tempoLabel||''};${b.status||'wait'}\n`;
+  });
+  const blob = new Blob(["\uFEFF" + csv], { type: 'text/csv;charset=utf-8;' });
+  const link = document.createElement("a");
+  link.href = URL.createObjectURL(blob);
+  link.download = `Расписание_${dk(mskNow())}.csv`;
+  link.click();
+});
+
+document.getElementById('tgSendBtn').addEventListener('click', function() {
+  // ВСТАВЬ СЮДА СВОИ НОВЫЕ ДАННЫЕ ОТ BOTFATHER И СВОЙ CHAT ID
+  const BOT_TOKEN = 'ТВОЙ_НОВЫЙ_ТОКЕН_ОТ_BOTFATHER'; 
+  const CHAT_ID = 'ТВОЙ_CHAT_ID';
+  
+  if(BOT_TOKEN === 'ТВОЙ_НОВЫЙ_ТОКЕН_ОТ_BOTFATHER') {
+    return alert('Сначала впиши токен бота и Chat ID в код файла index.html в функцию tgSendBtn!');
+  }
+  if(!bookings.length) return alert("Нет записей для отправки");
+
+  let text = "📋 <b>Расписание конного клуба</b>\n\n";
+  let grouped = {};
+  bookings.sort((a,b) => a.dateKey.localeCompare(b.dateKey) || a.startMin - b.startMin).forEach(b => {
+    if(!grouped[b.dateKey]) grouped[b.dateKey] = [];
+    grouped[b.dateKey].push(b);
+  });
+
+  for(let date in grouped) {
+    text += `📅 <b>${date}</b>\n`;
+    grouped[date].forEach(b => {
+      let timeStr = m2s(b.startMin) + '-' + m2s(b.startMin + b.dur*60);
+      let statusIcon = b.status === 'done' ? '✅' : (b.status === 'cancel' ? '🚫' : '⏳');
+      text += `  ${statusIcon} ${timeStr} | 🐴 ${b.horse} | 👤 ${b.trainer}\n`;
+    });
+    text += "\n";
+  }
+
+  document.getElementById('tgSendBtn').textContent = '⏳ Отправка...';
+  fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ chat_id: CHAT_ID, text: text, parse_mode: 'HTML' })
+  })
+  .then(r => r.json())
+  .then(res => {
+    document.getElementById('tgSendBtn').textContent = '📨 Отправить таблицу в Телеграм';
+    alert(res.ok ? 'Успешно отправлено!' : 'Ошибка: ' + res.description);
+  })
+  .catch(e => {
+    document.getElementById('tgSendBtn').textContent = '📨 Отправить таблицу в Телеграм';
+    alert('Ошибка сети: ' + e);
+  });
+});
+
+
 /* ===== Кто вы ===== */
 function showWhoSelect(){
   var list=document.getElementById('whoList');list.innerHTML='';
@@ -456,10 +551,10 @@ document.getElementById('whoSkip').addEventListener('click',function(){myTrainer
 /* ===== Справка (аккордеон) ===== */
 var HELP=[
   {t:'\uD83D\uDCF1 Как установить приложение на телефон',c:'<p><strong>iPhone (Safari):</strong></p><ul><li>Откройте сайт в Safari и зажмите ссылку</li><li>Нажмите кнопку <strong>«Поделиться»</strong> (квадрат со стрелкой)</li><li>Прокрутите вниз \u2014 нажмите <strong>«На экран Домой»</strong></li><li>Нажмите «Добавить» \u2014 иконка появится на рабочем столе</li></ul><p><strong>Android (Chrome):</strong></p><ul><li>Откройте сайт в Chrome</li><li>Нажмите <strong>\u22EE</strong> (три точки) \u2192 «Установить приложение»</li><li>Нажмите «Установить»</li></ul><p>Приложение открывается как отдельное, без строки адреса браузера. Работает быстрее и не distracting.</p>'},
-  {t:'\uD83D\uDD14 Напоминания о занятиях (возможно не работает)',c:'<p>После входа в систему вам предложат <strong>выбрать себя</strong> из списка тренеров. Напоминания будут приходить <strong>только о ваших</strong> занятиях \u2014 за <strong>'+REMIND_MIN+' минут</strong> до начала.</p><p><strong>Как работают:</strong></p><ul><li>Страница должна быть открыта (или приложение добавлено на телефон)</li><li>Браузер пришлёт push-уведомление + звуковой сигнал</li><li>Также появляется подсказка вверху страницы</li></ul><p>Если вы пропустили выбор \u2014 можно выйти и зайти снова, или нажать \u2699\uFE0F \u2192 статус в шапке покажет вашего тренера.</p><p><strong>Важно:</strong> если два человека выбрали одного тренера \u2014 оба получат уведомления.</p>'},
+  {t:'\uD83D\uDD14 Напоминания о занятиях',c:'<p>После входа в систему вам предложат <strong>выбрать себя</strong> из списка тренеров. Напоминания будут приходить <strong>только о ваших</strong> занятиях \u2014 за <strong>'+REMIND_MIN+' минут</strong> до начала.</p><p><strong>Как работают:</strong></p><ul><li>Страница должна быть открыта (или приложение добавлено на телефон)</li><li>Браузер пришлёт push-уведомление + звуковой сигнал</li><li>Также появляется подсказка вверху страницы</li></ul><p>Если вы пропустили выбор \u2014 можно выйти и зайти снова, или нажать \u2699\uFE0F \u2192 статус в шапке покажет вашего тренера.</p><p><strong>Важно:</strong> если два человека выбрали одного тренера \u2014 оба получат уведомления.</p>'},
   {t:'\uD83D\uDC0E Цветные полоски у броней',c:'<p>Каждая бронь в таблице имеет <strong>цветную полоску слева</strong> \u2014 это цвет тренера, который проводит занятие. Цвета задаются в конфигураторе и видны в легенде под заголовком.</p><p>Это помогает быстро определить чьё занятие по цвету, не читая имя.</p>'},
   {t:'\uD83C\uDF19 Тёмная тема',c:'<p>Нажмите кнопку <strong>\uD83C\uDF19</strong> (луна/солнце) в шапке \u2014 переключится тёмная/светлая тема. Выбор сохраняется на вашем устройстве.</p><p>Тёмная тема удобна вечером и не слепит глаза в загоне.</p>'},
-  {t:'\uD83D\uDCCA Статистика за 2 недели',c:'<p>Кнопка <strong>\uD83D\uDCCA</strong> (только для админов) показывает:</p><ul><li><strong>Тренеры</strong> \u2014 сколько занятий выполнено, ожидает, отменено + суммарные часы</li><li><strong>Лошади</strong> \u2014 визуальная загруженность: кто сколько занятий провёл за 2 недели</li></ul>'},
+  {t:'\uD83D\uDCCA Статистика',c:'<p>Кнопка <strong>\uD83D\uDCCA</strong> (только для админов) показывает:</p><ul><li><strong>Тренеры</strong> \u2014 сколько занятий выполнено, ожидает, отменено + суммарные часы</li><li><strong>Лошади</strong> \u2014 визуальная загруженность</li></ul>'},
   {t:'\uD83D\uDDD1\uFE0F Выбор «Кто вы»',c:'<p>При первом входе после установки/очистки данных появится экран выбора тренера. Это нужно чтобы <strong>разделить уведомления</strong> между людьми.</p><p>Вы всегда можете сменить выбор: нажмите \u2699\uFE0F Конфигурация \u2192 посмотрите «Вы: ...» в шапке, или выйдите и зайдите снова.</p>'}
 ];
 function renderHelp(){
@@ -486,7 +581,7 @@ function calcStats(){
 }
 function openStats(){
   var s=calcStats(),m=document.getElementById('statsModal');
-  var h='<h2>\uD83D\uDCCA Статистика за 2 недели</h2><div class="stat-total">Активных записей: '+s.total+'</div>';
+  var h='<h2>\uD83D\uDCCA Статистика</h2><div class="stat-total">Активных записей: '+s.total+'</div>';
   h+='<div class="sec"><h3>\uD83E\uDDD1 Тренеры</h3>';
   Object.keys(s.ts).forEach(function(n){var t=s.ts[n];
     h+='<div class="stat-row"><span class="stat-dot" style="background:'+esc(t.color)+'"></span><span class="stat-name">'+esc(n)+'</span>';
@@ -517,10 +612,10 @@ function renderDays(){
     t.className='day-tab'+(i===curDayOff?' active':'')+(isT?' today':'')+(isNM?' new-month':'')+(isP&&!isT?' past-day':'');
     if(isT)t.title='Сегодня';
     t.innerHTML='<span class="dname">'+DS[i%7]+'</span><span class="dnum">'+d.getDate()+'</span><span class="cnt">'+n+'</span>';
-    t.addEventListener('click',function(){curDayOff=i;trimOld();schedRefresh()});
+    t.addEventListener('click',function(){curDayOff=i;schedRefresh()});
     box.appendChild(t)});
   requestAnimationFrame(function(){var a=box.querySelector('.day-tab.active');if(a)a.scrollIntoView({behavior:'smooth',block:'nearest',inline:'center'})})}
-function trimOld(){while(dates.length>14&&curDayOff>0){dates.shift();curDayOff--}}
+
 function renderSched(){
   var box=document.getElementById('sched'),horses=config.horses;
   if(!horses.length){box.innerHTML='<div class="no-horses">Нет лошадей. Добавьте в \u2699\uFE0F</div>';return}
@@ -576,8 +671,8 @@ function openForm(){editId=null;document.getElementById('formTitle').textContent
 function openFormFor(off,sm,horse){editId=null;document.getElementById('formTitle').textContent='Новая бронь';document.getElementById('fSave').textContent='Забронировать';_fill(off,sm,horse,1.5,'',curLI,curTI,'wait');document.getElementById('overlay').classList.add('open')}
 function openFormEdit(b){editId=b.id;document.getElementById('formTitle').textContent='Редактирование';document.getElementById('fSave').textContent='Сохранить';
   var li=0,ti=0;config.loads.forEach(function(l,i){if(l.label===b.loadLabel)li=i});config.tempos.forEach(function(t,i){if(t.label===b.tempoLabel)ti=i});
-  var off=0;dates.forEach(function(d,i){if(dk(d)===b.dateKey)off=i});
-  if(off===0&&dk(dates[0])!==b.dateKey){var p=b.dateKey.split('-');dates.unshift(new Date(+p[0],+p[1]-1,+p[2]));off=0}
+  var off=-1;dates.forEach(function(d,i){if(dk(d)===b.dateKey)off=i});
+  if(off===-1){var p=b.dateKey.split('-');dates.unshift(new Date(+p[0],+p[1]-1,+p[2]));off=0; curDayOff = 0;}
   _fill(off,b.startMin,b.horse,b.dur,b.trainer,li,ti,b.status||'wait');document.getElementById('overlay').classList.add('open')}
 function _fill(off,sm,horse,dur,trainer,li,ti,status){
   var ad=dates[off];if(!ad)return;
@@ -637,67 +732,37 @@ function renderCfg(){
     var rm=document.createElement('button');rm.className='rm';rm.textContent='\u2715';rm.addEventListener('click',function(){if(cfgD.tempos.length<=1)return;cfgD.tempos.splice(i,1);renderCfg()});
     r.appendChild(li);r.appendChild(rm);tb.appendChild(r)});
   var hb=document.getElementById('cfgHorses');hb.innerHTML='';
-  cfgD.horses.forEach(function(item,i){var c=document.createElement('span');c.className='namechip';c.innerHTML=esc(item)+' <button class="rm" title="Удалить">\u2715</button>';c.querySelector('.rm').addEventListener('click',function(){cfgD.horses.splice(i,1);renderCfg()});hb.appendChild(c)});
+  cfgD.horses.forEach(function(h,i){var d=document.createElement('div');d.className='namechip';
+    d.innerHTML=esc(h)+'<button class="rm">\u2715</button>';
+    d.querySelector('.rm').addEventListener('click',function(){cfgD.horses.splice(i,1);renderCfg()});hb.appendChild(d)});
   var trb=document.getElementById('cfgTrainers');trb.innerHTML='';
-  cfgD.trainers.forEach(function(item,i){var r=document.createElement('div');r.className='trainer-row';
-    var ci=document.createElement('input');ci.type='color';ci.value=item.color||TP[i%TP.length];ci.addEventListener('input',function(){cfgD.trainers[i].color=ci.value});
-    var ns=document.createElement('span');ns.textContent=item.name;
+  cfgD.trainers.forEach(function(t,i){var r=document.createElement('div');r.className='trainer-row';
+    var ci=document.createElement('input');ci.type='color';ci.value=t.color;ci.addEventListener('input',function(){cfgD.trainers[i].color=ci.value});
+    var sp=document.createElement('span');sp.textContent=t.name;
     var rm=document.createElement('button');rm.className='rm';rm.textContent='\u2715';rm.addEventListener('click',function(){cfgD.trainers.splice(i,1);renderCfg()});
-    r.appendChild(ci);r.appendChild(ns);r.appendChild(rm);trb.appendChild(r)});
-  /* Показать кто я */
-  var info=document.createElement('div');
-  info.style.cssText='margin-top:12px;padding:10px;border-radius:10px;background:var(--done-bg);font-size:13px;color:var(--done-text)';
-  info.innerHTML=myTrainer?'\u2705 Вы: <strong>'+esc(myTrainer)+'</strong> <span style="float:right;cursor:pointer;text-decoration:underline;font-size:11px" id="cfgChangeMe">сменить</span>':'\u26A0 Вы не выбраны \u2014 уведомления не будут приходить. <span style="float:right;cursor:pointer;text-decoration:underline;font-size:11px" id="cfgSetMe">выбрать</span>';
-  trb.parentElement.insertBefore(info,trb.nextSibling.nextSibling);
-  var cm=document.getElementById('cfgChangeMe');if(cm)cm.addEventListener('click',function(){showWhoSelect()});
-  var sm=document.getElementById('cfgSetMe');if(sm)sm.addEventListener('click',function(){showWhoSelect()});
-}
-function addS(iid,arr,fn){var inp=document.getElementById(iid),v=inp.value.trim();if(!v)return;if(arr.some(function(x){return(typeof x==='string'?x:x.name).toLowerCase()===v.toLowerCase()})){inp.value='';return}arr.push(v);inp.value='';fn()}
-document.getElementById('cfgHorseAdd').addEventListener('click',function(){if(cfgD)addS('cfgHorseName',cfgD.horses,renderCfg)});
-document.getElementById('cfgTrainerAdd').addEventListener('click',function(){
-  if(!cfgD)return;var n=document.getElementById('cfgTrainerName').value.trim();if(!n)return;
-  if(cfgD.trainers.some(function(t){return t.name.toLowerCase()===n.toLowerCase()})){document.getElementById('cfgTrainerName').value='';return}
-  var c=document.getElementById('cfgTrainerColor').value||TP[cfgD.trainers.length%TP.length];
-  cfgD.trainers.push({name:n,color:c});document.getElementById('cfgTrainerName').value='';
-  document.getElementById('cfgTrainerColor').value=TP[cfgD.trainers.length%TP.length];renderCfg()});
-document.getElementById('cfgLoadAdd').addEventListener('click',function(){if(!cfgD)return;var n=document.getElementById('cfgLoadName').value.trim();if(!n)return;cfgD.loads.push({label:n});document.getElementById('cfgLoadName').value='';renderCfg()});
-document.getElementById('cfgTempoAdd').addEventListener('click',function(){if(!cfgD)return;var n=document.getElementById('cfgTempoName').value.trim();if(!n)return;cfgD.tempos.push({label:n});document.getElementById('cfgTempoName').value='';renderCfg()});
+    r.appendChild(ci);r.appendChild(sp);r.appendChild(rm);trb.appendChild(r)})}
+document.getElementById('cfgLoadAdd').addEventListener('click',function(){var v=document.getElementById('cfgLoadName').value.trim();if(v){cfgD.loads.push({label:v});document.getElementById('cfgLoadName').value='';renderCfg()}});
+document.getElementById('cfgTempoAdd').addEventListener('click',function(){var v=document.getElementById('cfgTempoName').value.trim();if(v){cfgD.tempos.push({label:v});document.getElementById('cfgTempoName').value='';renderCfg()}});
+document.getElementById('cfgHorseAdd').addEventListener('click',function(){var v=document.getElementById('cfgHorseName').value.trim();if(v){cfgD.horses.push(v);document.getElementById('cfgHorseName').value='';renderCfg()}});
+document.getElementById('cfgTrainerAdd').addEventListener('click',function(){var n=document.getElementById('cfgTrainerName').value.trim();if(n){cfgD.trainers.push({name:n,color:document.getElementById('cfgTrainerColor').value});document.getElementById('cfgTrainerName').value='';renderCfg()}});
 document.getElementById('cfgSave').addEventListener('click',function(){
-  if(!cfgD)return;var err=document.getElementById('cfgErr');
-  cfgD.loads=cfgD.loads.filter(function(l){return l.label&&l.label.trim()}).map(function(l){return{label:l.label.trim()}});
-  cfgD.tempos=cfgD.tempos.filter(function(t){return t.label&&t.label.trim()}).map(function(t){return{label:t.label.trim()}});
-  if(!cfgD.loads.length||!cfgD.tempos.length){err.textContent='\u26A0 Нужен хотя бы один вариант.';err.style.display='block';return}
-  cfgD.horses=cfgD.horses.map(function(h){return(h||'').trim()}).filter(Boolean);
-  cfgD.trainers=cfgD.trainers.map(function(t){return{name:(t.name||'').trim(),color:t.color||'#4a7c59'}}).filter(function(t){return t.name});
-  var np=document.getElementById('cfgPass').value.trim();if(np)cfgD.adminPass=np;
-  config=cfgD;curLI=0;curTI=0;saveCfg();closeCfg()});
+  var np=document.getElementById('cfgPass').value.trim();
+  if(np)cfgD.adminPass=np;
+  config=cfgD;saveCfg();closeCfg()});
 document.getElementById('cfgCancel').addEventListener('click',closeCfg);
 
-/* ===== Клик-обработчики ===== */
-document.getElementById('fCancel').addEventListener('click',closeForm);
-document.getElementById('fab').addEventListener('click',function(){if(isAdmin)openForm()});
-document.getElementById('overlay').addEventListener('click',function(e){if(e.target===e.currentTarget)closeForm()});
-document.getElementById('cfgOverlay').addEventListener('click',function(e){if(e.target===e.currentTarget)closeCfg()});
-document.getElementById('loginOverlay').addEventListener('click',function(e){if(e.target===e.currentTarget)document.getElementById('loginOverlay').classList.remove('open')});
-document.getElementById('detailOverlay').addEventListener('click',function(e){if(e.target===e.currentTarget)closeDetail()});
-document.getElementById('statsOverlay').addEventListener('click',function(e){if(e.target===e.currentTarget)document.getElementById('statsOverlay').classList.remove('open')});
-document.getElementById('whoOverlay').addEventListener('click',function(e){if(e.target===e.currentTarget)return/* не закрывать по клику на фон */});
-document.getElementById('infoOverlay').addEventListener('click',function(e){if(e.target===e.currentTarget)document.getElementById('infoOverlay').classList.remove('open')});
+/* ===== Часы и старт ===== */
+setInterval(function(){document.getElementById('mskClock').textContent='\uD83D\uDD50 МСК '+mskStr()},1000);
+document.getElementById('mskClock').textContent='\uD83D\uDD50 МСК '+mskStr();
 
-/* ===== Часы, скольжение, напоминания ===== */
-function startTick(){
-  var tick=function(){
-    var el=document.getElementById('mskClock');if(el)el.textContent='\uD83D\uDD50 МСК '+mskStr();
-    var cd=dk(mskNow());
-    if(cd!==lastDK){lastDK=cd;var ld=dates[dates.length-1];dates.push(new Date(ld.getFullYear(),ld.getMonth(),ld.getDate()+1));
-      if(curDayOff>0){dates.shift();curDayOff--}schedRefresh()}
-    checkRemind()};
-  tick();setInterval(tick,30000)}
+// Находим индекс сегодняшнего дня при старте
+var todayKey = dk(mskNow());
+for(var i=0; i<dates.length; i++) {
+    if(dk(dates[i]) === todayKey) { curDayOff = i; break; }
+}
 
-/* ===== Запуск ===== */
-lastDK=dk(mskNow());initFB();schedRefresh();setInterval(function(){var d=mskNow();document.getElementById('mskClock').textContent='\uD83D\uDD50 МСК '+String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0')+':'+String(d.getSeconds()).padStart(2,'0')},1000);
-if(isAdmin)reqNotif();
+initFB();
+if(!myTrainer && isAdmin) setTimeout(showWhoSelect, 500);
 </script>
-<script src="update.js"></script>
 </body>
 </html>

@@ -5,7 +5,6 @@ setInterval(function() {
     if (typeof checkRemind === 'function') checkRemind();
 }, 30000);
 
-// Улучшенный звук
 var originalPlayBeep = window.playBeep;
 window.playBeep = function() {
     try {
@@ -24,57 +23,32 @@ window.playBeep = function() {
     } catch(e) {}
 };
 
-// Умная система показа уведомлений
 var originalShowBadge = window.showBadge;
 window.showBadge = function(text) {
-    // 1. Сначала всегда показываем встроенный зеленый баннер вверху сайта
     if (originalShowBadge) originalShowBadge(text);
-    
     var notifSent = false;
-
-    // 2. Пытаемся отправить СИСТЕМНОЕ уведомление (только для PWA / HTTPS)
     if ('Notification' in window && Notification.permission === 'granted') {
         if (navigator.serviceWorker && navigator.serviceWorker.controller) {
-            // Если это установленное PWA приложение
             navigator.serviceWorker.ready.then(function(reg) {
                 reg.showNotification('Конный клуб', { body: text, icon: window.icon64, vibrate: [200, 100, 200] });
                 notifSent = true;
             }).catch(function(){});
         } else if (location.protocol === 'https:') {
-            // Если это просто вкладка, но по защищенному протоколу HTTPS
-            try {
-                new Notification('Конный клуб', { body: text, icon: window.icon64 });
-                notifSent = true;
-            } catch(e) {}
+            try { new Notification('Конный клуб', { body: text, icon: window.icon64 }); notifSent = true; } catch(e) {}
         }
     }
-
-    // 3. Если системное уведомление НЕ сработало (обычный HTTP компьютер/телефон),
-    // показываем красивое всплывающее окошко в правом нижнем углу экрана.
-    if (!notifSent) {
-        showBrowserPopup(text);
-    }
+    if (!notifSent) showBrowserPopup(text);
 };
 
-// Функция красивого окошка для обычного браузера
 function showBrowserPopup(text) {
     var popup = document.createElement('div');
     popup.innerHTML = '<div style="font-weight:700;margin-bottom:4px;font-size:14px;">🐴 Конный клуб</div><div style="font-size:13px;opacity:0.9;">' + text.replace(/\n/g, '<br>') + '</div>';
     popup.style.cssText = 'position:fixed;bottom:20px;right:20px;left:20px;max-width:360px;margin-left:auto;background:#25252b;color:#e0ddd6;padding:16px;border-radius:14px;box-shadow:0 8px 30px rgba(0,0,0,0.4);z-index:99998;font-family:-apple-system,sans-serif;border:1px solid #3a3a42;transform:translateY(20px);opacity:0;transition:all 0.3s ease;';
-    
     document.body.appendChild(popup);
-    
-    // Анимация появления
-    requestAnimationFrame(function() {
-        popup.style.transform = 'translateY(0)';
-        popup.style.opacity = '1';
-    });
-    
-    // Автоматическое скрытие через 5 секунд
+    requestAnimationFrame(function() { popup.style.transform = 'translateY(0)'; popup.style.opacity = '1'; });
     setTimeout(function() {
-        popup.style.transform = 'translateY(20px)';
-        popup.style.opacity = '0';
-        setTimeout(function() { popup.remove(); }, 300); // Удаляем из кода после исчезновения
+        popup.style.transform = 'translateY(20px)'; popup.style.opacity = '0';
+        setTimeout(function() { popup.remove(); }, 300);
     }, 5000);
 }
 
@@ -103,6 +77,7 @@ function checkSitePass() {
         document.body.classList.add('unlocked');
         if (typeof initFB === 'function') initFB();
         addTestButton(); 
+        addWhoButtonToCfg(); // Добавляем кнопку в настройки
     } else {
         document.getElementById('passErr').style.display = 'block';
     }
@@ -117,49 +92,74 @@ document.getElementById('sitePass').addEventListener('keydown', function(e) { if
 function addTestButton() {
     var header = document.querySelector('header');
     if (!header) return;
-    
     var btn = document.createElement('button');
     btn.className = 'hdr-btn';
     btn.textContent = '🧪 Тест (10с)';
     btn.title = 'Проверка уведомлений через 10 секунд';
-    
     btn.addEventListener('click', function() {
-        btn.disabled = true;
-        btn.style.opacity = '0.5';
-        btn.textContent = '⏳ Ожидайте...';
-        
+        btn.disabled = true; btn.style.opacity = '0.5'; btn.textContent = '⏳ Ожидайте...';
         setTimeout(function() {
-            if (typeof showBadge === 'function') {
-                showBadge('🐴 ТЕСТ: Рокки через 15 мин!\nОльга · Плац');
-            }
-            if (typeof playBeep === 'function') {
-                playBeep();
-            }
-            
-            btn.textContent = '🧪 Тест (10с)';
-            btn.disabled = false;
-            btn.style.opacity = '1';
+            if (typeof showBadge === 'function') showBadge('🐴 ТЕСТ: Рокки через 15 мин!\nОльга · Плац');
+            if (typeof playBeep === 'function') playBeep();
+            btn.textContent = '🧪 Тест (10с)'; btn.disabled = false; btn.style.opacity = '1';
         }, 10000); 
     });
-    
     var mskClock = document.getElementById('mskClock');
-    if (mskClock && mskClock.nextSibling) {
-        header.insertBefore(btn, mskClock.nextSibling);
-    } else {
-        header.appendChild(btn);
-    }
+    if (mskClock && mskClock.nextSibling) { header.insertBefore(btn, mskClock.nextSibling); } 
+    else { header.appendChild(btn); }
 }
 
 // ==========================================
-// 4. ИСПРАВЛЕНИЕ ОКНА "КТО ВЫ" (Поверх всего)
+// 4. УБИРАЕМ АВТО-ВСПЛЫТИЕ "КТО ВЫ" + КНОПКА В НАСТРОЙКАХ
 // ==========================================
-var whoOv = document.getElementById('whoOverlay');
-if (whoOv) whoOv.style.zIndex = '10001';
 
+// Блокируем автоматическое появление окна
 var origShowWho = window.showWhoSelect;
 window.showWhoSelect = function() {
-    document.querySelectorAll('.overlay.open').forEach(function(ol) {
-        if (ol.id !== 'whoOverlay') ol.classList.remove('open');
-    });
-    if (origShowWho) origShowWho();
+    // Ничего не делаем. Окно не откроется само.
+    // Функция просто "молчит", когда её вызывает основной код при входе.
 };
+
+// Функция для ручного вызова (без блокировки)
+function forceShowWho() {
+    var whoOv = document.getElementById('whoOverlay');
+    if (whoOv) {
+        // Закрываем настройки, чтобы они не мешали
+        document.getElementById('cfgOverlay').classList.remove('open');
+        // Поднимаем окно "Кто вы" над всеми
+        whoOv.style.zIndex = '10001';
+        whoOv.classList.add('open');
+    }
+}
+
+// Добавляем кнопку в конфигуратор (настройки)
+function addWhoButtonToCfg() {
+    var cfgOverlay = document.getElementById('cfgOverlay');
+    if (!cfgOverlay) return;
+    
+    // Следим за открытием настроек, чтобы вставить кнопку
+    var observer = new MutationObserver(function() {
+        if (cfgOverlay.classList.contains('open')) {
+            // Проверяем, не вставили ли мы кнопку уже
+            if (!document.getElementById('myWhoBtn')) {
+                var errDiv = document.getElementById('cfgErr');
+                var parent = errDiv ? errDiv.parentNode : cfgOverlay.querySelector('.modal');
+                if (parent) {
+                    var btn = document.createElement('button');
+                    btn.id = 'myWhoBtn';
+                    btn.className = 'btn save';
+                    btn.style.marginTop = '12px';
+                    btn.style.background = 'var(--surface-alt)'; // Другой цвет, чтобы не путать с "Сохранить"
+                    btn.style.color = 'var(--ink)';
+                    btn.textContent = '👤 Выбрать «Кто я» (для уведомлений)';
+                    btn.addEventListener('click', forceShowWho);
+                    
+                    // Вставляем кнопку перед строкой ошибок
+                    parent.insertBefore(btn, errDiv);
+                }
+            }
+        }
+    });
+    
+    observer.observe(cfgOverlay, { attributes: true, attributeFilter: ['class'] });
+}

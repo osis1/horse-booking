@@ -1,7 +1,13 @@
 // ==========================================
-// 1. ЭКРАН-ЗАГЛУШКА (Темный, не выжигает глаза)
+// 1. ЭКРАН-ЗАГЛУШКА (Безопасная для верстки)
 // ==========================================
 var SITE_PASSWORD = "admin"; // Поменяйте на свой пароль
+
+// ВРЕМЕННО замораживаем запуск Firebase из index.html
+var realInitFB = window.initFB;
+window.initFB = function() {
+    window._fbWaiting = true; // Говорим: "я готов запуститься, но жду пароль"
+};
 
 var wall = document.createElement('div');
 wall.id = 'authWall';
@@ -14,7 +20,7 @@ wall.style.cssText = 'position:fixed;inset:0;z-index:99999;display:flex;align-it
 document.body.prepend(wall);
 
 var wallStyle = document.createElement('style');
-wallStyle.textContent = 'body>*:not(#authWall){display:none!important}body.unlocked>*:not(#authWall){display:initial!important}body.unlocked header,body.unlocked .legend,body.unlocked .trainer-legend,body.unlocked .days,body.unlocked .chips,body.unlocked .btnrow,body.unlocked .addrow,body.unlocked .multrow,body.unlocked .trainer-row,body.unlocked .stat-row,body.unlocked .dc-row,body.unlocked .who-item,body.unlocked .grid{display:flex!important}#sitePass:focus{border-color:#4a7c59!important}';
+wallStyle.textContent = 'body>*:not(#authWall){display:none!important}body.unlocked>*:not(#authWall){display:block!important}body.unlocked header,body.unlocked .legend,body.unlocked .trainer-legend,body.unlocked .days,body.unlocked .chips,body.unlocked .btnrow,body.unlocked .addrow,body.unlocked .multrow,body.unlocked .trainer-row,body.unlocked .stat-row,body.unlocked .dc-row,body.unlocked .who-item,body.unlocked .grid{display:flex!important}#sitePass:focus{border-color:#4a7c59!important}';
 document.head.appendChild(wallStyle);
 
 function checkSitePass() {
@@ -22,10 +28,13 @@ function checkSitePass() {
         document.getElementById('authWall').remove();
         document.body.classList.add('unlocked');
         
-        // Запускаем Firebase ТОЛЬКО после ввода пароля
-        if (typeof initFB === 'function') initFB();
+        // РАЗМОРАЖИВАЕМ Firebase и запускаем
+        window.initFB = realInitFB; 
+        if (window._fbWaiting) {
+            window.initFB();
+            window._fbWaiting = false;
+        }
         
-        // Запускаем все остальные фишки
         initUpdates();
     } else {
         document.getElementById('passErr').style.display = 'block';
@@ -37,7 +46,7 @@ document.getElementById('sitePass').addEventListener('keydown', function(e) { if
 
 
 // ==========================================
-// 2. УВЕДОМЛЕНИЯ ДЛЯ PWA И ПРОСТОГО БРАУЗЕРА
+// 2. УВЕДОМЛЕНИЯ (PWA и браузер)
 // ==========================================
 setInterval(function() {
     if (typeof checkRemind === 'function') checkRemind();
@@ -51,7 +60,6 @@ window.playBeep = function() {
         o1.connect(g1); g1.connect(c.destination);
         o1.frequency.value = 880; g1.gain.value = 0.3;
         o1.start(c.currentTime); o1.stop(c.currentTime + 0.2);
-        
         var o2 = c.createOscillator(); var g2 = c.createGain();
         o2.connect(g2); g2.connect(c.destination);
         o2.frequency.value = 1100; g2.gain.value = 0;
@@ -91,25 +99,15 @@ function showBrowserPopup(text) {
 }
 
 // ==========================================
-// 3. ТЕСТОВАЯ КНОПКА И КЛИК ПО ТЕКСТУ СНИЗУ
+// 3. ТЕСТОВАЯ КНОПКА
 // ==========================================
-function forceShowWho() {
-    var whoOv = document.getElementById('whoOverlay');
-    if (whoOv) {
-        var cfgOv = document.getElementById('cfgOverlay');
-        if(cfgOv) cfgOv.classList.remove('open');
-        whoOv.style.zIndex = '10001';
-        whoOv.classList.add('open');
-    }
-}
-
 function addTestButton() {
     var header = document.querySelector('header');
     if (!header) return;
     var btn = document.createElement('button');
     btn.className = 'hdr-btn';
     btn.textContent = '🧪 Тест (10с)';
-    btn.title = 'Проверка уведомлений через 10 секунд';
+    btn.title = 'Проверка уведомлений';
     btn.addEventListener('click', function() {
         btn.disabled = true; btn.style.opacity = '0.5'; btn.textContent = '⏳ Ожидайте...';
         setTimeout(function() {
@@ -123,20 +121,22 @@ function addTestButton() {
     else { header.appendChild(btn); }
 }
 
-function makeGuestHintClickable() {
-    var hint = document.getElementById('guestHint');
-    if (hint) {
-        hint.style.cursor = 'pointer';
-        hint.style.textDecoration = 'underline';
-        hint.style.textUnderlineOffset = '3px';
-        hint.addEventListener('click', function() { forceShowWho(); });
+// ==========================================
+// 4. КНОПКА "КТО Я" В НАСТРОЙКАХ
+// ==========================================
+function forceShowWho() {
+    var whoOv = document.getElementById('whoOverlay');
+    if (whoOv) {
+        var cfgOv = document.getElementById('cfgOverlay');
+        if(cfgOv) cfgOv.classList.remove('open');
+        whoOv.style.zIndex = '10001';
+        whoOv.classList.add('open');
     }
 }
 
 function addWhoButtonToCfg() {
     var cfgOverlay = document.getElementById('cfgOverlay');
     if (!cfgOverlay) return;
-    
     var observer = new MutationObserver(function() {
         if (cfgOverlay.classList.contains('open')) {
             if (!document.getElementById('myWhoBtn')) {
@@ -156,17 +156,15 @@ function addWhoButtonToCfg() {
             }
         }
     });
-    
     observer.observe(cfgOverlay, { attributes: true, attributeFilter: ['class'] });
 }
 
-// Блокируем авто-всплытие окна "Кто вы"
+// Блокируем авто-всплытие
 var origShowWho = window.showWhoSelect;
 window.showWhoSelect = function() {};
 
-// Общая функция запуска всего (срабатывает только после ввода пароля)
+// Запуск всего остального после снятия заглушки
 function initUpdates() {
     addTestButton();
-    makeGuestHintClickable();
     addWhoButtonToCfg();
 }

@@ -351,7 +351,6 @@
 
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
-<script src="update.js"></script>
 <script>
 'use strict';
 
@@ -564,6 +563,10 @@ function syncSW(){if(navigator.serviceWorker&&navigator.serviceWorker.controller
 document.getElementById('remindSelect').addEventListener('change',function(){if(myTrainer){localStorage.setItem('hc_remind_'+myTrainer,this.value);syncSW()}});
 
 /* ===== Старт ===== */
+/* ===== Регистрация Service Worker ===== */
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('update.js').catch(function(e){ console.warn('SW ошибка:', e) });
+}
 setInterval(function(){document.getElementById('mskClock').textContent='\uD83D\uDD50 МСК '+mskStr()},1000);document.getElementById('mskClock').textContent='\uD83D\uDD50 МСК '+mskStr();var todayKey=dk(mskNow());for(var i=0;i<dates.length;i++){if(dk(dates[i])===todayKey){curDayOff=i;break}}initFB();if(!myTrainer&&isAdmin)setTimeout(showWhoSelect,500);
 </script>
 </body>

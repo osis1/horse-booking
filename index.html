@@ -405,8 +405,63 @@ function tColor(n){if(!n)return null;var t=config.trainers.find(function(x){retu
 function getSlots(){var a=[],s=(config.startHour||8)*60,e=(config.endHour||21)*60,st=config.slotStep||30;for(var m=s;m<e;m+=st)a.push(m);return a}
 function schedRefresh(){if(refreshTmr)return;refreshTmr=setTimeout(function(){refreshTmr=null;refreshUI()},250)}
 
-function cleanOldBookings(){if(!db)return;var m=mskNow();if(m.getDate()<3)return;var cutoffStr=m.getFullYear()+'-'+String(m.getMonth()+1).padStart(2,'0')+'-01';var toDelete={};var hasOld=false;bookings.forEach(function(b){if(b.dateKey<cutoffStr){toDelete[b.id]=null;hasOld=true}});if(hasOld)db.ref('bookings').update(toDelete)}
+async function cleanOldBookings(){
+  if(!db) return;
+  var m = mskNow();
+  // Очистка запускается автоматически после 3-го числа месяца
+  if(m.getDate() < 3) return; 
 
+  var cutoffStr = m.getFullYear() + '-' + String(m.getMonth() + 1).padStart(2, '0') + '-01';
+  var oldBookings = bookings.filter(function(b){ return b.dateKey < cutoffStr; });
+
+  // Если старых записей нет, ничего не делаем
+  if(!oldBookings.length) return;
+
+  const BOT_TOKEN = '8314548735:AAF4muTvWtLH-UMKZ0MOIhAoflneENsowIA';
+  const CHAT_ID = '6467332405';
+
+  // 1. Формируем архивный текстовый отчет по прошлым дням
+  let text = "📦 <b>АВТО-АРХИВ ЗА ПРОШЛЫЙ МЕСЯЦ</b>\n\n";
+  let grouped = {};
+  oldBookings.forEach(function(b){
+    if(!grouped[b.dateKey]) grouped[b.dateKey] = [];
+    grouped[b.dateKey].push(b);
+  });
+
+  for(let date in grouped){
+    text += "📅 <b>" + date + "</b>\n";
+    grouped[date].forEach(function(b){
+      let timeStr = m2s(b.startMin) + '-' + m2s(b.startMin + b.dur * 60);
+      let statusIcon = b.status === 'done' ? '✅' : (b.status === 'cancel' ? '🚫' : '⏳');
+      text += "  " + statusIcon + " " + timeStr + " | 🐴 " + b.horse + " | 👤 " + b.trainer + (b.comment ? " | 💬 " + b.comment : "") + "\n";
+    });
+    text += "\n";
+  }
+
+  try {
+    // 2. Сначала отправляем архив в Telegram
+    let response = await fetch("https://api.telegram.org/bot" + BOT_TOKEN + "/sendMessage", {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({chat_id: CHAT_ID, text: text, parse_mode: 'HTML'})
+    });
+    
+    let res = await response.json();
+
+    // 3. Удаляем старые записи из Firebase ТОЛЬКО после успешной доставки в Telegram
+    if(res.ok){
+      var toDelete = {};
+      oldBookings.forEach(function(b){ toDelete[b.id] = null; });
+      db.ref('bookings').update(toDelete);
+      console.log('Архив успешно доставлен в Telegram. Данные прошлого месяца очищены из базы.');
+    } else {
+      console.error('Не удалось отправить архив в Telegram:', res.description);
+    }
+  } catch(e) {
+    console.error('Ошибка сети при отправке архива:', e);
+  }
+}
+  
 /* ===== Firebase ===== */
 function initFB(){
   var st=document.getElementById('status');

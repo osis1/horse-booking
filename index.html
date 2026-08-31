@@ -127,10 +127,10 @@
   @media(min-width:600px){.overlay{align-items:center}.modal{border-radius:18px}}
   .modal h2{font-size:17px;margin-bottom:8px}
   .modal label{display:block;font-size:12px;font-weight:600;color:var(--muted);margin:12px 0 4px}
-  .modal select,.modal input[type="text"],.modal input[type="password"],.modal input[type="number"]{
+  .modal select,.modal input[type="text"],.modal input[type="password"],.modal input[type="number"],.modal textarea{
     width:100%;padding:11px 12px;font-size:15px;border:1.5px solid var(--line);border-radius:10px;
-    background:var(--input-bg);color:var(--ink);transition:background .3s,border-color .3s,color .3s}
-  .modal select:focus,.modal input:focus{outline:none;border-color:var(--green)}
+    background:var(--input-bg);color:var(--ink);transition:background .3s,border-color .3s,color .3s; font-family:inherit;}
+  .modal select:focus,.modal input:focus,.modal textarea:focus{outline:none;border-color:var(--green)}
   .chips{display:flex;gap:6px;flex-wrap:wrap}
   .chip{padding:9px 14px;border:1.5px solid var(--line);border-radius:10px;
     background:var(--input-bg);font-size:14px;font-weight:600;cursor:pointer;color:var(--ink);
@@ -169,7 +169,7 @@
   .detail-card{padding:14px;border-radius:12px;border:1.5px solid var(--line);margin-bottom:12px;transition:border-color .3s}
   .detail-card .dc-row{display:flex;justify-content:space-between;padding:4px 0;font-size:14px}
   .detail-card .dc-row .dc-label{color:var(--muted);font-size:12px}
-  .detail-card .dc-row .dc-val{font-weight:600}
+  .detail-card .dc-row .dc-val{font-weight:600; max-width: 60%; text-align: right;}
   .detail-card .dc-status{display:inline-block;padding:3px 10px;border-radius:8px;font-size:12px;font-weight:700;margin-top:6px}
   .dc-done{background:var(--done-bg);color:var(--done-text)}
   .dc-wait{background:var(--wait-bg);color:var(--wait-text)}
@@ -245,10 +245,22 @@
 <button class="fab" id="fab" title="Забронировать">＋</button>
 <div class="notif-badge" id="notifBadge"></div>
 
+<!-- Кто вы -->
 <div class="overlay" id="whoOverlay"><div class="modal">
   <h2>👤 Кто вы?</h2>
   <p style="font-size:13px;color:var(--muted);margin-bottom:14px">Выберите себя — уведомления будут приходить только о ваших занятиях</p>
   <div id="whoList"></div>
+  <div id="remindWrap" style="margin-top:14px; display:none;">
+    <label style="display:block;font-size:12px;font-weight:600;color:var(--muted);margin-bottom:4px;">Напоминать за:</label>
+    <select id="remindSelect" style="width:100%;padding:11px 12px;font-size:15px;border:1.5px solid var(--line);border-radius:10px;background:var(--input-bg);color:var(--ink);">
+      <option value="15">15 минут</option>
+      <option value="30">30 минут</option>
+      <option value="45">45 минут</option>
+      <option value="60">1 час (60 мин)</option>
+      <option value="90">1.5 часа (90 мин)</option>
+      <option value="120">2 часа (120 мин)</option>
+    </select>
+  </div>
   <div class="who-skip" id="whoSkip">Пропустить (уведомления отключены)</div>
 </div></div>
 
@@ -273,7 +285,6 @@
 <div class="overlay" id="cfgOverlay"><div class="modal">
   <h2>⚙️ Конфигуратор</h2>
   
-   <!-- НОВЫЕ КНОПКИ ТУТ -->
   <label style="display:block;font-size:12px;font-weight:600;color:var(--muted);margin-bottom:4px; margin-top: 12px;">Выгрузить данные за:</label>
   <select id="exportMonth" style="width:100%;padding:11px 12px;font-size:15px;border:1.5px solid var(--line);border-radius:10px;background:var(--input-bg);color:var(--ink);margin-bottom:12px;">
       <option value="all">За все время</option>
@@ -303,6 +314,8 @@
 
 <div class="overlay" id="statsOverlay"><div class="modal" id="statsModal"></div></div>
 <div class="overlay" id="detailOverlay"><div class="modal" id="detailModal"></div></div>
+
+<!-- Форма брони -->
 <div class="overlay" id="overlay"><div class="modal">
   <h2 id="formTitle">Новая бронь</h2>
   <label>Дата</label>
@@ -327,6 +340,8 @@
     <div class="chip sel" data-s="wait">⏳ Ожидание</div>
     <div class="chip" data-s="cancel">🚫 Отменена</div>
   </div>
+  <label>Комментарий к записи</label>
+  <textarea id="fComment" placeholder="Особые пожелания, примечания..." style="min-height:50px;resize:vertical;"></textarea>
   <div class="err" id="fErr"></div>
   <div class="btnrow">
     <button class="btn cancel" id="fCancel">Отмена</button>
@@ -361,13 +376,7 @@ var DS=['Пн','Вт','Ср','Чт','Пт','Сб','Вс'];
 var ST={done:{label:'Выполнено',cls:'done',icon:'\u2713'},wait:{label:'Ожидание',cls:'wait',icon:'\u23F3'},cancel:{label:'Отменена',cls:'cancel',icon:'\uD83D\uDEAB'}};
 var DEF={loads:[{label:'Плац'},{label:'Поле'},{label:'Лес'}],tempos:[{label:'Шаг'},{label:'Рысь'},{label:'Галоп'}],
   horses:['Рокки','Изюм','Форсаж','Дон','Былина','Армани','Падуб','Хаммер'],
-  trainers:[
-    {name:'Ольга (тренер)',color:'#4a7c59'},
-    {name:'Алиса (тренер)',color:'#c0533e'},
-    {name:'Наталья (тренер)',color:'#e0b73f'},
-    {name:'Эльвира (берейтор)',color:'#5b7fb5'},
-    {name:'Ангелина (тренер)',color:'#9b59b6'}
-  ],
+  trainers:[{name:'Ольга (тренер)',color:'#4a7c59'},{name:'Алиса (тренер)',color:'#c0533e'},{name:'Наталья (тренер)',color:'#e0b73f'},{name:'Эльвира (берейтор)',color:'#5b7fb5'},{name:'Ангелина (тренер)',color:'#9b59b6'}],
   adminPass:'admin',startHour:8,endHour:21,slotStep:30};
 
 /* ===== Состояние ===== */
@@ -381,18 +390,7 @@ var notifiedSet={},refreshTmr=null,wasOnline=false;
 /* ===== Утилиты ===== */
 function mskNow(){var n=new Date();return new Date(n.getTime()+(n.getTimezoneOffset()+180)*60000)}
 function mskStr(){var d=mskNow();return String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0')+':'+String(d.getSeconds()).padStart(2,'0')}
-function getInitDates(){
-  var m=mskNow(), a=[];
-  // Текущий месяц
-  var firstDay = new Date(m.getFullYear(), m.getMonth(), 1);
-  var lastDay = new Date(m.getFullYear(), m.getMonth() + 1, 0);
-  for(var d = new Date(firstDay); d <= lastDay; d.setDate(d.getDate() + 1)) a.push(new Date(d));
-  // Следующий месяц
-  var nextFirst = new Date(m.getFullYear(), m.getMonth() + 1, 1);
-  var nextLast = new Date(m.getFullYear(), m.getMonth() + 2, 0);
-  for(var d = new Date(nextFirst); d <= nextLast; d.setDate(d.getDate() + 1)) a.push(new Date(d));
-  return a;
-}
+function getInitDates(){var m=mskNow(),a=[];var firstDay=new Date(m.getFullYear(),m.getMonth(),1);var lastDay=new Date(m.getFullYear(),m.getMonth()+1,0);for(var d=new Date(firstDay);d<=lastDay;d.setDate(d.getDate()+1))a.push(new Date(d));var nextFirst=new Date(m.getFullYear(),m.getMonth()+1,1);var nextLast=new Date(m.getFullYear(),m.getMonth()+2,0);for(var d=new Date(nextFirst);d<=nextLast;d.setDate(d.getDate()+1))a.push(new Date(d));return a}
 function dk(d){return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')}
 function m2s(m){return String(Math.floor(m/60)).padStart(2,'0')+':'+String(m%60).padStart(2,'0')}
 function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})}
@@ -400,449 +398,173 @@ function tColor(n){if(!n)return null;var t=config.trainers.find(function(x){retu
 function getSlots(){var a=[],s=(config.startHour||8)*60,e=(config.endHour||21)*60,st=config.slotStep||30;for(var m=s;m<e;m+=st)a.push(m);return a}
 function schedRefresh(){if(refreshTmr)return;refreshTmr=setTimeout(function(){refreshTmr=null;refreshUI()},250)}
 
-/* ===== Автоочистка старых данных (3-го числа удаляем прошлый месяц) ===== */
-function cleanOldBookings() {
-  if (!db) return;
-  var m = mskNow();
-  if (m.getDate() < 3) return; // До 3-го числа храним всё
-  
-  var cutoffStr = m.getFullYear() + '-' + String(m.getMonth()+1).padStart(2,'0') + '-01';
-  var toDelete = {};
-  var hasOld = false;
-  
-  bookings.forEach(function(b) {
-    if (b.dateKey < cutoffStr) {
-      toDelete[b.id] = null; // null в Firebase означает удаление
-      hasOld = true;
-    }
-  });
-  
-  if (hasOld) {
-    db.ref('bookings').update(toDelete);
-  }
-}
+function cleanOldBookings(){if(!db)return;var m=mskNow();if(m.getDate()<3)return;var cutoffStr=m.getFullYear()+'-'+String(m.getMonth()+1).padStart(2,'0')+'-01';var toDelete={};var hasOld=false;bookings.forEach(function(b){if(b.dateKey<cutoffStr){toDelete[b.id]=null;hasOld=true}});if(hasOld)db.ref('bookings').update(toDelete)}
 
-/* ===== Firebase (тихий) ===== */
+/* ===== Firebase ===== */
 function initFB(){
   var st=document.getElementById('status');
   if(!firebaseConfig||typeof firebase==='undefined'){st.textContent='демо';schedRefresh();return}
   try{firebase.initializeApp(firebaseConfig);db=firebase.database();
-    db.ref('config').on('value',function(sn){
-      var v=sn.val();if(v){config=Object.assign(JSON.parse(JSON.stringify(DEF)),v);
-        if(!Array.isArray(config.loads))config.loads=DEF.loads;if(!Array.isArray(config.tempos))config.tempos=DEF.tempos;
-        if(!Array.isArray(config.horses))config.horses=[];if(!Array.isArray(config.trainers))config.trainers=[];
-        config.loads=config.loads.map(function(l){return typeof l==='string'?{label:l}:{label:l.label||''}});
-        config.tempos=config.tempos.map(function(t){return typeof t==='string'?{label:t}:{label:t.label||''}});
-        config.trainers=config.trainers.map(function(t,i){if(typeof t==='string')return{name:t,color:TP[i%TP.length]};if(!t.color)t.color=TP[i%TP.length];return{name:t.name||'',color:t.color}});
-        delete config.rate}
-      curLI=Math.min(curLI,Math.max(0,config.loads.length-1));curTI=Math.min(curTI,Math.max(0,config.tempos.length-1));schedRefresh()});
-    db.ref('bookings').on('value',function(sn){
-      var v=sn.val();bookings=v?Object.keys(v).map(function(k){return Object.assign({id:k},v[k])}):[];
-      if(!wasOnline){wasOnline=true;st.textContent='\u25CF онлайн';st.className='status ok'}
-      
-      // Отправляем расписание в Service Worker для фоновых пушей
-      if(navigator.serviceWorker && navigator.serviceWorker.controller) {
-        var swList = bookings.map(function(b){ return { dateKey:b.dateKey, startMin:b.startMin, horse:b.horse, trainer:b.trainer, loadLabel:b.loadLabel, status:b.status, sent:false }; });
-        navigator.serviceWorker.controller.postMessage({cmd: 'update_schedule', list: swList});
-      }
-      
-      cleanOldBookings(); // Проверяем, не нужно ли удалить старый месяц
-      schedRefresh()},function(e){
-        if(wasOnline){st.textContent='переподключение\u2026';st.className='status err'}
-        wasOnline=false});
+    db.ref('config').on('value',function(sn){var v=sn.val();if(v){config=Object.assign(JSON.parse(JSON.stringify(DEF)),v);if(!Array.isArray(config.loads))config.loads=DEF.loads;if(!Array.isArray(config.tempos))config.tempos=DEF.tempos;if(!Array.isArray(config.horses))config.horses=[];if(!Array.isArray(config.trainers))config.trainers=[];config.loads=config.loads.map(function(l){return typeof l==='string'?{label:l}:{label:l.label||''}});config.tempos=config.tempos.map(function(t){return typeof t==='string'?{label:t}:{label:t.label||''}});config.trainers=config.trainers.map(function(t,i){if(typeof t==='string')return{name:t,color:TP[i%TP.length]};if(!t.color)t.color=TP[i%TP.length];return{name:t.name||'',color:t.color}});delete config.rate}curLI=Math.min(curLI,Math.max(0,config.loads.length-1));curTI=Math.min(curTI,Math.max(0,config.tempos.length-1));schedRefresh()});
+    db.ref('bookings').on('value',function(sn){var v=sn.val();bookings=v?Object.keys(v).map(function(k){return Object.assign({id:k},v[k])}):[];if(!wasOnline){wasOnline=true;st.textContent='\u25CF онлайн';st.className='status ok'}syncSW();cleanOldBookings();schedRefresh()},function(e){if(wasOnline){st.textContent='переподключение\u2026';st.className='status err'}wasOnline=false});
   }catch(e){st.textContent='ошибка';st.className='status err';db=null;schedRefresh()}
 }
-
 function saveCfg(){if(db)db.ref('config').set(config);schedRefresh()}
 function pushB(item){if(db)db.ref('bookings').push(item);else{item.id='l_'+Date.now();bookings.push(item);schedRefresh()}}
 function updB(id,d){if(db)db.ref('bookings/'+id).update(d);else{var b=bookings.find(function(x){return x.id===id});if(b)Object.assign(b,d);schedRefresh()}}
 function delB(id){if(db)db.ref('bookings/'+id).remove();else{bookings=bookings.filter(function(b){return b.id!==id});schedRefresh()}}
 
-/* ===== Напоминания (только мой тренер) ===== */
+/* ===== Напоминания ===== */
 var REMIND_MIN=15;
 function playBeep(){try{var c=new(window.AudioContext||window.webkitAudioContext)(),o=c.createOscillator(),g=c.createGain();o.connect(g);g.connect(c.destination);o.frequency.value=880;g.gain.value=.2;o.start();g.gain.exponentialRampToValueAtTime(.001,c.currentTime+.5);o.stop(c.currentTime+.5)}catch(e){}}
 function showBadge(t){var b=document.getElementById('notifBadge');b.textContent=t;b.classList.add('show');setTimeout(function(){b.classList.remove('show')},4000)}
-function checkRemind(){
-  if(!isAdmin||!myTrainer)return;
-  var nowM=mskNow().getHours()*60+mskNow().getMinutes(),todayDK=dk(mskNow());
-  bookings.forEach(function(b){
-    if((b.status||'wait')!=='wait'||b.dateKey!==todayDK||notifiedSet[b.id])return;
-    if(b.trainer!==myTrainer)return;
-    var diff=b.startMin-nowM;
-    if(diff>=0&&diff<=REMIND_MIN){notifiedSet[b.id]=true;
-      var title='\uD83D\uDC0E '+b.horse+' через '+diff+' мин';
-      var body=b.trainer+' \u00B7 '+m2s(b.startMin)+' \u00B7 '+esc(b.loadLabel||'');
-      showBadge(title);playBeep();
-      if('Notification' in window&&Notification.permission==='granted'){try{new Notification(title,{body:body,icon:icon64,tag:b.id,vibrate:[200,100,200]})}catch(e){}}
-    }
-  });
-}
+function checkRemind(){if(!isAdmin||!myTrainer)return;var REMIND_MIN=parseInt(localStorage.getItem('hc_remind_'+myTrainer))||15;var nowM=mskNow().getHours()*60+mskNow().getMinutes(),todayDK=dk(mskNow());bookings.forEach(function(b){if((b.status||'wait')!=='wait'||b.dateKey!==todayDK||notifiedSet[b.id])return;if(b.trainer!==myTrainer)return;var diff=b.startMin-nowM;if(diff>=0&&diff<=REMIND_MIN){notifiedSet[b.id]=true;var title='\uD83D\uDC0E '+b.horse+' через '+diff+' мин';var body=b.trainer+' \u00B7 '+m2s(b.startMin)+' \u00B7 '+esc(b.loadLabel||'');showBadge(title);playBeep();if('Notification' in window&&Notification.permission==='granted'){try{new Notification(title,{body:body,icon:icon64,tag:b.id,vibrate:[200,100,200]})}catch(e){}}}})}
 function reqNotif(){if('Notification' in window&&Notification.permission==='default')Notification.requestPermission()}
 
-/* ===== Экспорт CSV и Телеграм ===== */
-document.getElementById('csvDownBtn').addEventListener('click', function() {
-  var data = getFilteredExportData(); // Берем данные с учетом выбранного месяца
-  var monthName = document.getElementById('exportMonth').options[document.getElementById('exportMonth').selectedIndex].text;
-  
-  if(!data.length) return alert("Нет записей за: " + monthName);
-  
-  let csv = 'Дата;Время;Длительность(ч);Лошадь;Тренер;Нагрузка;Темп;Статус\n';
-  data.forEach(function(b) {
-    let timeStr = m2s(b.startMin) + ' - ' + m2s(b.startMin + b.dur*60);
-    csv += b.dateKey + ';' + timeStr + ';' + b.dur + ';' + b.horse + ';' + b.trainer + ';' + (b.loadLabel||'') + ';' + (b.tempoLabel||'') + ';' + (b.status||'wait') + '\n';
-  });
-  
-  // Подписываем файл названием месяца
-  var fileName = monthName === 'За все время' ? 'Расписание_все.csv' : 'Расписание_' + document.getElementById('exportMonth').value + '.csv';
-  
-  const blob = new Blob(["\uFEFF" + csv], { type: 'text/csv;charset=utf-8;' });
-  const link = document.createElement("a");
-  link.href = URL.createObjectURL(blob);
-  link.download = fileName;
-  link.click();
-});
+/* ===== Экспорт ===== */
+function populateExportMonths(){var sel=document.getElementById('exportMonth');var currentVal=sel.value;sel.innerHTML='<option value="all">За все время</option>';var monthsSet={};bookings.forEach(function(b){var ym=b.dateKey.substring(0,7);monthsSet[ym]=true});var MN_RU=['Январь','Февраль','Март','Апрель','Май','Июнь','Июль','Август','Сентябрь','Октябрь','Ноябрь','Декабрь'];Object.keys(monthsSet).sort().reverse().forEach(function(ym){var parts=ym.split('-');var mIndex=parseInt(parts[1],10)-1;var label=MN_RU[mIndex]+' '+parts[0];var opt=document.createElement('option');opt.value=ym;opt.textContent=label;sel.appendChild(opt)});if([...sel.options].some(o=>o.value===currentVal))sel.value=currentVal}
+function getFilteredExportData(){var selVal=document.getElementById('exportMonth').value;var dataToExport=bookings;if(selVal!=='all')dataToExport=bookings.filter(function(b){return b.dateKey.startsWith(selVal)});return dataToExport.sort(function(a,b){return a.dateKey.localeCompare(b.dateKey)||a.startMin-b.startMin})}
 
-document.getElementById('tgSendBtn').addEventListener('click', function() {
-  // ВСТАВЬ СВОЙ НОВЫЙ ТОКЕН СЮДА В РЕДАКТОРЕ КОДА!
-  const BOT_TOKEN = '8314548735:AAF4muTvWtLH-UMKZ0MOIhAoflneENsowIA'; 
-  const CHAT_ID = '6467332405';
-  
-  if(BOT_TOKEN === 'ТВОЙ_НОВЫЙ_ТОКЕН_ОТ_BOTFATHER') {
-    return alert('Сначала впиши токен бота и Chat ID в код файла index.html!');
-  }
-  
-  var data = getFilteredExportData(); // Берем данные с учетом выбранного месяца
-  var monthName = document.getElementById('exportMonth').options[document.getElementById('exportMonth').selectedIndex].text;
-  
-  if(!data.length) return alert("Нет записей за: " + monthName);
+document.getElementById('csvDownBtn').addEventListener('click',function(){var data=getFilteredExportData();var monthName=document.getElementById('exportMonth').options[document.getElementById('exportMonth').selectedIndex].text;if(!data.length)return alert("Нет записей за: "+monthName);let csv='Дата;Время;Длительность(ч);Лошадь;Тренер;Нагрузка;Темп;Статус;Комментарий\n';data.forEach(function(b){let timeStr=m2s(b.startMin)+' - '+m2s(b.startMin+b.dur*60);csv+=b.dateKey+';'+timeStr+';'+b.dur+';'+b.horse+';'+b.trainer+';'+(b.loadLabel||'')+';'+(b.tempoLabel||'')+';'+(b.status||'wait')+';'+(b.comment||'')+'\n'});var fileName=monthName==='За все время'?'Расписание_все.csv':'Расписание_'+document.getElementById('exportMonth').value+'.csv';const blob=new Blob(["\uFEFF"+csv],{type:'text/csv;charset=utf-8;'});const link=document.createElement("a");link.href=URL.createObjectURL(blob);link.download=fileName;link.click()});
 
-  let text = "📋 <b>Расписание: " + monthName + "</b>\n\n";
-  let grouped = {};
-  data.forEach(function(b) {
-    if(!grouped[b.dateKey]) grouped[b.dateKey] = [];
-    grouped[b.dateKey].push(b);
-  });
-
-  for(let date in grouped) {
-    text += "📅 <b>" + date + "</b>\n";
-    grouped[date].forEach(function(b) {
-      let timeStr = m2s(b.startMin) + '-' + m2s(b.startMin + b.dur*60);
-      let statusIcon = b.status === 'done' ? '✅' : (b.status === 'cancel' ? '🚫' : '⏳');
-      text += "  " + statusIcon + " " + timeStr + " | 🐴 " + b.horse + " | 👤 " + b.trainer + "\n";
-    });
-    text += "\n";
-  }
-
-  document.getElementById('tgSendBtn').textContent = '⏳ Отправка...';
-  fetch("https://api.telegram.org/bot" + BOT_TOKEN + "/sendMessage", {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ chat_id: CHAT_ID, text: text, parse_mode: 'HTML' })
-  })
-  .then(function(r) { return r.json(); })
-  .then(function(res) {
-    document.getElementById('tgSendBtn').textContent = '📨 Отправить таблицу в Телеграм';
-    alert(res.ok ? 'Успешно отправлено!' : 'Ошибка: ' + res.description);
-  })
-  .catch(function(e) {
-    document.getElementById('tgSendBtn').textContent = '📨 Отправить таблицу в Телеграм';
-    alert('Ошибка сети: ' + e);
-  });
-});
+document.getElementById('tgSendBtn').addEventListener('click',function(){
+  const BOT_TOKEN='8314548735:AAF4muTvWtLH-UMKZ0MOIhAoflneENsowIA';const CHAT_ID='6467332405';
+  if(BOT_TOKEN==='ТВОЙ_НОВЫЙ_ТОКЕН_ОТ_BOTFATHER')return alert('Впишите токен и Chat ID в код!');
+  var data=getFilteredExportData();var monthName=document.getElementById('exportMonth').options[document.getElementById('exportMonth').selectedIndex].text;if(!data.length)return alert("Нет записей за: "+monthName);
+  let text="📋 <b>Расписание: "+monthName+"</b>\n\n";let grouped={};data.forEach(function(b){if(!grouped[b.dateKey])grouped[b.dateKey]=[];grouped[b.dateKey].push(b)});
+  for(let date in grouped){text+="📅 <b>"+date+"</b>\n";grouped[date].forEach(function(b){let timeStr=m2s(b.startMin)+'-'+m2s(b.startMin+b.dur*60);let statusIcon=b.status==='done'?'✅':(b.status==='cancel'?'🚫':'⏳');text+="  "+statusIcon+" "+timeStr+" | 🐴 "+b.horse+" | 👤 "+b.trainer+(b.comment ? " | 💬 "+b.comment : "")+"\n"});text+="\n"}
+  document.getElementById('tgSendBtn').textContent='⏳ Отправка...';fetch("https://api.telegram.org/bot"+BOT_TOKEN+"/sendMessage",{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({chat_id:CHAT_ID,text:text,parse_mode:'HTML'})}).then(function(r){return r.json()}).then(function(res){document.getElementById('tgSendBtn').textContent='📨 Отправить таблицу в Телеграм';alert(res.ok?'Успешно отправлено!':'Ошибка: '+res.description)}).catch(function(e){document.getElementById('tgSendBtn').textContent='📨 Отправить таблицу в Телеграм';alert('Ошибка сети: '+e)})});
 
 /* ===== Кто вы ===== */
-function showWhoSelect(){
-  var list=document.getElementById('whoList');list.innerHTML='';
-  
-  // Показываем настройку времени, если тренер уже выбран
-  var wrap = document.getElementById('remindWrap');
-  if(myTrainer) {
-    wrap.style.display = 'block';
-    document.getElementById('remindSelect').value = localStorage.getItem('hc_remind_'+myTrainer) || '15';
-  }
-
-  config.trainers.forEach(function(t){
-    var d=document.createElement('div');d.className='who-item'+(myTrainer===t.name?' sel':'');
-    var role=t.name.match(/\(([^)]+)\)/);role=role?role[1]:'';
-    d.innerHTML='<span class="stat-dot" style="background:'+esc(t.color)+'"></span><span>'+esc(t.name)+'</span><span class="who-role">'+esc(role)+'</span>';
-    d.addEventListener('click',function(){
-      myTrainer=t.name;localStorage.setItem('hc_me',myTrainer);
-      
-      // Сохраняем выбранное время напоминания лично для этого тренера
-      var selRemind = document.getElementById('remindSelect').value;
-      localStorage.setItem('hc_remind_'+myTrainer, selRemind);
-      
-      document.getElementById('whoOverlay').classList.remove('open');
-      syncSW(); // Обновляем фоновый скрипт с новым временем
-      schedRefresh();
-    });
-    list.appendChild(d)});
-  document.getElementById('whoOverlay').classList.add('open');
-}
+function showWhoSelect(){var list=document.getElementById('whoList');list.innerHTML='';var wrap=document.getElementById('remindWrap');if(myTrainer){wrap.style.display='block';document.getElementById('remindSelect').value=localStorage.getItem('hc_remind_'+myTrainer)||'15'}config.trainers.forEach(function(t){var d=document.createElement('div');d.className='who-item'+(myTrainer===t.name?' sel':'');var role=t.name.match(/\(([^)]+)\)/);role=role?role[1]:'';d.innerHTML='<span class="stat-dot" style="background:'+esc(t.color)+'"></span><span>'+esc(t.name)+'</span><span class="who-role">'+esc(role)+'</span>';d.addEventListener('click',function(){myTrainer=t.name;localStorage.setItem('hc_me',myTrainer);var selRemind=document.getElementById('remindSelect').value;localStorage.setItem('hc_remind_'+myTrainer,selRemind);document.getElementById('whoOverlay').classList.remove('open');syncSW();schedRefresh()});list.appendChild(d)});document.getElementById('whoOverlay').classList.add('open')}
 document.getElementById('whoSkip').addEventListener('click',function(){myTrainer='';localStorage.removeItem('hc_me');document.getElementById('whoOverlay').classList.remove('open');schedRefresh()});
 
-/* ===== Справка (аккордеон) ===== */
-var HELP=[
-  {t:'\uD83D\uDCF1 Как установить приложение на телефон',c:'<p><strong>iPhone (Safari):</strong></p><ul><li>Откройте сайт в Safari и зажмите ссылку</li><li>Нажмите кнопку <strong>«Поделиться»</strong> (квадрат со стрелкой)</li><li>Прокрутите вниз \u2014 нажмите <strong>«На экран Домой»</strong></li><li>Нажмите «Добавить» \u2014 иконка появится на рабочем столе</li></ul><p><strong>Android (Chrome):</strong></p><ul><li>Откройте сайт в Chrome</li><li>Нажмите <strong>\u22EE</strong> (три точки) \u2192 «Установить приложение»</li><li>Нажмите «Установить»</li></ul><p>Приложение открывается как отдельное, без строки адреса браузера. Работает быстрее и не distracting.</p>'},
-  {t:'\uD83D\uDD14 Напоминания о занятиях',c:'<p>После входа в систему вам предложат <strong>выбрать себя</strong> из списка тренеров. Напоминания будут приходить <strong>только о ваших</strong> занятиях \u2014 за <strong>'+REMIND_MIN+' минут</strong> до начала.</p><p><strong>Как работают:</strong></p><ul><li>Страница должна быть открыта (или приложение добавлено на телефон)</li><li>Браузер пришлёт push-уведомление + звуковой сигнал</li><li>Также появляется подсказка вверху страницы</li></ul><p>Если вы пропустили выбор \u2014 можно выйти и зайти снова, или нажать \u2699\uFE0F \u2192 статус в шапке покажет вашего тренера.</p><p><strong>Важно:</strong> если два человека выбрали одного тренера \u2014 оба получат уведомления.</p>'},
-  {t:'\uD83D\uDC0E Цветные полоски у броней',c:'<p>Каждая бронь в таблице имеет <strong>цветную полоску слева</strong> \u2014 это цвет тренера, который проводит занятие. Цвета задаются в конфигураторе и видны в легенде под заголовком.</p><p>Это помогает быстро определить чьё занятие по цвету, не читая имя.</p>'},
-  {t:'\uD83C\uDF19 Тёмная тема',c:'<p>Нажмите кнопку <strong>\uD83C\uDF19</strong> (луна/солнце) в шапке \u2014 переключится тёмная/светлая тема. Выбор сохраняется на вашем устройстве.</p><p>Тёмная тема удобна вечером и не слепит глаза в загоне.</p>'},
-  {t:'\uD83D\uDCCA Статистика',c:'<p>Кнопка <strong>\uD83D\uDCCA</strong> (только для админов) показывает:</p><ul><li><strong>Тренеры</strong> \u2014 сколько занятий выполнено, ожидает, отменено + суммарные часы</li><li><strong>Лошади</strong> \u2014 визуальная загруженность</li></ul>'},
-  {t:'\uD83D\uDDD1\uFE0F Выбор «Кто вы»',c:'<p>При первом входе после установки/очистки данных появится экран выбора тренера. Это нужно чтобы <strong>разделить уведомления</strong> между людьми.</p><p>Вы всегда можете сменить выбор: нажмите \u2699\uFE0F Конфигурация \u2192 посмотрите «Вы: ...» в шапке, или выйдите и зайдите снова.</p>'}
-];
-function renderHelp(){
-  var box=document.getElementById('accList');box.innerHTML='';
-  HELP.forEach(function(item,i){
-    var div=document.createElement('div');div.className='acc-item';
-    div.innerHTML='<div class="acc-head" data-i="'+i+'">'+item.t+'</div><div class="acc-body"><div>'+item.c+'</div></div>';
-    box.appendChild(div)});
-  box.querySelectorAll('.acc-head').forEach(function(h){
-    h.addEventListener('click',function(){h.parentElement.classList.toggle('open')})});
-}
+/* ===== Справка ===== */
+var HELP=[{t:'\uD83D\uDCF1 Установка',c:'<p><strong>iPhone:</strong> Safari -> Поделиться -> На экран Домой.</p><p><strong>Android:</strong> Chrome -> Настройки -> Установить приложение.</p>'},{t:'\uD83D\uDD14 Уведомления',c:'<p>Работают за 15-120 мин до начала (настраивается в "Кто вы").</p>'}];
+function renderHelp(){var box=document.getElementById('accList');box.innerHTML='';HELP.forEach(function(item,i){var div=document.createElement('div');div.className='acc-item';div.innerHTML='<div class="acc-head" data-i="'+i+'">'+item.t+'</div><div class="acc-body"><div>'+item.c+'</div></div>';box.appendChild(div)});box.querySelectorAll('.acc-head').forEach(function(h){h.addEventListener('click',function(){h.parentElement.classList.toggle('open')})})}
 document.getElementById('infoBtn').addEventListener('click',function(){renderHelp();document.getElementById('infoOverlay').classList.add('open')});
 document.getElementById('infoClose').addEventListener('click',function(){document.getElementById('infoOverlay').classList.remove('open')});
 
 /* ===== Статистика ===== */
-function calcStats(){
-  var dks=dates.map(dk),rel=bookings.filter(function(b){return dks.indexOf(b.dateKey)!==-1&&(b.status||'wait')!=='cancel'});
+function openStats(){
+  var m=document.getElementById('statsModal');
+  var h='<h2>\uD83D\uDCCA Статистика</h2>';
+  h+='<div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px;" id="statChips">';
+  h+='<div class="chip sel" data-d="1">Сегодня</div>';
+  h+='<div class="chip" data-d="7">7 дней</div>';
+  h+='<div class="chip" data-d="30">30 дней</div></div>';
+  h+='<div style="display:flex;gap:8px;margin-bottom:16px;align-items:center;">';
+  h+='<input type="date" id="statFrom" style="flex:1;padding:8px 10px;border:1.5px solid var(--line);border-radius:8px;background:var(--input-bg);color:var(--ink);font-size:14px;">';
+  h+='<span style="color:var(--muted);font-weight:600;">—</span>';
+  h+='<input type="date" id="statTo" style="flex:1;padding:8px 10px;border:1.5px solid var(--line);border-radius:8px;background:var(--input-bg);color:var(--ink);font-size:14px;"></div>';
+  h+='<div id="statsContent"></div>';
+  h+='<div class="btnrow"><button class="btn cancel" id="statsClose">Закрыть</button></div>';
+  m.innerHTML=h;
+  document.getElementById('statsOverlay').classList.add('open');
+  
+  m.querySelectorAll('#statChips .chip').forEach(function(c){
+    c.addEventListener('click',function(){
+      m.querySelectorAll('#statChips .chip').forEach(function(x){x.classList.remove('sel')});
+      c.classList.add('sel');
+      document.getElementById('statFrom').value='';
+      document.getElementById('statTo').value='';
+      renderStatsContent(parseInt(c.dataset.d));
+    });
+  });
+  
+  ['statFrom','statTo'].forEach(function(id){
+    document.getElementById(id).addEventListener('change',function(){
+      m.querySelectorAll('#statChips .chip').forEach(function(x){x.classList.remove('sel')});
+      renderStatsContent(null);
+    });
+  });
+  
+  document.getElementById('statsClose').addEventListener('click',function(){document.getElementById('statsOverlay').classList.remove('open')});
+  renderStatsContent(1);
+}
+
+function renderStatsContent(days){
+  var cont=document.getElementById('statsContent');
+  var rel=[];
+  if(days===null){
+    var from=document.getElementById('statFrom').value;
+    var to=document.getElementById('statTo').value;
+    if(from&&to){rel=bookings.filter(function(b){return b.dateKey>=from&&b.dateKey<=to&&(b.status||'wait')!=='cancel'})} 
+    else {cont.innerHTML='<p style="color:var(--muted);text-align:center;padding:20px">Выберите обе даты для выборки</p>';return;}
+  } else {
+    var datesArr=[];
+    for(var i=0; i<days; i++){var d=new Date(mskNow().getTime() - i*24*60*60*1000);datesArr.push(dk(d))}
+    rel=bookings.filter(function(b){return datesArr.indexOf(b.dateKey)!==-1&&(b.status||'wait')!=='cancel'});
+  }
+  
   var ts={};config.trainers.forEach(function(t){ts[t.name]={done:0,wait:0,cancel:0,hours:0,color:t.color}});
   rel.forEach(function(b){var s=b.status||'wait';if(ts[b.trainer]){ts[b.trainer][s]++;ts[b.trainer].hours+=(b.dur||0)}});
   var hs={};config.horses.forEach(function(h){hs[h]={total:0,hours:0}});
   rel.forEach(function(b){if(hs[b.horse]!==undefined){hs[b.horse].total++;hs[b.horse].hours+=(b.dur||0)}});
   var mx=0;Object.keys(hs).forEach(function(h){if(hs[h].total>mx)mx=hs[h].total});
-  return{ts:ts,hs:hs,mx:mx,total:rel.length}
-}
-function openStats(){
-  var s=calcStats(),m=document.getElementById('statsModal');
-  var h='<h2>\uD83D\uDCCA Статистика</h2><div class="stat-total">Активных записей: '+s.total+'</div>';
-  h+='<div class="sec"><h3>\uD83E\uDDD1 Тренеры</h3>';
-  Object.keys(s.ts).forEach(function(n){var t=s.ts[n];
-    h+='<div class="stat-row"><span class="stat-dot" style="background:'+esc(t.color)+'"></span><span class="stat-name">'+esc(n)+'</span>';
-    h+='<span class="stat-nums">\u2713'+t.done+' \u23F3'+t.wait+' \uD83D\uDEAB'+t.cancel+'</span><span class="stat-hours">'+t.hours+' ч</span></div>'});
+  
+  var h='<div class="stat-total">Активных записей: '+rel.length+'</div><div class="sec"><h3>\uD83E\uDDD1 Тренеры</h3>';
+  Object.keys(ts).forEach(function(n){var t=ts[n];h+='<div class="stat-row"><span class="stat-dot" style="background:'+esc(t.color)+'"></span><span class="stat-name">'+esc(n)+'</span><span class="stat-nums">\u2713'+t.done+' \u23F3'+t.wait+' \uD83D\uDEAB'+t.cancel+'</span><span class="stat-hours">'+t.hours+' ч</span></div>'});
   h+='</div><div class="sec"><h3>\uD83D\uDC0E Загруженность лошадей</h3>';
-  Object.keys(s.hs).forEach(function(n){var v=s.hs[n],pct=s.mx>0?Math.round(v.total/s.mx*100):0;
-    h+='<div class="stat-row"><span class="stat-name">'+esc(n)+'</span><div class="stat-bar-wrap"><div class="stat-bar" style="width:'+pct+'%"></div></div><span class="stat-nums">'+v.total+' ('+v.hours+' ч)</span></div>'});
-  h+='</div><div class="btnrow"><button class="btn cancel" id="statsClose">Закрыть</button></div>';
-  m.innerHTML=h;document.getElementById('statsOverlay').classList.add('open');
-  document.getElementById('statsClose').addEventListener('click',function(){document.getElementById('statsOverlay').classList.remove('open')})}
-
+  Object.keys(hs).forEach(function(n){var v=hs[n],pct=mx>0?Math.round(v.total/mx*100):0;h+='<div class="stat-row"><span class="stat-name">'+esc(n)+'</span><div class="stat-bar-wrap"><div class="stat-bar" style="width:'+pct+'%"></div></div><span class="stat-nums">'+v.total+' ('+v.hours+' ч)</span></div>'});
+  h+='</div>';
+  cont.innerHTML=h;
+}
 /* ===== Отрисовка ===== */
-function renderTL(){
-  var b=document.getElementById('trainerLegend');if(!config.trainers.length){b.innerHTML='';return}
-  b.innerHTML=config.trainers.map(function(t){
-    var extra=(myTrainer===t.name)?'<span class="my-badge">Я</span>':'';
-    return '<span class="tl-item"><span class="tl-dot" style="background:'+esc(t.color)+'"></span>'+esc(t.name)+extra+'</span>'}).join('')}
-function renderDays(){
-  var box=document.getElementById('days');box.innerHTML='';
-  var tk=dk(mskNow()),f=dates[0],l=dates[dates.length-1],mt;
-  if(f.getMonth()===l.getMonth())mt=f.getDate()+' \u2013 '+l.getDate()+' '+MN[f.getMonth()]+' '+f.getFullYear();
-  else mt=f.getDate()+' '+MN[f.getMonth()].substring(0,3)+' \u2013 '+l.getDate()+' '+MN[l.getMonth()].substring(0,3)+' '+l.getFullYear();
-  document.getElementById('monthLabel').textContent=mt;
-  dates.forEach(function(d,i){
-    var key=dk(d),n=bookings.filter(function(b){return b.dateKey===key&&(b.status||'wait')!=='cancel'}).length;
-    var isT=key===tk,isNM=d.getMonth()!==f.getMonth(),isP=key<tk;
-    var t=document.createElement('div');
-    t.className='day-tab'+(i===curDayOff?' active':'')+(isT?' today':'')+(isNM?' new-month':'')+(isP&&!isT?' past-day':'');
-    if(isT)t.title='Сегодня';
-    t.innerHTML='<span class="dname">'+DS[i%7]+'</span><span class="dnum">'+d.getDate()+'</span><span class="cnt">'+n+'</span>';
-    t.addEventListener('click',function(){curDayOff=i;schedRefresh()});
-    box.appendChild(t)});
-  requestAnimationFrame(function(){var a=box.querySelector('.day-tab.active');if(a)a.scrollIntoView({behavior:'smooth',block:'nearest',inline:'center'})})}
-
-function renderSched(){
-  var box=document.getElementById('sched'),horses=config.horses;
-  if(!horses.length){box.innerHTML='<div class="no-horses">Нет лошадей. Добавьте в \u2699\uFE0F</div>';return}
-  var ad=dates[curDayOff];if(!ad)return;var adk=dk(ad),db2=bookings.filter(function(b){return b.dateKey===adk});
-  var isT=adk===dk(mskNow()),nowM=mskNow().getHours()*60+mskNow().getMinutes(),step=config.slotStep||30,sl=getSlots();
-  var g=document.createElement('div');g.className='grid';g.style.gridTemplateColumns='72px repeat('+horses.length+',1fr)';
-  var co=document.createElement('div');co.className='gh corner';co.textContent='Время';g.appendChild(co);
-  horses.forEach(function(h){var gh=document.createElement('div');gh.className='gh';gh.textContent=h;g.appendChild(gh)});
-  sl.forEach(function(sm){
-    var tc=document.createElement('div');tc.className='gl';tc.textContent=m2s(sm);g.appendChild(tc);
-    horses.forEach(function(horse){
-      var gc=document.createElement('div');gc.className='gc';var se=sm+step;
-      var mt=db2.filter(function(b){return b.horse===horse&&b.startMin<se&&(b.startMin+b.dur*60)>sm});
-      if(!mt.length){gc.classList.add('empty-slot');if(isAdmin){var ph=document.createElement('div');ph.className='add-placeholder';ph.textContent='\uFF0B';ph.addEventListener('click',function(){openFormFor(curDayOff,sm,horse)});gc.appendChild(ph)}}
-      else mt.forEach(function(b){var st=ST[b.status]||ST.wait;var ip=isT&&(b.startMin+b.dur*60)<=nowM;
-        var bl=document.createElement('div');bl.className='bblock s-'+st.cls+(ip?' past':'')+(b.trainer===myTrainer?' mine':'');
-        var tc2=tColor(b.trainer);if(tc2)bl.style.borderLeftColor=tc2;
-        bl.innerHTML='<div class="btime">'+esc(m2s(b.startMin)+'-'+m2s(b.startMin+b.dur*60))+'</div><div class="btrainer">'+esc(b.trainer||'\u2014')+'</div>';
-        bl.addEventListener('click',function(){openDetail(b.id)});gc.appendChild(bl)});
-      g.appendChild(gc)})});
-  var w=document.createElement('div');w.className='grid-wrap';w.appendChild(g);box.innerHTML='';box.appendChild(w)}
-function renderHdr(){
-  document.getElementById('adminBtn').style.display=isAdmin?'none':'inline-block';
-  document.getElementById('adminCfgBtn').style.display=isAdmin?'inline-block':'none';
-  document.getElementById('adminOutBtn').style.display=isAdmin?'inline-block':'none';
-  document.getElementById('statsBtn').style.display=isAdmin?'inline-block':'none';
-  document.getElementById('guestHint').style.display=isAdmin?'none':'block';
-  document.getElementById('fab').style.display=isAdmin?'block':'none'}
+function renderTL(){var b=document.getElementById('trainerLegend');if(!config.trainers.length){b.innerHTML='';return}b.innerHTML=config.trainers.map(function(t){var extra=(myTrainer===t.name)?'<span class="my-badge">Я</span>':'';return '<span class="tl-item"><span class="tl-dot" style="background:'+esc(t.color)+'"></span>'+esc(t.name)+extra+'</span>'}).join('')}
+function renderDays(){var box=document.getElementById('days');box.innerHTML='';var tk=dk(mskNow()),f=dates[0],l=dates[dates.length-1],mt;if(f.getMonth()===l.getMonth())mt=f.getDate()+' \u2013 '+l.getDate()+' '+MN[f.getMonth()]+' '+f.getFullYear();else mt=f.getDate()+' '+MN[f.getMonth()].substring(0,3)+' \u2013 '+l.getDate()+' '+MN[l.getMonth()].substring(0,3)+' '+l.getFullYear();document.getElementById('monthLabel').textContent=mt;dates.forEach(function(d,i){var key=dk(d),n=bookings.filter(function(b){return b.dateKey===key&&(b.status||'wait')!=='cancel'}).length;var isT=key===tk,isNM=d.getMonth()!==f.getMonth(),isP=key<tk;var t=document.createElement('div');t.className='day-tab'+(i===curDayOff?' active':'')+(isT?' today':'')+(isNM?' new-month':'')+(isP&&!isT?' past-day':'');if(isT)t.title='Сегодня';t.innerHTML='<span class="dname">'+DS[i%7]+'</span><span class="dnum">'+d.getDate()+'</span><span class="cnt">'+n+'</span>';t.addEventListener('click',function(){curDayOff=i;schedRefresh()});box.appendChild(t)});requestAnimationFrame(function(){var a=box.querySelector('.day-tab.active');if(a)a.scrollIntoView({behavior:'smooth',block:'nearest',inline:'center'})})}
+function renderSched(){var box=document.getElementById('sched'),horses=config.horses;if(!horses.length){box.innerHTML='<div class="no-horses">Нет лошадей. Добавьте в \u2699\uFE0F</div>';return}var ad=dates[curDayOff];if(!ad)return;var adk=dk(ad),db2=bookings.filter(function(b){return b.dateKey===adk});var isT=adk===dk(mskNow()),nowM=mskNow().getHours()*60+mskNow().getMinutes(),step=config.slotStep||30,sl=getSlots();var g=document.createElement('div');g.className='grid';g.style.gridTemplateColumns='72px repeat('+horses.length+',1fr)';var co=document.createElement('div');co.className='gh corner';co.textContent='Время';g.appendChild(co);horses.forEach(function(h){var gh=document.createElement('div');gh.className='gh';gh.textContent=h;g.appendChild(gh)});sl.forEach(function(sm){var tc=document.createElement('div');tc.className='gl';tc.textContent=m2s(sm);g.appendChild(tc);horses.forEach(function(horse){var gc=document.createElement('div');gc.className='gc';var se=sm+step;var mt=db2.filter(function(b){return b.horse===horse&&b.startMin<se&&(b.startMin+b.dur*60)>sm});if(!mt.length){gc.classList.add('empty-slot');if(isAdmin){var ph=document.createElement('div');ph.className='add-placeholder';ph.textContent='\uFF0B';ph.addEventListener('click',function(){openFormFor(curDayOff,sm,horse)});gc.appendChild(ph)}}else mt.forEach(function(b){var st=ST[b.status]||ST.wait;var ip=isT&&(b.startMin+b.dur*60)<=nowM;var bl=document.createElement('div');bl.className='bblock s-'+st.cls+(ip?' past':'')+(b.trainer===myTrainer?' mine':'');var tc2=tColor(b.trainer);if(tc2)bl.style.borderLeftColor=tc2;bl.innerHTML='<div class="btime">'+esc(m2s(b.startMin)+'-'+m2s(b.startMin+b.dur*60))+'</div><div class="btrainer">'+esc(b.trainer||'\u2014')+'</div>';bl.addEventListener('click',function(){openDetail(b.id)});gc.appendChild(bl)});g.appendChild(gc)})});var w=document.createElement('div');w.className='grid-wrap';w.appendChild(g);box.innerHTML='';box.appendChild(w)}
+function renderHdr(){document.getElementById('adminBtn').style.display=isAdmin?'none':'inline-block';document.getElementById('adminCfgBtn').style.display=isAdmin?'inline-block':'none';document.getElementById('adminOutBtn').style.display=isAdmin?'inline-block':'none';document.getElementById('statsBtn').style.display=isAdmin?'inline-block':'none';document.getElementById('guestHint').style.display=isAdmin?'none':'block';document.getElementById('fab').style.display=isAdmin?'block':'none'}
 function refreshUI(){renderHdr();renderTL();renderDays();renderSched()}
 
-/* ===== Детали ===== */
-function openDetail(id){
-  var b=bookings.find(function(x){return x.id===id});if(!b)return;
-  var m=document.getElementById('detailModal'),st=ST[b.status]||ST.wait,tc=tColor(b.trainer);
-  var h='<h2>'+esc(b.horse)+' \u00B7 '+m2s(b.startMin)+'</h2><div class="detail-card">';
-  h+='<div class="dc-row"><span class="dc-label">Дата</span><span class="dc-val">'+esc(b.dateKey)+'</span></div>';
-  h+='<div class="dc-row"><span class="dc-label">Длительность</span><span class="dc-val">'+b.dur+' ч</span></div>';
-  h+='<div class="dc-row"><span class="dc-label">Тренер</span><span class="dc-val">'+(tc?'<span style="display:inline-block;width:10px;height:10px;border-radius:3px;background:'+esc(tc)+';margin-right:6px;vertical-align:-1px"></span>':'')+esc(b.trainer||'\u2014')+'</span></div>';
-  h+='<div class="dc-row"><span class="dc-label">Нагрузка</span><span class="dc-val">'+esc(b.loadLabel||'\u2014')+'</span></div>';
-  h+='<div class="dc-row"><span class="dc-label">Темп</span><span class="dc-val">'+esc(b.tempoLabel||'\u2014')+'</span></div>';
-  h+='<span class="dc-status dc-'+st.cls+'">'+st.icon+' '+st.label+'</span></div>';
-  if(isAdmin){h+='<div class="chips" style="margin-bottom:12px">';
-    Object.keys(ST).forEach(function(k){var s=ST[k],sel=(b.status||'wait')===k?' sel':'';h+='<div class="chip'+sel+'" data-s="'+k+'" id="ds_'+k+'">'+s.icon+' '+s.label+'</div>'});
-    h+='</div><button class="btn save" style="width:100%;margin-bottom:8px" id="detailEdit">\u270F\uFE0F Редактировать</button><button class="dc-del" id="detailDel">\uD83D\uDDD1 Удалить</button>'}
-  m.innerHTML=h;document.getElementById('detailOverlay').classList.add('open');
-  if(isAdmin){Object.keys(ST).forEach(function(k){document.getElementById('ds_'+k).addEventListener('click',function(){updB(id,{status:k});document.getElementById('detailOverlay').classList.remove('open')})});
-    document.getElementById('detailDel').addEventListener('click',function(){if(confirm('Удалить?')){delB(id);document.getElementById('detailOverlay').classList.remove('open')}});
-    document.getElementById('detailEdit').addEventListener('click',function(){document.getElementById('detailOverlay').classList.remove('open');openFormEdit(b)})}}
-function closeDetail(){document.getElementById('detailOverlay').classList.remove('open')}
+/* ===== Детали (с комментарием) ===== */
+function openDetail(id){var b=bookings.find(function(x){return x.id===id});if(!b)return;var m=document.getElementById('detailModal'),st=ST[b.status]||ST.wait,tc=tColor(b.trainer);var h='<h2>'+esc(b.horse)+' \u00B7 '+m2s(b.startMin)+'</h2><div class="detail-card">';h+='<div class="dc-row"><span class="dc-label">Дата</span><span class="dc-val">'+esc(b.dateKey)+'</span></div>';h+='<div class="dc-row"><span class="dc-label">Длительность</span><span class="dc-val">'+b.dur+' ч</span></div>';h+='<div class="dc-row"><span class="dc-label">Тренер</span><span class="dc-val">'+(tc?'<span style="display:inline-block;width:10px;height:10px;border-radius:3px;background:'+esc(tc)+';margin-right:6px;vertical-align:-1px"></span>':'')+esc(b.trainer||'\u2014')+'</span></div>';h+='<div class="dc-row"><span class="dc-label">Нагрузка</span><span class="dc-val">'+esc(b.loadLabel||'\u2014')+'</span></div>';h+='<div class="dc-row"><span class="dc-label">Темп</span><span class="dc-val">'+esc(b.tempoLabel||'\u2014')+'</span></div>';h+='<div class="dc-row"><span class="dc-label">Комментарий</span><span class="dc-val">'+esc(b.comment||'\u2014')+'</span></div>';h+='<span class="dc-status dc-'+st.cls+'">'+st.icon+' '+st.label+'</span></div>';if(isAdmin){h+='<div class="chips" style="margin-bottom:12px">';Object.keys(ST).forEach(function(k){var s=ST[k],sel=(b.status||'wait')===k?' sel':'';h+='<div class="chip'+sel+'" data-s="'+k+'" id="ds_'+k+'">'+s.icon+' '+s.label+'</div>'});h+='</div><button class="btn save" style="width:100%;margin-bottom:8px" id="detailEdit">\u270F\uFE0F Редактировать</button><button class="dc-del" id="detailDel">\uD83D\uDDD1 Удалить</button>'}m.innerHTML=h;document.getElementById('detailOverlay').classList.add('open');if(isAdmin){Object.keys(ST).forEach(function(k){document.getElementById('ds_'+k).addEventListener('click',function(){updB(id,{status:k});document.getElementById('detailOverlay').classList.remove('open')})});document.getElementById('detailDel').addEventListener('click',function(){if(confirm('Удалить?')){delB(id);document.getElementById('detailOverlay').classList.remove('open')}});document.getElementById('detailEdit').addEventListener('click',function(){document.getElementById('detailOverlay').classList.remove('open');openFormEdit(b)})}}
 
-/* ===== Форма ===== */
-function openForm(){editId=null;document.getElementById('formTitle').textContent='Новая бронь';document.getElementById('fSave').textContent='Забронировать';_fill(curDayOff,480,config.horses[0]||'',1.5,'',0,0,'wait');document.getElementById('overlay').classList.add('open')}
-function openFormFor(off,sm,horse){editId=null;document.getElementById('formTitle').textContent='Новая бронь';document.getElementById('fSave').textContent='Забронировать';_fill(off,sm,horse,1.5,'',curLI,curTI,'wait');document.getElementById('overlay').classList.add('open')}
-function openFormEdit(b){editId=b.id;document.getElementById('formTitle').textContent='Редактирование';document.getElementById('fSave').textContent='Сохранить';
-  var li=0,ti=0;config.loads.forEach(function(l,i){if(l.label===b.loadLabel)li=i});config.tempos.forEach(function(t,i){if(t.label===b.tempoLabel)ti=i});
-  var off=-1;dates.forEach(function(d,i){if(dk(d)===b.dateKey)off=i});
-  if(off===-1){var p=b.dateKey.split('-');dates.unshift(new Date(+p[0],+p[1]-1,+p[2]));off=0; curDayOff = 0;}
-  _fill(off,b.startMin,b.horse,b.dur,b.trainer,li,ti,b.status||'wait');document.getElementById('overlay').classList.add('open')}
-function _fill(off,sm,horse,dur,trainer,li,ti,status){
-  var ad=dates[off];if(!ad)return;
-  document.getElementById('fDayInfo').textContent=ad.getDate()+' '+MN[ad.getMonth()]+' '+ad.getFullYear()+', '+DS[off%7];
-  var ts=document.getElementById('fTime');ts.innerHTML='';
-  getSlots().forEach(function(m){var o=document.createElement('option');o.value=m;o.textContent=m2s(m);if(m===sm)o.selected=true;ts.appendChild(o)});
-  document.getElementById('fHorse').innerHTML=config.horses.map(function(h){return '<option'+(h===horse?' selected':'')+'>'+esc(h)+'</option>'}).join('')||'<option value="">\u2014 нет \u2014</option>';
-  document.getElementById('trainerList').innerHTML=config.trainers.map(function(t){return '<option value="'+esc(t.name)+'">'}).join('');
-  document.getElementById('fLoad').innerHTML=config.loads.map(function(l,i){return '<div class="chip'+(i===li?' sel':'')+'" data-i="'+i+'">'+esc(l.label)+'</div>'}).join('');
-  document.getElementById('fTempo').innerHTML=config.tempos.map(function(t,i){return '<div class="chip'+(i===ti?' sel':'')+'" data-i="'+i+'">'+esc(t.label)+'</div>'}).join('');
-  document.querySelectorAll('#fDur .chip').forEach(function(c){c.classList.toggle('sel',parseFloat(c.dataset.h)===dur)});curDur=dur;
-  document.querySelectorAll('#fStatus .chip').forEach(function(c){c.classList.toggle('sel',c.dataset.s===status)});curSt=status;
-  curLI=li;curTI=ti;curDayOff=off;document.getElementById('fErr').style.display='none';document.getElementById('fTrainer').value=trainer||''}
+/* ===== Форма брони ===== */
+function openForm(){editId=null;document.getElementById('formTitle').textContent='Новая бронь';document.getElementById('fSave').textContent='Забронировать';_fill(curDayOff,480,config.horses[0]||'',1.5,'',0,0,'wait','');document.getElementById('overlay').classList.add('open')}
+function openFormFor(off,sm,horse){editId=null;document.getElementById('formTitle').textContent='Новая бронь';document.getElementById('fSave').textContent='Забронировать';_fill(off,sm,horse,1.5,'',curLI,curTI,'wait','');document.getElementById('overlay').classList.add('open')}
+function openFormEdit(b){editId=b.id;document.getElementById('formTitle').textContent='Редактирование';document.getElementById('fSave').textContent='Сохранить';var li=0,ti=0;config.loads.forEach(function(l,i){if(l.label===b.loadLabel)li=i});config.tempos.forEach(function(t,i){if(t.label===b.tempoLabel)ti=i});var off=-1;dates.forEach(function(d,i){if(dk(d)===b.dateKey)off=i});if(off===-1){var p=b.dateKey.split('-');dates.unshift(new Date(+p[0],+p[1]-1,+p[2]));off=0;curDayOff=0}_fill(off,b.startMin,b.horse,b.dur,b.trainer,li,ti,b.status||'wait', b.comment||'');document.getElementById('overlay').classList.add('open')}
+
+function _fill(off,sm,horse,dur,trainer,li,ti,status,comment){var ad=dates[off];if(!ad)return;document.getElementById('fDayInfo').textContent=ad.getDate()+' '+MN[ad.getMonth()]+' '+ad.getFullYear()+', '+DS[off%7];var ts=document.getElementById('fTime');ts.innerHTML='';getSlots().forEach(function(m){var o=document.createElement('option');o.value=m;o.textContent=m2s(m);if(m===sm)o.selected=true;ts.appendChild(o)});document.getElementById('fHorse').innerHTML=config.horses.map(function(h){return '<option'+(h===horse?' selected':'')+'>'+esc(h)+'</option>'}).join('')||'<option value="">\u2014 нет \u2014</option>';document.getElementById('trainerList').innerHTML=config.trainers.map(function(t){return '<option value="'+esc(t.name)+'">'}).join('');document.getElementById('fLoad').innerHTML=config.loads.map(function(l,i){return '<div class="chip'+(i===li?' sel':'')+'" data-i="'+i+'">'+esc(l.label)+'</div>'}).join('');document.getElementById('fTempo').innerHTML=config.tempos.map(function(t,i){return '<div class="chip'+(i===ti?' sel':'')+'" data-i="'+i+'">'+esc(t.label)+'</div>'}).join('');document.querySelectorAll('#fDur .chip').forEach(function(c){c.classList.toggle('sel',parseFloat(c.dataset.h)===dur)});curDur=dur;document.querySelectorAll('#fStatus .chip').forEach(function(c){c.classList.toggle('sel',c.dataset.s===status)});curSt=status;curLI=li;curTI=ti;curDayOff=off;document.getElementById('fErr').style.display='none';document.getElementById('fTrainer').value=trainer||'';document.getElementById('fComment').value=comment||''}
+
 function closeForm(){document.getElementById('overlay').classList.remove('open');editId=null}
+
 function bindC(id,cb){document.getElementById(id).addEventListener('click',function(e){var c=e.target.closest('.chip');if(!c)return;c.parentElement.querySelectorAll('.chip').forEach(function(x){x.classList.remove('sel')});c.classList.add('sel');cb(c)})}
 bindC('fDur',function(c){curDur=parseFloat(c.dataset.h)});bindC('fLoad',function(c){curLI=parseInt(c.dataset.i,10)});bindC('fTempo',function(c){curTI=parseInt(c.dataset.i,10)});bindC('fStatus',function(c){curSt=c.dataset.s});
-document.getElementById('fSave').addEventListener('click',function(){
-  var err=document.getElementById('fErr'),ad=dates[curDayOff];if(!ad)return;
-  var key=dk(ad),sm=parseInt(document.getElementById('fTime').value,10),horse=document.getElementById('fHorse').value;
-  var trainer=document.getElementById('fTrainer').value.trim(),em=sm+curDur*60;
-  var L=config.loads[curLI]||{label:''},T=config.tempos[curTI]||{label:''};
-  if(!trainer){err.textContent='\u26A0 Укажите тренера.';err.style.display='block';return}
-  var cl=bookings.find(function(b){return b.id!==editId&&(b.status||'wait')!=='cancel'&&b.dateKey===key&&b.horse===horse&&b.startMin<em&&sm<b.startMin+b.dur*60});
-  if(cl){err.textContent='\u26A0 \u00AB'+horse+'\u00BB занята с '+m2s(cl.startMin)+' до '+m2s(cl.startMin+cl.dur*60)+'.';err.style.display='block';return}
-  err.style.display='none';var data={dateKey:key,startMin:sm,dur:curDur,horse:horse,trainer:trainer,loadLabel:L.label,tempoLabel:T.label,status:curSt};
-  if(editId)updB(editId,data);else pushB(data);closeForm()});
+
+// ИСПРАВЛЕНИЕ КНОПКИ ОТМЕНА
+document.getElementById('fCancel').addEventListener('click', closeForm);
+
+document.getElementById('fSave').addEventListener('click',function(){var err=document.getElementById('fErr'),ad=dates[curDayOff];if(!ad)return;var key=dk(ad),sm=parseInt(document.getElementById('fTime').value,10),horse=document.getElementById('fHorse').value;var trainer=document.getElementById('fTrainer').value.trim(),em=sm+curDur*60;var L=config.loads[curLI]||{label:''},T=config.tempos[curTI]||{label:''};if(!trainer){err.textContent='\u26A0 Укажите тренера.';err.style.display='block';return}var cl=bookings.find(function(b){return b.id!==editId&&(b.status||'wait')!=='cancel'&&b.dateKey===key&&b.horse===horse&&b.startMin<em&&sm<b.startMin+b.dur*60});if(cl){err.textContent='\u26A0 \u00AB'+horse+'\u00BB занята с '+m2s(cl.startMin)+' до '+m2s(cl.startMin+cl.dur*60)+'.';err.style.display='block';return}err.style.display='none';
+// СОХРАНЕНИЕ КОММЕНТАРИЯ
+var data={dateKey:key,startMin:sm,dur:curDur,horse:horse,trainer:trainer,loadLabel:L.label,tempoLabel:T.label,status:curSt, comment: document.getElementById('fComment').value.trim()};
+if(editId)updB(editId,data);else pushB(data);closeForm()});
 
 /* ===== Вход ===== */
 function openLogin(){document.getElementById('loginErr').style.display='none';document.getElementById('loginPass').value='';document.getElementById('loginOverlay').classList.add('open');setTimeout(function(){document.getElementById('loginPass').focus()},50)}
-document.getElementById('loginGo').addEventListener('click',doLogin);
-document.getElementById('loginPass').addEventListener('keydown',function(e){if(e.key==='Enter')doLogin()});
-function doLogin(){
-  var p=document.getElementById('loginPass').value;
-  if(p===(config.adminPass||'admin')){isAdmin=true;localStorage.setItem('hc_admin','true');document.getElementById('loginOverlay').classList.remove('open');
-    reqNotif();if(!myTrainer)showWhoSelect();else schedRefresh()}
-  else{var e=document.getElementById('loginErr');e.textContent='\u26A0 Неверный пароль.';e.style.display='block'}}
+document.getElementById('loginGo').addEventListener('click',doLogin);document.getElementById('loginPass').addEventListener('keydown',function(e){if(e.key==='Enter')doLogin()});
+function doLogin(){var p=document.getElementById('loginPass').value;if(p===(config.adminPass||'admin')){isAdmin=true;localStorage.setItem('hc_admin','true');document.getElementById('loginOverlay').classList.remove('open');reqNotif();if(!myTrainer)showWhoSelect();else schedRefresh()}else{var e=document.getElementById('loginErr');e.textContent='\u26A0 Неверный пароль.';e.style.display='block'}}
 document.getElementById('loginCancel').addEventListener('click',function(){document.getElementById('loginOverlay').classList.remove('open')});
-document.getElementById('adminBtn').addEventListener('click',openLogin);
-document.getElementById('adminCfgBtn').addEventListener('click',function(){if(isAdmin)openCfg()});
-document.getElementById('adminOutBtn').addEventListener('click',function(){if(!isAdmin)return;if(confirm('Выйти?')){isAdmin=false;localStorage.removeItem('hc_admin');closeCfg();closeForm();closeDetail();schedRefresh()}});
-document.getElementById('statsBtn').addEventListener('click',function(){if(isAdmin)openStats()});
+document.getElementById('adminBtn').addEventListener('click',openLogin);document.getElementById('adminCfgBtn').addEventListener('click',function(){if(isAdmin)openCfg()});document.getElementById('adminOutBtn').addEventListener('click',function(){if(!isAdmin)return;if(confirm('Выйти?')){isAdmin=false;localStorage.removeItem('hc_admin');closeCfg();closeForm();closeDetail();schedRefresh()}});document.getElementById('statsBtn').addEventListener('click',function(){if(isAdmin)openStats()});
 
 /* ===== Конфигуратор ===== */
 var cfgD=null;
-function openCfg(){
-  cfgD=JSON.parse(JSON.stringify(config));
-  document.getElementById('cfgErr').style.display='none';
-  document.getElementById('cfgPass').value='';
-  populateExportMonths(); // <--- ВОТ ЭТА ДОБАВКА
-  renderCfg();
-  document.getElementById('cfgOverlay').classList.add('open');
-}
+function openCfg(){cfgD=JSON.parse(JSON.stringify(config));document.getElementById('cfgErr').style.display='none';document.getElementById('cfgPass').value='';populateExportMonths();renderCfg();document.getElementById('cfgOverlay').classList.add('open')}
 function closeCfg(){document.getElementById('cfgOverlay').classList.remove('open');cfgD=null}
-function renderCfg(){
-  if(!cfgD)return;
-  var lb=document.getElementById('cfgLoads');lb.innerHTML='';
-  cfgD.loads.forEach(function(it,i){var r=document.createElement('div');r.className='multrow';
-    var li=document.createElement('input');li.className='lbl-in';li.type='text';li.value=it.label;li.placeholder='Название';li.addEventListener('input',function(){cfgD.loads[i].label=li.value});
-    var rm=document.createElement('button');rm.className='rm';rm.textContent='\u2715';rm.addEventListener('click',function(){if(cfgD.loads.length<=1)return;cfgD.loads.splice(i,1);renderCfg()});
-    r.appendChild(li);r.appendChild(rm);lb.appendChild(r)});
-  var tb=document.getElementById('cfgTempos');tb.innerHTML='';
-  cfgD.tempos.forEach(function(it,i){var r=document.createElement('div');r.className='multrow';
-    var li=document.createElement('input');li.className='lbl-in';li.type='text';li.value=it.label;li.placeholder='Название';li.addEventListener('input',function(){cfgD.tempos[i].label=li.value});
-    var rm=document.createElement('button');rm.className='rm';rm.textContent='\u2715';rm.addEventListener('click',function(){if(cfgD.tempos.length<=1)return;cfgD.tempos.splice(i,1);renderCfg()});
-    r.appendChild(li);r.appendChild(rm);tb.appendChild(r)});
-  var hb=document.getElementById('cfgHorses');hb.innerHTML='';
-  cfgD.horses.forEach(function(h,i){var d=document.createElement('div');d.className='namechip';
-    d.innerHTML=esc(h)+'<button class="rm">\u2715</button>';
-    d.querySelector('.rm').addEventListener('click',function(){cfgD.horses.splice(i,1);renderCfg()});hb.appendChild(d)});
-  var trb=document.getElementById('cfgTrainers');trb.innerHTML='';
-  cfgD.trainers.forEach(function(t,i){var r=document.createElement('div');r.className='trainer-row';
-    var ci=document.createElement('input');ci.type='color';ci.value=t.color;ci.addEventListener('input',function(){cfgD.trainers[i].color=ci.value});
-    var sp=document.createElement('span');sp.textContent=t.name;
-    var rm=document.createElement('button');rm.className='rm';rm.textContent='\u2715';rm.addEventListener('click',function(){cfgD.trainers.splice(i,1);renderCfg()});
-    r.appendChild(ci);r.appendChild(sp);r.appendChild(rm);trb.appendChild(r)})}
+function renderCfg(){if(!cfgD)return;var lb=document.getElementById('cfgLoads');lb.innerHTML='';cfgD.loads.forEach(function(it,i){var r=document.createElement('div');r.className='multrow';var li=document.createElement('input');li.className='lbl-in';li.type='text';li.value=it.label;li.placeholder='Название';li.addEventListener('input',function(){cfgD.loads[i].label=li.value});var rm=document.createElement('button');rm.className='rm';rm.textContent='\u2715';rm.addEventListener('click',function(){if(cfgD.loads.length<=1)return;cfgD.loads.splice(i,1);renderCfg()});r.appendChild(li);r.appendChild(rm);lb.appendChild(r)});var tb=document.getElementById('cfgTempos');tb.innerHTML='';cfgD.tempos.forEach(function(it,i){var r=document.createElement('div');r.className='multrow';var li=document.createElement('input');li.className='lbl-in';li.type='text';li.value=it.label;li.placeholder='Название';li.addEventListener('input',function(){cfgD.tempos[i].label=li.value});var rm=document.createElement('button');rm.className='rm';rm.textContent='\u2715';rm.addEventListener('click',function(){if(cfgD.tempos.length<=1)return;cfgD.tempos.splice(i,1);renderCfg()});r.appendChild(li);r.appendChild(rm);tb.appendChild(r)});var hb=document.getElementById('cfgHorses');hb.innerHTML='';cfgD.horses.forEach(function(h,i){var d=document.createElement('div');d.className='namechip';d.innerHTML=esc(h)+'<button class="rm">\u2715</button>';d.querySelector('.rm').addEventListener('click',function(){cfgD.horses.splice(i,1);renderCfg()});hb.appendChild(d)});var trb=document.getElementById('cfgTrainers');trb.innerHTML='';cfgD.trainers.forEach(function(t,i){var r=document.createElement('div');r.className='trainer-row';var ci=document.createElement('input');ci.type='color';ci.value=t.color;ci.addEventListener('input',function(){cfgD.trainers[i].color=ci.value});var sp=document.createElement('span');sp.textContent=t.name;var rm=document.createElement('button');rm.className='rm';rm.textContent='\u2715';rm.addEventListener('click',function(){cfgD.trainers.splice(i,1);renderCfg()});r.appendChild(ci);r.appendChild(sp);r.appendChild(rm);trb.appendChild(r)})}
 document.getElementById('cfgLoadAdd').addEventListener('click',function(){var v=document.getElementById('cfgLoadName').value.trim();if(v){cfgD.loads.push({label:v});document.getElementById('cfgLoadName').value='';renderCfg()}});
 document.getElementById('cfgTempoAdd').addEventListener('click',function(){var v=document.getElementById('cfgTempoName').value.trim();if(v){cfgD.tempos.push({label:v});document.getElementById('cfgTempoName').value='';renderCfg()}});
 document.getElementById('cfgHorseAdd').addEventListener('click',function(){var v=document.getElementById('cfgHorseName').value.trim();if(v){cfgD.horses.push(v);document.getElementById('cfgHorseName').value='';renderCfg()}});
 document.getElementById('cfgTrainerAdd').addEventListener('click',function(){var n=document.getElementById('cfgTrainerName').value.trim();if(n){cfgD.trainers.push({name:n,color:document.getElementById('cfgTrainerColor').value});document.getElementById('cfgTrainerName').value='';renderCfg()}});
-document.getElementById('cfgSave').addEventListener('click',function(){
-  var np=document.getElementById('cfgPass').value.trim();
-  if(np)cfgD.adminPass=np;
-  config=cfgD;saveCfg();closeCfg()});
+document.getElementById('cfgSave').addEventListener('click',function(){var np=document.getElementById('cfgPass').value.trim();if(np)cfgD.adminPass=np;config=cfgD;saveCfg();closeCfg()});
 document.getElementById('cfgCancel').addEventListener('click',closeCfg);
-/* ===== Логика выгрузки по месяцам ===== */
-function populateExportMonths() {
-  var sel = document.getElementById('exportMonth');
-  var currentVal = sel.value;
-  sel.innerHTML = '<option value="all">За все время</option>';
-  
-  var monthsSet = {};
-  bookings.forEach(function(b) {
-    var ym = b.dateKey.substring(0, 7); // Получаем "2023-10"
-    monthsSet[ym] = true;
-  });
-  
-  var MN_RU = ['Январь','Февраль','Март','Апрель','Май','Июнь','Июль','Август','Сентябрь','Октябрь','Ноябрь','Декабрь'];
-  
-  // Сортируем месяцы от новых к старым
-  Object.keys(monthsSet).sort().reverse().forEach(function(ym) {
-    var parts = ym.split('-');
-    var mIndex = parseInt(parts[1], 10) - 1;
-    var label = MN_RU[mIndex] + ' ' + parts[0];
-    var opt = document.createElement('option');
-    opt.value = ym;
-    opt.textContent = label;
-    sel.appendChild(opt);
-  });
-  
-  // Восстанавливаем выбранный месяц, если он остался в списке
-  if ([...sel.options].some(o => o.value === currentVal)) {
-    sel.value = currentVal;
-  }
-}
 
-function getFilteredExportData() {
-  var selVal = document.getElementById('exportMonth').value;
-  var dataToExport = bookings;
-  if (selVal !== 'all') {
-    dataToExport = bookings.filter(function(b) { return b.dateKey.startsWith(selVal); });
-  }
-  // Сортируем по дате и времени
-  return dataToExport.sort(function(a,b) { return a.dateKey.localeCompare(b.dateKey) || a.startMin - b.startMin; });
-}
+/* ===== SW Sync ===== */
+function syncSW(){if(navigator.serviceWorker&&navigator.serviceWorker.controller){var swRemindMin=parseInt(localStorage.getItem('hc_remind_'+myTrainer))||15;var swList=bookings.map(function(b){return{dateKey:b.dateKey,startMin:b.startMin,horse:b.horse,trainer:b.trainer,loadLabel:b.loadLabel,status:b.status,sent:false}});navigator.serviceWorker.controller.postMessage({cmd:'update_schedule',list:swList,remindMin:swRemindMin})}}
+document.getElementById('remindSelect').addEventListener('change',function(){if(myTrainer){localStorage.setItem('hc_remind_'+myTrainer,this.value);syncSW()}});
 
-/* ===== Часы и старт ===== */
-setInterval(function(){document.getElementById('mskClock').textContent='\uD83D\uDD50 МСК '+mskStr()},1000);
-document.getElementById('mskClock').textContent='\uD83D\uDD50 МСК '+mskStr();
-
-// Находим индекс сегодняшнего дня при старте
-var todayKey = dk(mskNow());
-for(var i=0; i<dates.length; i++) {
-    if(dk(dates[i]) === todayKey) { curDayOff = i; break; }
-}
-
-initFB();
-if(!myTrainer && isAdmin) setTimeout(showWhoSelect, 500);
+/* ===== Старт ===== */
+setInterval(function(){document.getElementById('mskClock').textContent='\uD83D\uDD50 МСК '+mskStr()},1000);document.getElementById('mskClock').textContent='\uD83D\uDD50 МСК '+mskStr();var todayKey=dk(mskNow());for(var i=0;i<dates.length;i++){if(dk(dates[i])===todayKey){curDayOff=i;break}}initFB();if(!myTrainer&&isAdmin)setTimeout(showWhoSelect,500);
 </script>
 </body>
 </html>

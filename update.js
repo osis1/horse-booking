@@ -11,7 +11,7 @@ setInterval(function() {
 }, 30000);
 
 // ==========================================
-// 2. ЗВУК (Двойной писк)
+// 2. ЗВУК
 // ==========================================
 var originalPlayBeep = window.playBeep;
 window.playBeep = function() {

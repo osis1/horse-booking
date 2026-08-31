@@ -28,6 +28,8 @@ function checkTime() {
 self.addEventListener('message', function(e) {
     if (e.data.cmd === 'update_schedule') {
         mySchedule = e.data.list || [];
+        // Берем индивидуальное время уведомления от сайта
+        if (e.data.remindMin) REMIND_MIN = e.data.remindMin;
     } 
     else if (e.data.cmd === 'check_time') {
         checkTime();

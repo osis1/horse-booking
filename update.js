@@ -1,10 +1,8 @@
-// Обязательно обнови версию файла (v=4), чтобы браузер скачал новый sw.js без таймеров
-if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js?v=4');
+if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js?v=5');
 
 setInterval(function(){ 
     if(typeof checkRemind==='function') checkRemind();
     
-    // Каждые 30 секунд будим Service Worker и заставляем его проверять расписание
     if(navigator.serviceWorker && navigator.serviceWorker.controller) {
         navigator.serviceWorker.controller.postMessage({cmd: 'check_time'});
     }

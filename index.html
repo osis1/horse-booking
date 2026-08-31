@@ -695,7 +695,7 @@ function startTick(){
   tick();setInterval(tick,30000)}
 
 /* ===== Запуск ===== */
-lastDK=dk(mskNow());initFB();schedRefresh();startTick();
+lastDK=dk(mskNow());initFB();schedRefresh();setInterval(function(){var d=mskNow();document.getElementById('mskClock').textContent='\uD83D\uDD50 МСК '+String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0')+':'+String(d.getSeconds()).padStart(2,'0')},1000);
 if(isAdmin)reqNotif();
 </script>
 <script src="update.js"></script>

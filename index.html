@@ -290,16 +290,6 @@
 <div class="overlay" id="cfgOverlay"><div class="modal">
   <h2>⚙️ Конфигуратор</h2>
 
-  <div class="sec"><h3>Нагрузки <span class="arr">▾</span></h3><div class="sec-body"><div id="cfgLoads"></div>
-    <div class="addrow"><input type="text" id="cfgLoadName" placeholder="Название"><button id="cfgLoadAdd">＋</button></div></div></div>
-  <div class="sec"><h3>Темп <span class="arr">▾</span></h3><div class="sec-body"><div id="cfgTempos"></div>
-    <div class="addrow"><input type="text" id="cfgTempoName" placeholder="Название темпа"><button id="cfgTempoAdd">＋</button></div></div></div>
-  <div class="sec"><h3>Лошади <span class="arr">▾</span></h3><div class="sec-body"><div class="chips" id="cfgHorses"></div>
-    <div class="addrow"><input type="text" id="cfgHorseName" placeholder="Кличка"><button id="cfgHorseAdd">＋</button></div></div></div>
-  <div class="sec"><h3>Тренеры / Берейторы <span class="arr">▾</span></h3><div class="sec-body"><div id="cfgTrainers"></div>
-    <div class="addrow">
-      <input type="color" id="cfgTrainerColor" value="#4a7c59" style="width:48px;height:44px;padding:3px;border:1.5px solid var(--line);border-radius:10px;cursor:pointer;flex:none;background:var(--card)">
-      <input type="text" id="cfgTrainerName" placeholder="Имя, напр: Ольга (тренер)"><button id="cfgTrainerAdd">＋</button></div></div></div>
   <div class="sec"><h3>🔔 Уведомления (Telegram) <span class="arr">▾</span></h3><div class="sec-body">
     <label>Кто я (напоминания будут о моих занятиях)</label>
     <select id="cfgWho" style="width:100%;padding:11px 12px;font-size:15px;border:1.5px solid var(--line);border-radius:10px;background:var(--input-bg);color:var(--ink);"></select>
@@ -320,6 +310,18 @@
     <div id="tgBindArea" style="margin-top:12px"></div>
     <button class="btn-tg-csv" id="cfgTestNotifBtn" style="margin-top:10px;">🔔 Тест уведомления (в Telegram)</button>
   </div></div>
+
+  <div class="sec"><h3>Нагрузки <span class="arr">▾</span></h3><div class="sec-body"><div id="cfgLoads"></div>
+    <div class="addrow"><input type="text" id="cfgLoadName" placeholder="Название"><button id="cfgLoadAdd">＋</button></div></div></div>
+  <div class="sec"><h3>Темп <span class="arr">▾</span></h3><div class="sec-body"><div id="cfgTempos"></div>
+    <div class="addrow"><input type="text" id="cfgTempoName" placeholder="Название темпа"><button id="cfgTempoAdd">＋</button></div></div></div>
+  <div class="sec"><h3>Лошади <span class="arr">▾</span></h3><div class="sec-body"><div class="chips" id="cfgHorses"></div>
+    <div class="addrow"><input type="text" id="cfgHorseName" placeholder="Кличка"><button id="cfgHorseAdd">＋</button></div></div></div>
+  <div class="sec"><h3>Тренеры / Берейторы <span class="arr">▾</span></h3><div class="sec-body"><div id="cfgTrainers"></div>
+    <div class="addrow">
+      <input type="color" id="cfgTrainerColor" value="#4a7c59" style="width:48px;height:44px;padding:3px;border:1.5px solid var(--line);border-radius:10px;cursor:pointer;flex:none;background:var(--card)">
+      <input type="text" id="cfgTrainerName" placeholder="Имя, напр: Ольга (тренер)"><button id="cfgTrainerAdd">＋</button></div></div></div>
+
   <div class="sec"><h3>Безопасность <span class="arr">▾</span></h3><div class="sec-body">
     <label>Новый пароль (пусто = не менять)</label>
     <input type="text" id="cfgPass" placeholder="Новый пароль" autocomplete="off"></div></div>

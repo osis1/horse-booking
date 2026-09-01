@@ -56,6 +56,9 @@ async function main() {
           await tg('sendMessage', { chat_id: m.chat.id, text: '⚠️ Код не найден. Сгенерируйте код в приложении (⚙️ → Мой профиль).' });
         }
       }
+      else if (t === '/start') {
+        await tg('sendMessage', { chat_id: m.chat.id, text: '👋 Чтобы привязать уведомления, отправьте: /start ВАШ_КОД\n\nКод показан в приложении: ⚙️ → 🔔 Уведомления (Telegram).' });
+      }
       if (t === '/status') {
         const users = (await fetchJSON(DB_URL + '/tgUsers.json', {})) || {};
         const mine = Object.values(users).find(x => x.chatId === String(m.chat.id));

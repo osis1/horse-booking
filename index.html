@@ -730,24 +730,50 @@ function renderStatsContent(days){
     var to=document.getElementById('statTo').value;
     if(!from||!to){cont.innerHTML='<p style="color:var(--muted);text-align:center;padding:20px">Выберите обе даты для выборки</p>';return}
     rel=bookings.filter(function(b){return b.dateKey>=from&&b.dateKey<=to&&(b.status||'wait')!=='cancel'});
-    periodTxt='Период: '+from+' — '+to;
+    var fp=from.split('-'),tp=to.split('-');
+    periodTxt=parseInt(fp[2],10)+' '+MN[parseInt(fp[1],10)-1]+' — '+parseInt(tp[2],10)+' '+MN[parseInt(tp[1],10)-1]+' '+tp[0];
   } else {
     var datesArr=[];
     for(var i=0;i<days;i++){var d=new Date(mskNow().getTime()-i*24*60*60*1000);datesArr.push(dk(d))}
     rel=bookings.filter(function(b){return datesArr.indexOf(b.dateKey)!==-1&&(b.status||'wait')!=='cancel'});
     periodTxt='Сегодня';
   }
-  if(!rel.length){cont.innerHTML='<div class="stat-total">'+esc(periodTxt)+'</div><p style="color:var(--muted);text-align:center;padding:20px">Нет записей за выбранный период \uD83E\uDD7D<br><span style="font-size:11px">Прошлые месяцы хранятся в архиве (кнопка 🗂)</span></p>';return}
-  var ts={};config.trainers.forEach(function(t){ts[t.name]={done:0,wait:0,cancel:0,hours:0,color:t.color}});
-  rel.forEach(function(b){var s=b.status||'wait';if(ts[b.trainer]){ts[b.trainer][s]++;ts[b.trainer].hours+=(b.dur||0)}});
-  var hs={};config.horses.forEach(function(h){hs[h]={total:0,hours:0}});
-  rel.forEach(function(b){if(hs[b.horse]!==undefined){hs[b.horse].total++;hs[b.horse].hours+=(b.dur||0)}});
-  var mx=0;Object.keys(hs).forEach(function(h){if(hs[h].total>mx)mx=hs[h].total});
-  var h='<div class="stat-total">'+esc(periodTxt)+' · Активных записей: '+rel.length+'</div><div class="sec"><h3>\uD83E\uDDD1 Тренеры</h3>';
-  Object.keys(ts).forEach(function(n){var t=ts[n];h+='<div class="stat-row"><span class="stat-dot" style="background:'+esc(t.color)+'"></span><span class="stat-name">'+esc(n)+'</span><span class="stat-nums">\u2713'+t.done+' \u23F3'+t.wait+' \uD83D\uDEAB'+t.cancel+'</span><span class="stat-hours">'+t.hours+' ч</span></div>'});
-  h+='</div><div class="sec"><h3>\uD83D\uDC0E Загруженность лошадей</h3>';
-  Object.keys(hs).forEach(function(n){var v=hs[n],pct=mx>0?Math.round(v.total/mx*100):0;h+='<div class="stat-row"><span class="stat-name">'+esc(n)+'</span><div class="stat-bar-wrap"><div class="stat-bar" style="width:'+pct+'%"></div></div><span class="stat-nums">'+v.total+' ('+v.hours+' ч)</span></div>'});
+  if(!rel.length){cont.innerHTML='<div class="stat-total">'+esc(periodTxt)+'</div><p style="color:var(--muted);text-align:center;padding:20px">Нет записей за выбранный период \uD83E\uDD7D<br><span style="font-size:11px">Прошлые месяцы хранятся в архиве (кнопка \uD83D\uDDC2)</span></p>';return}
+
+  /* Сводка */
+  var totalH=0,doneN=0,waitN=0,dd={};
+  rel.forEach(function(b){totalH+=(b.dur||0);dd[b.dateKey]=1;if((b.status||'wait')==='done')doneN++;else waitN++});
+  var h='<div style="display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap">';
+  h+='<div style="flex:1;min-width:100px;background:var(--input-bg);border:1.5px solid var(--line);border-radius:12px;padding:10px;text-align:center"><div style="font-size:20px;font-weight:800;color:var(--green)">'+durStr(totalH)+'</div><div style="font-size:11px;color:var(--muted)">часов всего</div></div>';
+  h+='<div style="flex:1;min-width:100px;background:var(--input-bg);border:1.5px solid var(--line);border-radius:12px;padding:10px;text-align:center"><div style="font-size:20px;font-weight:800">'+rel.length+'</div><div style="font-size:11px;color:var(--muted)">занятий</div></div>';
+  h+='<div style="flex:1;min-width:100px;background:var(--input-bg);border:1.5px solid var(--line);border-radius:12px;padding:10px;text-align:center"><div style="font-size:20px;font-weight:800">'+Object.keys(dd).length+'</div><div style="font-size:11px;color:var(--muted)">дней</div></div>';
+  h+='<div style="flex:1;min-width:100px;background:var(--input-bg);border:1.5px solid var(--line);border-radius:12px;padding:10px;text-align:center"><div style="font-size:20px;font-weight:800">'+durStr(Object.keys(dd).length?totalH/Object.keys(dd).length:0)+'</div><div style="font-size:11px;color:var(--muted)">ч в день</div></div>';
   h+='</div>';
+  h+='<div style="font-size:12px;color:var(--muted);text-align:center;margin-bottom:12px">'+esc(periodTxt)+' · \u2705 '+doneN+' · \u23F3 '+waitN+'</div>';
+
+  /* Тренеры: только те, у кого есть записи, сортировка по часам */
+  var ts={};
+  rel.forEach(function(b){var n=b.trainer||'\u2014';if(!ts[n])ts[n]={hours:0,n:0,done:0,color:(tColor(b.trainer)||'#999')};ts[n].hours+=(b.dur||0);ts[n].n++;if((b.status||'wait')==='done')ts[n].done++});
+  var tArr=Object.keys(ts).sort(function(a,b){return ts[b].hours-ts[a].hours});
+  if(tArr.length){
+    var mxT=ts[tArr[0]].hours;
+    h+='<div class="sec"><h3>\uD83E\uDDD1 Тренеры</h3>';
+    tArr.forEach(function(n){var t=ts[n],pct=mxT>0?Math.round(t.hours/mxT*100):0;
+      h+='<div class="stat-row"><span class="stat-dot" style="background:'+esc(t.color)+'"></span><span class="stat-name">'+esc(n)+(t.done===t.n?'':' <span style="font-size:10px;color:var(--wait-text)">('+(t.n-t.done)+' \u23F3)</span>')+'</span><div class="stat-bar-wrap"><div class="stat-bar" style="width:'+pct+'%"></div></div><span class="stat-nums">'+t.n+' зан.</span><span class="stat-hours">'+durStr(t.hours)+' ч</span></div>'});
+    h+='</div>';
+  }
+
+  /* Лошади: только с записями, сортировка по часам */
+  var hs={};
+  rel.forEach(function(b){if(!hs[b.horse])hs[b.horse]={hours:0,n:0};hs[b.horse].hours+=(b.dur||0);hs[b.horse].n++});
+  var hArr=Object.keys(hs).sort(function(a,b){return hs[b].hours-hs[a].hours});
+  if(hArr.length){
+    var mxH=hs[hArr[0]].hours;
+    h+='<div class="sec"><h3>\uD83D\uDC0E Загруженность лошадей</h3>';
+    hArr.forEach(function(n){var v=hs[n],pct=mxH>0?Math.round(v.hours/mxH*100):0;
+      h+='<div class="stat-row"><span class="stat-name">'+esc(n)+'</span><div class="stat-bar-wrap"><div class="stat-bar" style="width:'+pct+'%"></div></div><span class="stat-nums">'+v.n+' зан.</span><span class="stat-hours">'+durStr(v.hours)+' ч</span></div>'});
+    h+='</div>';
+  }
   cont.innerHTML=h;
 }
 

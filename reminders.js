@@ -6,7 +6,7 @@ const https = require('https');
 const TG_TOKEN = process.env.TG_TOKEN;
 const DB_URL = 'https://courage-club-46edd-default-rtdb.europe-west1.firebasedatabase.app';
 
-function fetchJSON(url, options, body) {
+function fetchJSON(url, options) {
   return new Promise((resolve, reject) => {
     const req = https.request(url, options || {}, res => {
       let data = '';
@@ -14,7 +14,7 @@ function fetchJSON(url, options, body) {
       res.on('end', () => { try { resolve(JSON.parse(data)); } catch(e){ resolve(null); } });
     });
     req.on('error', reject);
-    if (body) req.write(body);
+    if (options && options.body) req.write(options.body);
     req.end();
   });
 }

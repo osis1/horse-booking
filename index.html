@@ -216,11 +216,6 @@
   .stat-bar-wrap{flex:1;height:8px;background:var(--bar-bg);border-radius:4px;overflow:hidden;min-width:50px}
   .stat-bar{height:100%;background:var(--green);border-radius:4px;transition:width .4s}
   .stat-total{font-size:12px;color:var(--muted);text-align:center;margin-top:8px}
-  .notif-badge{position:fixed;top:12px;left:50%;transform:translateX(-50%);z-index:200;
-    padding:10px 18px;border-radius:12px;background:var(--green);color:#fff;font-size:13px;
-    font-weight:600;box-shadow:0 4px 20px rgba(0,0,0,.3);opacity:0;
-    transition:opacity .3s;pointer-events:none;top:calc(12px + env(safe-area-inset-top,0px))}
-  .notif-badge.show{opacity:1}
   .btn-tg-csv{width:100%;padding:12px;border:1.5px solid var(--line);border-radius:10px;background:var(--surface);color:var(--ink);font-size:14px;font-weight:600;cursor:pointer;margin-bottom:8px;transition: background .2s, border-color .2s}
   .btn-tg-csv:hover{border-color:var(--green); background: var(--done-bg)}
   .tg-code{font-size:22px;font-weight:800;letter-spacing:3px;text-align:center;background:var(--input-bg);
@@ -259,7 +254,6 @@
 <div id="sched"></div>
 <div class="guesthint" id="guestHint" style="display:none">Вход для администратора — кнопка «🔒 Войти» вверху</div>
 <button class="fab" id="fab" title="Забронировать">＋</button>
-<div class="notif-badge" id="notifBadge"></div>
 
 <!-- Кто вы -->
 <div class="overlay" id="whoOverlay"><div class="modal">
@@ -645,10 +639,17 @@ function renderTgBindArea(){
   var code=getMyCode();
   var st=myTgStatus();
   var bot=config.botName||'';
+  var collapsed=localStorage.getItem('hc_tg_collapsed')==='1';
   var h='';
   if(st&&st.confirmed){
-    h+='<div class="tg-status ok">\u2705 Telegram привязан</div>';
-    h+='<button class="btn-tg-csv" id="unbindBtn">\uD83D\uDD13 Отвязать этот Telegram</button>';
+    if(collapsed){
+      h+='<div id="tgCollapsed" style="display:flex;align-items:center;gap:8px;padding:8px 10px;border:1.5px solid var(--done-bg);background:var(--done-bg);border-radius:10px;cursor:pointer;font-size:13px;font-weight:600;color:var(--done-text)">\u2705 Telegram привязан <span style="margin-left:auto;font-size:11px;color:var(--muted)">развернуть \u203A</span></div>';
+    }else{
+      h+='<div class="tg-status ok">\u2705 Telegram привязан</div>';
+      h+='<p style="font-size:11px;color:var(--muted);margin-bottom:4px">Код этой привязки: <b>'+esc(code)+'</b></p>';
+      h+='<button class="btn-tg-csv" id="unbindBtn">\uD83D\uDD13 Отвязать этот Telegram</button>';
+      h+='<p style="font-size:11px;color:var(--muted);margin-top:4px;cursor:pointer;text-align:center" id="tgCollapseBtn">свернуть \u203A</p>';
+    }
   }else{
     h+='<div class="tg-status wait">\u23F3 Telegram не привязан</div>';
     h+='<p style="font-size:12px;color:var(--muted);margin-bottom:4px">Ваш код привязки:</p>';
@@ -661,22 +662,19 @@ function renderTgBindArea(){
     }
   }
   area.innerHTML=h;
+  var col=document.getElementById('tgCollapsed');
+  if(col)col.addEventListener('click',function(){localStorage.setItem('hc_tg_collapsed','1');renderTgBindArea()});
+  var exp=document.getElementById('tgCollapseBtn');
+  if(exp)exp.addEventListener('click',function(){localStorage.setItem('hc_tg_collapsed','0');renderTgBindArea()});
   var ub=document.getElementById('unbindBtn');
   if(ub)ub.addEventListener('click',async function(){
     if(!confirm('Отвязать Telegram? Напоминания приходить перестанут.'))return;
     ub.disabled=true;
-    try{await db.ref('tgUsers/'+code).remove();alert('Отвязано. Чтобы привязать снова — сгенерируйте кнопку заново.')}
-    catch(e){alert('Ошибка: '+(e.message||e))}
-    ub.disabled=false;
-  });
-} 
-
-  area.innerHTML=h;
-  var ub=document.getElementById('unbindBtn');
-  if(ub)ub.addEventListener('click',async function(){
-    if(!confirm('Отвязать Telegram? Напоминания приходить перестанут.'))return;
-    ub.disabled=true;
-    try{await db.ref('tgUsers/'+code).remove();alert('Отвязано. Чтобы привязать снова — сгенерируйте кнопку заново.')}
+    try{
+      await db.ref('tgUsers/'+code).remove();
+      localStorage.setItem('hc_tg_collapsed','0');
+      alert('Отвязано. Теперь здесь снова появится код и кнопка привязки.');
+    }
     catch(e){alert('Ошибка: '+(e.message||e))}
     ub.disabled=false;
   });
@@ -728,17 +726,16 @@ async function ensureRemindEntry(){
   if(cur&&cur.trainer===myTrainer)return;
   var keepMin=15;
   if(cur&&cur.trainer!==myTrainer&&cur.minutes)keepMin=cur.minutes;
-  if(cur&&cur.trainer===myTrainer)return;
   db.ref('remindSettings/'+code).set({trainer:myTrainer,minutes:keepMin,active:true});
 }
 
 /* ===== Справка ===== */
 var HELP=[
  {t:'\uD83D\uDCF1 Установка на телефон',c:'<p><strong>iPhone (Safari):</strong></p><ul><li>Откройте сайт в Safari</li><li>Кнопка «Поделиться» (квадрат со стрелкой вверх)</li><li>Выберите «На экран “Домой”»</li><li>Нажмите «Добавить»</li></ul><p><strong>Android (Chrome):</strong></p><ul><li>Откройте сайт в Chrome</li><li>Меню (⋮) → «Установить приложение» / «Добавить на главный экран»</li><li>Подтвердите установку</li></ul><p>После установки приложение открывается как обычное — без адресной строки, с иконкой на рабочем столе.</p>'},
- {t:'\uD83D\uDD14 Напоминания в Telegram',c:'<p>Напоминания приходят <strong>в Telegram</strong> — они работают всегда, даже если приложение закрыто или телефона нет рядом с расписанием.</p><p><strong>Как подключить (один раз):</strong></p><ul><li>Откройте ⚙️ настройки → «🔔 Уведомления (Telegram)»</li><li>Выберите «Кто я» и за сколько минут напоминать</li><li>Нажмите «✈️ Открыть бота и привязать» — в чате нажмите «Старт»</li><li>Через 1–2 минуты статус сменится на «✅ Telegram привязан»</li></ul><p><strong>Важно:</strong> напоминания приходят только о занятиях, где в поле «Тренер» указано <strong>ровно ваше имя</strong> со статусом «⏳ Ожидание» на сегодняшний день. Проверить привязку можно командой <code>/status</code> боту. Работает на любом телефоне — и Android, и iPhone.</p>'},
+ {t:'\uD83D\uDD14 Напоминания в Telegram',c:'<p>Напоминания приходят <strong>в Telegram</strong> — они работают всегда, даже если приложение закрыто.</p><p><strong>Как подключить (один раз):</strong></p><ul><li>Откройте ⚙️ настройки → «🔔 Уведомления (Telegram)»</li><li>Выберите «Кто я» и за сколько минут напоминать</li><li>Нажмите «✈️ Открыть бота и привязать» — в чате нажмите «Старт» (если бот уже запускался и код не подставился — отправьте вручную <code>/start КОД</code>)</li><li>Через 1–2 минуты статус сменится на «✅ Telegram привязан» и свернётся в компактную строку</li></ul><p><strong>Важно:</strong> напоминания приходят только о занятиях, где в поле «Тренер» указано <strong>ровно ваше имя</strong> со статусом «⏳ Ожидание» на сегодняшний день. Проверить привязку: <code>/status</code> боту. Работает на Android и iPhone.</p>'},
  {t:'\uD83D\uDC0E Как читать расписание',c:'<ul><li><strong>Зелёная плашка</strong> — занятие выполнено</li><li><strong>Жёлтая плашка</strong> — ожидание (запланировано)</li><li><strong>Красная плашка</strong> — отменена</li><li>Цветная полоска слева на плашке — цвет тренера (легенда под календарём)</li><li>Рамка вокруг плашки — это <strong>ваше</strong> занятие</li><li>Нажмите на занятие — откроются подробности: время, нагрузка, темп, комментарий</li><li>Пустые клетки со знаком «＋» — свободное время, можно забронировать</li></ul>'},
- {t:'\u2699\uFE0F Для администратора',c:'<ul><li><strong>Вход</strong> — кнопка «🔒 Войти» вверху</li><li><strong>Конфигуратор (⚙️)</strong> — лошади, тренеры, нагрузки, темпы, пароль, уведомления</li><li><strong>📦 Экспорт и Telegram</strong> (свернутый раздел внизу) — CSV для Excel, отправка таблицы в канал/чат, токен бота, имя бота для привязок</li><li><strong>🗂 Архив</strong> — кнопка вверху: прошлые месяцы хранятся вечно, клик по месяцу разворачивает детализацию, можно скачать CSV. Ничего не удаляется автоматически</li><li><strong>Автоархив</strong> — при первом открытии в новом месяце отчёт за прошедший месяц (сводка + детализация + CSV) уходит в чат админа, копия записей — в архив</li><li><strong>Напоминания</strong> — рассылает Telegram-бот через серверное расписание (GitHub Actions), работает безотносительно того, открыт ли сайт. Отчёт/архив по команде бота тоже теперь работает всегда</li><li><strong>Статистика (📊)</strong> — за сегодня или за свой период</li></ul>'},
- {t:'\u2753 Частые вопросы',c:'<p><strong>Не приходят напоминания?</strong></p><ul><li>Проверьте привязку: в ⚙️ → «Уведомления» должен быть статус «✅ Telegram привязан» (или отправьте боту <code>/status</code>)</li><li>Проверьте, что бронь создана с вашим именем тренера — ровно как в «Кто я»</li><li>Проверьте статус брони: «⏳ Ожидание», и что бронь на сегодня</li><li>Напоминание может прийти с задержкой до 5 минут — так работает расписание сервера</li></ul><p><strong>Куда деваются старые записи?</strong> Они не удаляются — копируются в архив (кнопка 🗂 вверху), откуда их всегда можно посмотреть или скачать CSV.</p><p><strong>Можно ли привязать два имени (тренер + берейтор)?</strong> Да — привяжите оба имени по очереди, сообщения будут приходить в один чат.</p>'}
+ {t:'\u2699\uFE0F Для администратора',c:'<ul><li><strong>Вход</strong> — кнопка «🔒 Войти» вверху</li><li><strong>Конфигуратор (⚙️)</strong> — уведомления, лошади, тренеры, нагрузки, темпы, пароль</li><li><strong>📦 Экспорт и Telegram</strong> (свернутый раздел внизу) — CSV для Excel, отправка таблицы, токен бота, имя бота</li><li><strong>🗂 Архив</strong> — прошлые месяцы хранятся вечно, клик по месяцу разворачивает детализацию, можно скачать CSV</li><li><strong>Автоархив</strong> — при первом открытии в новом месяце отчёт за прошедший месяц уходит в чат админа, копия записей — в архив</li><li><strong>Напоминания</strong> — рассылает Telegram-бот через облачный планировщик (cron-job.org + Cloudflare Worker), работает всегда</li><li><strong>Статистика (📊)</strong> — за сегодня или за свой период</li></ul>'},
+ {t:'\u2753 Частые вопросы',c:'<p><strong>Не приходят напоминания?</strong></p><ul><li>Проверьте привязку: в ⚙️ → «Уведомления» статус «✅ Telegram привязан» (или <code>/status</code> боту)</li><li>Бронь создана с вашим именем тренера — ровно как в «Кто я»?</li><li>Статус брони «⏳ Ожидание», и бронь на сегодня?</li><li>Напоминание может прийти с задержкой до 1–2 минут</li></ul><p><strong>Куда деваются старые записи?</strong> Копируются в архив (🗂), ничего не удаляется.</p><p><strong>Можно ли привязать два имени?</strong> Да — привяжите оба по очереди, сообщения придут в один чат.</p>'}
 ];
 function renderHelp(){var box=document.getElementById('accList');box.innerHTML='';HELP.forEach(function(item,i){var div=document.createElement('div');div.className='acc-item';div.innerHTML='<div class="acc-head" data-i="'+i+'">'+item.t+'</div><div class="acc-body"><div>'+item.c+'</div></div>';box.appendChild(div)});box.querySelectorAll('.acc-head').forEach(function(h){h.addEventListener('click',function(){h.parentElement.classList.toggle('open')})})}
 document.getElementById('infoBtn').addEventListener('click',function(){renderHelp();document.getElementById('infoOverlay').classList.add('open')});

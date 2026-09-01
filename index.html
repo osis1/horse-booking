@@ -653,7 +653,7 @@ function renderTgBindArea(){
     h+='<div class="tg-code">'+esc(code)+'</div>';
     if(bot){
       h+='<a href="https://t.me/'+esc(bot)+'?start='+esc(code)+'" target="_blank" style="text-decoration:none"><button class="btn-tg-csv" style="background:var(--green);color:#fff;border-color:var(--green)">\u2708 Открыть бота и привязать</button></a>';
-      h+='<p style="font-size:11px;color:var(--muted);margin-top:4px">Откроется чат с ботом — нажмите «Старт». Привязка завершится автоматически в течение пары минут.</p>';
+      h+='<p style="font-size:11px;color:var(--muted);margin-top:4px">Откроется чат с ботом. Если код не подставился автоматически (бывает, если бот уже был запущен) — отправьте в чат вручную: <b>/start '+esc(code)+'</b></p>';
     }else{
       h+='<p style="font-size:12px;color:var(--muted)">Отправьте боту сообщение: <b>/start '+esc(code)+'</b><br>(имя бота задается в ⚙️ → Экспорт и Telegram)</p>';
     }

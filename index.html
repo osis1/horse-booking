@@ -223,6 +223,12 @@
   .notif-badge.show{opacity:1}
   .btn-tg-csv{width:100%;padding:12px;border:1.5px solid var(--line);border-radius:10px;background:var(--surface);color:var(--ink);font-size:14px;font-weight:600;cursor:pointer;margin-bottom:8px;transition: background .2s, border-color .2s}
   .btn-tg-csv:hover{border-color:var(--green); background: var(--done-bg)}
+  .tg-code{font-size:22px;font-weight:800;letter-spacing:3px;text-align:center;background:var(--input-bg);
+    border:1.5px dashed var(--green);border-radius:10px;padding:10px;margin:8px 0;color:var(--green-dark);user-select:all}
+  body.dark .tg-code{color:var(--green)}
+  .tg-status{font-size:13px;font-weight:600;text-align:center;padding:8px;border-radius:10px;margin-bottom:8px}
+  .tg-status.wait{background:var(--wait-bg);color:var(--wait-text)}
+  .tg-status.ok{background:var(--done-bg);color:var(--done-text)}
 </style>
 </head>
 <body>
@@ -260,7 +266,7 @@
   <h2>👤 Кто вы?</h2>
   <p style="font-size:13px;color:var(--muted);margin-bottom:14px">Выберите себя — уведомления будут приходить только о ваших занятиях</p>
   <div id="whoList"></div>
-  <div class="who-skip" id="whoSkip">Пропустить (уведомления отключены)</div>
+  <div class="who-skip" id="whoSkip">Пропустить</div>
 </div></div>
 
 <div class="overlay" id="infoOverlay"><div class="modal">
@@ -294,8 +300,8 @@
     <div class="addrow">
       <input type="color" id="cfgTrainerColor" value="#4a7c59" style="width:48px;height:44px;padding:3px;border:1.5px solid var(--line);border-radius:10px;cursor:pointer;flex:none;background:var(--card)">
       <input type="text" id="cfgTrainerName" placeholder="Имя, напр: Ольга (тренер)"><button id="cfgTrainerAdd">＋</button></div></div></div>
-  <div class="sec"><h3>👤 Мой профиль <span class="arr">▾</span></h3><div class="sec-body">
-    <label>Кто я (уведомления будут о моих занятиях)</label>
+  <div class="sec"><h3>🔔 Уведомления (Telegram) <span class="arr">▾</span></h3><div class="sec-body">
+    <label>Кто я (напоминания будут о моих занятиях)</label>
     <select id="cfgWho" style="width:100%;padding:11px 12px;font-size:15px;border:1.5px solid var(--line);border-radius:10px;background:var(--input-bg);color:var(--ink);"></select>
     <label>Напоминать за:</label>
     <select id="cfgRemind" style="width:100%;padding:11px 12px;font-size:15px;border:1.5px solid var(--line);border-radius:10px;background:var(--input-bg);color:var(--ink);">
@@ -311,7 +317,8 @@
     <div id="cfgCustomRemindWrap" style="display:none;margin-top:8px;">
       <input type="number" id="cfgCustomRemindMin" min="1" max="720" placeholder="Минут до занятия, напр. 20" style="width:100%;padding:11px 12px;font-size:15px;border:1.5px solid var(--line);border-radius:10px;background:var(--input-bg);color:var(--ink);">
     </div>
-    <button class="btn-tg-csv" id="cfgTestNotifBtn" style="margin-top:10px;">🔔 Тест уведомления (придёт через 30 сек)</button>
+    <div id="tgBindArea" style="margin-top:12px"></div>
+    <button class="btn-tg-csv" id="cfgTestNotifBtn" style="margin-top:10px;">🔔 Тест уведомления (в Telegram)</button>
   </div></div>
   <div class="sec"><h3>Безопасность <span class="arr">▾</span></h3><div class="sec-body">
     <label>Новый пароль (пусто = не менять)</label>
@@ -336,8 +343,10 @@
     <input type="text" id="cfgTgToken" placeholder="Токен от @BotFather" autocomplete="off">
     <label>ID публичного канала (например, -100... или @channel)</label>
     <input type="text" id="cfgTgPublicChat" placeholder="-100123456789" autocomplete="off">
-    <label>ID личного чата админа (для архива и отчетов /report)</label>
+    <label>ID личного чата админа (для архивов и отчетов)</label>
     <input type="text" id="cfgTgAdminChat" placeholder="6467332405" autocomplete="off">
+    <label>Имя бота (для ссылок привязки, без @)</label>
+    <input type="text" id="cfgBotName" placeholder="напр: horse_club_reminder_bot" autocomplete="off">
   </div></div>
 
   <div class="err" id="cfgErr"></div>
@@ -421,7 +430,8 @@ var DEF={loads:[{label:'Плац'},{label:'Поле'},{label:'Лес'}],tempos:[
   adminPass:'admin',startHour:8,endHour:21,slotStep:30,
   tgToken:'8314548735:AAF4muTvWtLH-UMKZ0MOIhAoflneENsowIA',
   tgPublicChat:'',
-  tgAdminChat:'6467332405'};
+  tgAdminChat:'6467332405',
+  botName:''};
 
 /* ===== Состояние ===== */
 var db=null,config=JSON.parse(JSON.stringify(DEF)),bookings=[];
@@ -429,8 +439,10 @@ var isAdmin=localStorage.getItem('hc_admin')==='true';
 var myTrainer=localStorage.getItem('hc_me')||'';
 var dates=getInitDates(),curDayOff=0;
 var curDur=1.5,curLI=0,curTI=0,curSt='wait',lastDK='',editId=null;
-var notifiedSet={},refreshTmr=null,wasOnline=false;
-var tgPollOffset=0,autoArchTried=false;
+var refreshTmr=null,wasOnline=false;
+var autoArchTried=false;
+var myRemindCode=localStorage.getItem('hc_mycode')||'';
+var tgUsersCache={};
 
 /* ===== Утилиты ===== */
 function mskNow(){var n=new Date();return new Date(n.getTime()+(n.getTimezoneOffset()+180)*60000)}
@@ -444,6 +456,8 @@ function getSlots(){var a=[],s=(config.startHour||8)*60,e=(config.endHour||21)*6
 function schedRefresh(){if(refreshTmr)return;refreshTmr=setTimeout(function(){refreshTmr=null;refreshUI()},250)}
 function prevYM(){var m=mskNow(),y=m.getFullYear(),mo=m.getMonth()-1;if(mo<0){mo=11;y--}return y+'-'+String(mo+1).padStart(2,'0')}
 function ymLabel(ym){var p=ym.split('-');return (MONTH_NOM[parseInt(p[1],10)-1]||p[1])+' '+p[0]}
+function durStr(d){return String(Math.round(d*10)/10).replace('.',',')}
+function genCode(){var chars='ABCDEFGHJKLMNPQRSTUVWXYZ23456789',s='';for(var i=0;i<6;i++)s+=chars[Math.floor(Math.random()*chars.length)];return s}
 
 /* ===== Firebase ===== */
 function initFB(){
@@ -451,20 +465,14 @@ function initFB(){
   if(!firebaseConfig||typeof firebase==='undefined'){st.textContent='демо';schedRefresh();return}
   try{firebase.initializeApp(firebaseConfig);db=firebase.database();
     db.ref('config').on('value',function(sn){var v=sn.val();if(v){config=Object.assign(JSON.parse(JSON.stringify(DEF)),v);if(!Array.isArray(config.loads))config.loads=DEF.loads;if(!Array.isArray(config.tempos))config.tempos=DEF.tempos;if(!Array.isArray(config.horses))config.horses=[];if(!Array.isArray(config.trainers))config.trainers=[];config.loads=config.loads.map(function(l){return typeof l==='string'?{label:l}:{label:l.label||''}});config.tempos=config.tempos.map(function(t){return typeof t==='string'?{label:t}:{label:t.label||''}});config.trainers=config.trainers.map(function(t,i){if(typeof t==='string')return{name:t,color:TP[i%TP.length]};if(!t.color)t.color=TP[i%TP.length];return{name:t.name||'',color:t.color}});delete config.rate}curLI=Math.min(curLI,Math.max(0,config.loads.length-1));curTI=Math.min(curTI,Math.max(0,config.tempos.length-1));schedRefresh()});
-    db.ref('bookings').on('value',function(sn){var v=sn.val();bookings=v?Object.keys(v).map(function(k){return Object.assign({id:k},v[k])}):[];if(!wasOnline){wasOnline=true;st.textContent='\u25CF онлайн';st.className='status ok'}syncSW();autoArchive();schedRefresh()},function(e){if(wasOnline){st.textContent='переподключение\u2026';st.className='status err'}wasOnline=false});
+    db.ref('bookings').on('value',function(sn){var v=sn.val();bookings=v?Object.keys(v).map(function(k){return Object.assign({id:k},v[k])}):[];if(!wasOnline){wasOnline=true;st.textContent='\u25CF онлайн';st.className='status ok'}autoArchive();schedRefresh()},function(e){if(wasOnline){st.textContent='переподключение\u2026';st.className='status err'}wasOnline=false});
+    db.ref('tgUsers').on('value',function(sn){tgUsersCache=sn.val()||{};renderTgBindArea()});
   }catch(e){st.textContent='ошибка';st.className='status err';db=null;schedRefresh()}
 }
 function saveCfg(){if(db)db.ref('config').set(config);schedRefresh()}
 function pushB(item){if(db)db.ref('bookings').push(item);else{item.id='l_'+Date.now();bookings.push(item);schedRefresh()}}
 function updB(id,d){if(db)db.ref('bookings/'+id).update(d);else{var b=bookings.find(function(x){return x.id===id});if(b)Object.assign(b,d);schedRefresh()}}
 function delB(id){if(db)db.ref('bookings/'+id).remove();else{bookings=bookings.filter(function(b){return b.id!==id});schedRefresh()}}
-
-/* ===== Напоминания ===== */
-var REMIND_MIN=15;
-function playBeep(){try{var c=new(window.AudioContext||window.webkitAudioContext)(),o=c.createOscillator(),g=c.createGain();o.connect(g);g.connect(c.destination);o.frequency.value=880;g.gain.value=.2;o.start();g.gain.exponentialRampToValueAtTime(.001,c.currentTime+.5);o.stop(c.currentTime+.5)}catch(e){}}
-function showBadge(t){var b=document.getElementById('notifBadge');b.textContent=t;b.classList.add('show');setTimeout(function(){b.classList.remove('show')},4000)}
-function checkRemind(){if(!isAdmin||!myTrainer)return;var REMIND_MIN=parseInt(localStorage.getItem('hc_remind_'+myTrainer))||15;var nowM=mskNow().getHours()*60+mskNow().getMinutes(),todayDK=dk(mskNow());bookings.forEach(function(b){if((b.status||'wait')!=='wait'||b.dateKey!==todayDK||notifiedSet[b.id])return;if(b.trainer!==myTrainer)return;var diff=b.startMin-nowM;if(diff>=0&&diff<=REMIND_MIN){notifiedSet[b.id]=true;var title='\uD83D\uDC0E '+b.horse+' через '+diff+' мин';var body=b.trainer+' \u00B7 '+m2s(b.startMin)+' \u00B7 '+esc(b.loadLabel||'');showBadge(title);playBeep();if('Notification' in window&&Notification.permission==='granted'){try{new Notification(title,{body:body,icon:icon64,tag:b.id,vibrate:[200,100,200]})}catch(e){}}}})}
-function reqNotif(){if('Notification' in window&&Notification.permission==='default')Notification.requestPermission()}
 
 /* ===== Telegram: отправка ===== */
 async function tgSendText(chatId,text){
@@ -480,7 +488,6 @@ async function tgSendDoc(chatId,fileName,csv){
 }
 function chunkText(t){var parts=[],cur='';t.split('\n').forEach(function(l){if((cur+l+'\n').length>3500){parts.push(cur);cur=''}cur+=l+'\n'});if(cur.trim())parts.push(cur);return parts}
 
-function durStr(d){return String(Math.round(d*10)/10).replace('.',',')}
 function buildSummaryText(data,label){
   var total=0,hours=0,canceled=0,done=0,hs={},ts={},tc={};
   data.forEach(function(b){
@@ -535,7 +542,6 @@ function buildCSV(data){
   return csv;
 }
 
-/* Данные за месяц: сначала основные записи, если нет — из архива */
 async function getMonthData(ym){
   var rel=bookings.filter(function(b){return (b.dateKey||'').substring(0,7)===ym});
   if(rel.length||!db)return rel.sort(function(a,b){return a.dateKey.localeCompare(b.dateKey)||a.startMin-b.startMin});
@@ -558,7 +564,6 @@ function buildDetailHTML(items){
   return h;
 }
 
-/* Отчет за месяц (ym = '2026-08'): сводка + детализация + CSV-файл. Возвращает true при успехе */
 async function sendMonthlyReport(ym,chatId,btn){
   if(!config.tgToken){alert('Укажите Bot Token в настройках (⚙️ → Экспорт и Telegram)');return false}
   if(!chatId){alert('Укажите ID чата/канала в настройках (⚙️ → Экспорт и Telegram)');return false}
@@ -585,7 +590,7 @@ async function sendMonthlyReport(ym,chatId,btn){
   }
 }
 
-/* ===== Архивация: КОПИРОВАНИЕ прошедших месяцев в archive/ (без удаления!) ===== */
+/* ===== Архивация: копирование без удаления ===== */
 async function copyPastToArchive(){
   if(!db)return 0;
   var m=mskNow();
@@ -598,7 +603,6 @@ async function copyPastToArchive(){
   return past.length;
 }
 
-/* Автоархив: 1-го числа отчет за прошлый месяц в чат админа + КОПИЯ в архив (ничего не удаляется) */
 async function autoArchive(){
   if(!db||autoArchTried)return;
   if(!config.tgToken||!config.tgAdminChat)return;
@@ -615,30 +619,54 @@ async function autoArchive(){
     }
   }catch(e){console.warn('autoArchive:',e);autoArchTried=false}
 }
-/* ===== Telegram-бот: команды /report (пока сайт открыт) ===== */
-async function pollTg(){
-  if(!isAdmin||!config.tgToken||!config.tgAdminChat)return;
-  try{
-    var r=await fetch('https://api.telegram.org/bot'+config.tgToken+'/getUpdates?timeout=0&allowed_updates=%5B%22message%22%5D&offset='+(tgPollOffset+1));
-    var j=await r.json();
-    if(!j.ok||!j.result)return;
-    j.result.forEach(function(u){
-      tgPollOffset=Math.max(tgPollOffset,u.update_id);
-      var m=u.message;if(!m||!m.text)return;
-      if(String(m.chat.id)!==String(config.tgAdminChat))return;
-      var t=m.text.trim();
-      var mm=t.match(/^\/report(?:@\w+)?(?:\s+(\d{4}-\d{2}))?$/);
-      if(mm){
-        var ym=mm[1]||prevYM();
-        if(/^\d{4}-\d{2}$/.test(ym))sendMonthlyReport(ym,config.tgAdminChat,null);
-        else tgSendText(config.tgAdminChat,'\u26A0 Формат даты: ГГГГ-ММ, например /report 2026-07');
-        return;
-      }
-      if(t==='/start'||t==='/help'){
-        tgSendText(config.tgAdminChat,'\uD83D\uDC33 <b>Команды бота</b>\n\n/report — отчет за прошлый месяц\n/report 2026-07 — отчет за конкретный месяц\n\nОтчет: сводка + детализация + CSV-файл.\n\u26A0 Бот отвечает, пока приложение открыто у администратора.');
-      }
-    });
-  }catch(e){}
+
+/* ===== Уведомления: код привязки, статус, тест ===== */
+function getMyCode(){
+  if(myRemindCode)return myRemindCode;
+  myRemindCode=genCode();
+  localStorage.setItem('hc_mycode',myRemindCode);
+  return myRemindCode;
+}
+function saveRemindSettings(minutes){
+  if(!db||!myTrainer)return;
+  var code=getMyCode();
+  db.ref('remindSettings/'+code).set({trainer:myTrainer,minutes:minutes,active:true,by:myTrainer});
+}
+function myTgStatus(){
+  if(!myRemindCode)return null;
+  return tgUsersCache[myRemindCode]||null;
+}
+function renderTgBindArea(){
+  var area=document.getElementById('tgBindArea');
+  if(!area)return;
+  if(!myTrainer){area.innerHTML='<p style="font-size:12px;color:var(--muted)">Сначала выберите «Кто я» — и здесь появится привязка Telegram.</p>';return}
+  var code=getMyCode();
+  var st=myTgStatus();
+  var bot=config.botName||'';
+  var h='';
+  if(st&&st.confirmed){
+    h+='<div class="tg-status ok">\u2705 Telegram привязан</div>';
+    h+='<button class="btn-tg-csv" id="unbindBtn">\uD83D\uDD13 Отвязать этот Telegram</button>';
+  }else{
+    h+='<div class="tg-status wait">\u23F3 Telegram не привязан</div>';
+    h+='<p style="font-size:12px;color:var(--muted);margin-bottom:4px">Ваш код привязки:</p>';
+    h+='<div class="tg-code">'+esc(code)+'</div>';
+    if(bot){
+      h+='<a href="https://t.me/'+esc(bot)+'?start='+esc(code)+'" target="_blank" style="text-decoration:none"><button class="btn-tg-csv" style="background:var(--green);color:#fff;border-color:var(--green)">\u2708 Открыть бота и привязать</button></a>';
+      h+='<p style="font-size:11px;color:var(--muted);margin-top:4px">Откроется чат с ботом — нажмите «Старт». Привязка завершится автоматически в течение пары минут.</p>';
+    }else{
+      h+='<p style="font-size:12px;color:var(--muted)">Отправьте боту сообщение: <b>/start '+esc(code)+'</b><br>(имя бота задается в ⚙️ → Экспорт и Telegram)</p>';
+    }
+  }
+  area.innerHTML=h;
+  var ub=document.getElementById('unbindBtn');
+  if(ub)ub.addEventListener('click',async function(){
+    if(!confirm('Отвязать Telegram? Напоминания приходить перестанут.'))return;
+    ub.disabled=true;
+    try{await db.ref('tgUsers/'+code).remove();alert('Отвязано. Чтобы привязать снова — сгенерируйте кнопку заново.')}
+    catch(e){alert('Ошибка: '+(e.message||e))}
+    ub.disabled=false;
+  });
 }
 
 /* ===== Экспорт ===== */
@@ -673,17 +701,31 @@ document.getElementById('syncArchBtn').addEventListener('click',async function()
     alert('Готово! '+n+' записей добавлено в архив 🗂\n(в таблице всё осталось на месте)');
   }catch(e){btn.disabled=false;btn.textContent=old;alert('Ошибка: '+(e.message||e))}
 });
+
 /* ===== Кто вы ===== */
-function showWhoSelect(){var list=document.getElementById('whoList');list.innerHTML='';config.trainers.forEach(function(t){var d=document.createElement('div');d.className='who-item'+(myTrainer===t.name?' sel':'');var role=t.name.match(/\(([^)]+)\)/);role=role?role[1]:'';d.innerHTML='<span class="stat-dot" style="background:'+esc(t.color)+'"></span><span>'+esc(t.name)+'</span><span class="who-role">'+esc(role)+'</span>';d.addEventListener('click',function(){myTrainer=t.name;localStorage.setItem('hc_me',myTrainer);document.getElementById('whoOverlay').classList.remove('open');reqNotif();syncSW();schedRefresh()});list.appendChild(d)});document.getElementById('whoOverlay').classList.add('open')}
+function showWhoSelect(){var list=document.getElementById('whoList');list.innerHTML='';config.trainers.forEach(function(t){var d=document.createElement('div');d.className='who-item'+(myTrainer===t.name?' sel':'');var role=t.name.match(/\(([^)]+)\)/);role=role?role[1]:'';d.innerHTML='<span class="stat-dot" style="background:'+esc(t.color)+'"></span><span>'+esc(t.name)+'</span><span class="who-role">'+esc(role)+'</span>';d.addEventListener('click',function(){myTrainer=t.name;localStorage.setItem('hc_me',myTrainer);document.getElementById('whoOverlay').classList.remove('open');ensureRemindEntry();schedRefresh()});list.appendChild(d)});document.getElementById('whoOverlay').classList.add('open')}
 document.getElementById('whoSkip').addEventListener('click',function(){myTrainer='';localStorage.removeItem('hc_me');document.getElementById('whoOverlay').classList.remove('open');schedRefresh()});
+
+/* При выборе «кто я» — создать/перенести настройку напоминаний в Firebase */
+async function ensureRemindEntry(){
+  if(!db||!myTrainer)return;
+  var code=getMyCode();
+  var sn=await db.ref('remindSettings/'+code).once('value');
+  var cur=sn.val();
+  if(cur&&cur.trainer===myTrainer)return;
+  var keepMin=15;
+  if(cur&&cur.trainer!==myTrainer&&cur.minutes)keepMin=cur.minutes;
+  if(cur&&cur.trainer===myTrainer)return;
+  db.ref('remindSettings/'+code).set({trainer:myTrainer,minutes:keepMin,active:true});
+}
 
 /* ===== Справка ===== */
 var HELP=[
  {t:'\uD83D\uDCF1 Установка на телефон',c:'<p><strong>iPhone (Safari):</strong></p><ul><li>Откройте сайт в Safari</li><li>Кнопка «Поделиться» (квадрат со стрелкой вверх)</li><li>Выберите «На экран “Домой”»</li><li>Нажмите «Добавить»</li></ul><p><strong>Android (Chrome):</strong></p><ul><li>Откройте сайт в Chrome</li><li>Меню (⋮) → «Установить приложение» / «Добавить на главный экран»</li><li>Подтвердите установку</li></ul><p>После установки приложение открывается как обычное — без адресной строки, с иконкой на рабочем столе.</p>'},
- {t:'\uD83D\uDD14 Уведомления и напоминания',c:'<p>Приложение напомнит о занятии заранее — за выбранное вами время: от 5 минут до 2 часов или любое своё значение (в минутах).</p><ul><li>Напоминания приходят <strong>только</strong> о занятиях со статусом «⏳ Ожидание» на сегодняшний день</li><li>Каждый тренер настраивает время <strong>индивидуально</strong></li><li>Выбрать/сменить себя и настроить напоминания — в ⚙️ настройках, раздел «Мой профиль»</li><li>Кнопка «🔔 Тест уведомления» присылает проверочное через 30 секунд — так можно убедиться, что всё работает</li></ul><p><strong>Важно:</strong> на Android уведомления приходят, даже если вкладка закрыта (пока браузер работает в фоне). На iPhone фоновые уведомления приходят только пока приложение открыто — это ограничение Apple.</p>'},
+ {t:'\uD83D\uDD14 Напоминания в Telegram',c:'<p>Напоминания приходят <strong>в Telegram</strong> — они работают всегда, даже если приложение закрыто или телефона нет рядом с расписанием.</p><p><strong>Как подключить (один раз):</strong></p><ul><li>Откройте ⚙️ настройки → «🔔 Уведомления (Telegram)»</li><li>Выберите «Кто я» и за сколько минут напоминать</li><li>Нажмите «✈️ Открыть бота и привязать» — в чате нажмите «Старт»</li><li>Через 1–2 минуты статус сменится на «✅ Telegram привязан»</li></ul><p><strong>Важно:</strong> напоминания приходят только о занятиях, где в поле «Тренер» указано <strong>ровно ваше имя</strong> со статусом «⏳ Ожидание» на сегодняшний день. Проверить привязку можно командой <code>/status</code> боту. Работает на любом телефоне — и Android, и iPhone.</p>'},
  {t:'\uD83D\uDC0E Как читать расписание',c:'<ul><li><strong>Зелёная плашка</strong> — занятие выполнено</li><li><strong>Жёлтая плашка</strong> — ожидание (запланировано)</li><li><strong>Красная плашка</strong> — отменена</li><li>Цветная полоска слева на плашке — цвет тренера (легенда под календарём)</li><li>Рамка вокруг плашки — это <strong>ваше</strong> занятие</li><li>Нажмите на занятие — откроются подробности: время, нагрузка, темп, комментарий</li><li>Пустые клетки со знаком «＋» — свободное время, можно забронировать</li></ul>'},
- {t:'\u2699\uFE0F Для администратора',c:'<ul><li><strong>Вход</strong> — кнопка «🔒 Войти» вверху</li><li><strong>Конфигуратор (⚙️)</strong> — лошади, тренеры, нагрузки, темпы, пароль, профиль</li><li><strong>📦 Экспорт и Telegram</strong> (свернутый раздел внизу настроек) — CSV для Excel, отправка таблицы в канал/чат, настройка бота</li><li><strong>🗂 Архив</strong> — прошлые месяцы хранятся в архиве: кнопка 🗂 вверху открывает список, клик по месяцу разворачивает детализацию, можно скачать CSV</li><li><strong>Автоархив</strong> — при первом открытии в новом месяце отчет за прошедший месяц (сводка + детализация + CSV) уходит в чат админа, записи переносятся в архив (не удаляются). Каждый месяц — один раз</li><li><strong>Команды бота</strong> (в личном чате с ботом): <code>/report</code> — отчет за прошлый месяц, <code>/report 2026-07</code> — за любой месяц. Бот отвечает, пока приложение открыто хотя бы у одного администратора</li><li><strong>Статистика (📊)</strong> — за сегодня или за свой период</li></ul>'},
- {t:'\u2753 Частые вопросы',c:'<p><strong>Не приходят уведомления?</strong></p><ul><li>Проверьте, что вы выбрали себя в ⚙️ настройках («Мой профиль») и разрешили уведомления</li><li>Нажмите «🔔 Тест уведомления» — если тест не пришёл, проверьте настройки сайта в браузере</li><li>Напоминания приходят только о «⏳ Ожидании» на сегодня</li></ul><p><strong>Куда деваются старые записи?</strong> Они не удаляются — переносятся в архив (кнопка 🗂 вверху), откуда их всегда можно посмотреть или скачать CSV.</p><p><strong>Занятие отменили, а напоминание пришло?</strong> Обновите статус на «🚫 Отменена» — напоминания по отменённым не приходят.</p>'}
+ {t:'\u2699\uFE0F Для администратора',c:'<ul><li><strong>Вход</strong> — кнопка «🔒 Войти» вверху</li><li><strong>Конфигуратор (⚙️)</strong> — лошади, тренеры, нагрузки, темпы, пароль, уведомления</li><li><strong>📦 Экспорт и Telegram</strong> (свернутый раздел внизу) — CSV для Excel, отправка таблицы в канал/чат, токен бота, имя бота для привязок</li><li><strong>🗂 Архив</strong> — кнопка вверху: прошлые месяцы хранятся вечно, клик по месяцу разворачивает детализацию, можно скачать CSV. Ничего не удаляется автоматически</li><li><strong>Автоархив</strong> — при первом открытии в новом месяце отчёт за прошедший месяц (сводка + детализация + CSV) уходит в чат админа, копия записей — в архив</li><li><strong>Напоминания</strong> — рассылает Telegram-бот через серверное расписание (GitHub Actions), работает безотносительно того, открыт ли сайт. Отчёт/архив по команде бота тоже теперь работает всегда</li><li><strong>Статистика (📊)</strong> — за сегодня или за свой период</li></ul>'},
+ {t:'\u2753 Частые вопросы',c:'<p><strong>Не приходят напоминания?</strong></p><ul><li>Проверьте привязку: в ⚙️ → «Уведомления» должен быть статус «✅ Telegram привязан» (или отправьте боту <code>/status</code>)</li><li>Проверьте, что бронь создана с вашим именем тренера — ровно как в «Кто я»</li><li>Проверьте статус брони: «⏳ Ожидание», и что бронь на сегодня</li><li>Напоминание может прийти с задержкой до 5 минут — так работает расписание сервера</li></ul><p><strong>Куда деваются старые записи?</strong> Они не удаляются — копируются в архив (кнопка 🗂 вверху), откуда их всегда можно посмотреть или скачать CSV.</p><p><strong>Можно ли привязать два имени (тренер + берейтор)?</strong> Да — привяжите оба имени по очереди, сообщения будут приходить в один чат.</p>'}
 ];
 function renderHelp(){var box=document.getElementById('accList');box.innerHTML='';HELP.forEach(function(item,i){var div=document.createElement('div');div.className='acc-item';div.innerHTML='<div class="acc-head" data-i="'+i+'">'+item.t+'</div><div class="acc-body"><div>'+item.c+'</div></div>';box.appendChild(div)});box.querySelectorAll('.acc-head').forEach(function(h){h.addEventListener('click',function(){h.parentElement.classList.toggle('open')})})}
 document.getElementById('infoBtn').addEventListener('click',function(){renderHelp();document.getElementById('infoOverlay').classList.add('open')});
@@ -740,7 +782,6 @@ function renderStatsContent(days){
   }
   if(!rel.length){cont.innerHTML='<div class="stat-total">'+esc(periodTxt)+'</div><p style="color:var(--muted);text-align:center;padding:20px">Нет записей за выбранный период \uD83E\uDD7D<br><span style="font-size:11px">Прошлые месяцы хранятся в архиве (кнопка \uD83D\uDDC2)</span></p>';return}
 
-  /* Сводка */
   var totalH=0,doneN=0,waitN=0,dd={};
   rel.forEach(function(b){totalH+=(b.dur||0);dd[b.dateKey]=1;if((b.status||'wait')==='done')doneN++;else waitN++});
   var h='<div style="display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap">';
@@ -751,7 +792,6 @@ function renderStatsContent(days){
   h+='</div>';
   h+='<div style="font-size:12px;color:var(--muted);text-align:center;margin-bottom:12px">'+esc(periodTxt)+' · \u2705 '+doneN+' · \u23F3 '+waitN+'</div>';
 
-  /* Тренеры: только те, у кого есть записи, сортировка по часам */
   var ts={};
   rel.forEach(function(b){var n=b.trainer||'\u2014';if(!ts[n])ts[n]={hours:0,n:0,done:0,color:(tColor(b.trainer)||'#999')};ts[n].hours+=(b.dur||0);ts[n].n++;if((b.status||'wait')==='done')ts[n].done++});
   var tArr=Object.keys(ts).sort(function(a,b){return ts[b].hours-ts[a].hours});
@@ -763,7 +803,6 @@ function renderStatsContent(days){
     h+='</div>';
   }
 
-  /* Лошади: только с записями, сортировка по часам */
   var hs={};
   rel.forEach(function(b){if(!hs[b.horse])hs[b.horse]={hours:0,n:0};hs[b.horse].hours+=(b.dur||0);hs[b.horse].n++});
   var hArr=Object.keys(hs).sort(function(a,b){return hs[b].hours-hs[a].hours});
@@ -814,7 +853,7 @@ function renderSched(){var box=document.getElementById('sched'),horses=config.ho
 function renderHdr(){document.getElementById('adminBtn').style.display=isAdmin?'none':'inline-block';document.getElementById('adminCfgBtn').style.display=isAdmin?'inline-block':'none';document.getElementById('adminOutBtn').style.display=isAdmin?'inline-block':'none';document.getElementById('statsBtn').style.display=isAdmin?'inline-block':'none';document.getElementById('archBtn').style.display=isAdmin?'inline-block':'none';document.getElementById('guestHint').style.display=isAdmin?'none':'block';document.getElementById('fab').style.display=isAdmin?'block':'none'}
 function refreshUI(){renderHdr();renderTL();renderDays();renderSched()}
 
-/* ===== Детали (с комментарием) ===== */
+/* ===== Детали ===== */
 function openDetail(id){var b=bookings.find(function(x){return x.id===id});if(!b)return;var m=document.getElementById('detailModal'),st=ST[b.status]||ST.wait,tc=tColor(b.trainer);var h='<h2>'+esc(b.horse)+' \u00B7 '+m2s(b.startMin)+'</h2><div class="detail-card">';h+='<div class="dc-row"><span class="dc-label">Дата</span><span class="dc-val">'+esc(b.dateKey)+'</span></div>';h+='<div class="dc-row"><span class="dc-label">Длительность</span><span class="dc-val">'+b.dur+' ч</span></div>';h+='<div class="dc-row"><span class="dc-label">Тренер</span><span class="dc-val">'+(tc?'<span style="display:inline-block;width:10px;height:10px;border-radius:3px;background:'+esc(tc)+';margin-right:6px;vertical-align:-1px"></span>':'')+esc(b.trainer||'\u2014')+'</span></div>';h+='<div class="dc-row"><span class="dc-label">Нагрузка</span><span class="dc-val">'+esc(b.loadLabel||'\u2014')+'</span></div>';h+='<div class="dc-row"><span class="dc-label">Темп</span><span class="dc-val">'+esc(b.tempoLabel||'\u2014')+'</span></div>';h+='<div class="dc-row"><span class="dc-label">Комментарий</span><span class="dc-val">'+esc(b.comment||'\u2014')+'</span></div>';h+='<span class="dc-status dc-'+st.cls+'">'+st.icon+' '+st.label+'</span></div>';if(isAdmin){h+='<div class="chips" style="margin-bottom:12px">';Object.keys(ST).forEach(function(k){var s=ST[k],sel=(b.status||'wait')===k?' sel':'';h+='<div class="chip'+sel+'" data-s="'+k+'" id="ds_'+k+'">'+s.icon+' '+s.label+'</div>'});h+='</div><button class="btn save" style="width:100%;margin-bottom:8px" id="detailEdit">\u270F\uFE0F Редактировать</button><button class="dc-del" id="detailDel">\uD83D\uDDD1 Удалить</button>'}m.innerHTML=h;document.getElementById('detailOverlay').classList.add('open');if(isAdmin){Object.keys(ST).forEach(function(k){document.getElementById('ds_'+k).addEventListener('click',function(){updB(id,{status:k});document.getElementById('detailOverlay').classList.remove('open')})});document.getElementById('detailDel').addEventListener('click',function(){if(confirm('Удалить?')){delB(id);document.getElementById('detailOverlay').classList.remove('open')}});document.getElementById('detailEdit').addEventListener('click',function(){document.getElementById('detailOverlay').classList.remove('open');openFormEdit(b)})}}
 
 /* ===== Форма брони ===== */
@@ -838,9 +877,9 @@ if(editId)updB(editId,data);else pushB(data);closeForm()});
 /* ===== Вход ===== */
 function openLogin(){document.getElementById('loginErr').style.display='none';document.getElementById('loginPass').value='';document.getElementById('loginOverlay').classList.add('open');setTimeout(function(){document.getElementById('loginPass').focus()},50)}
 document.getElementById('loginGo').addEventListener('click',doLogin);document.getElementById('loginPass').addEventListener('keydown',function(e){if(e.key==='Enter')doLogin()});
-function doLogin(){var p=document.getElementById('loginPass').value;if(p===(config.adminPass||'admin')){isAdmin=true;localStorage.setItem('hc_admin','true');document.getElementById('loginOverlay').classList.remove('open');reqNotif();if(!myTrainer)showWhoSelect();else schedRefresh()}else{var e=document.getElementById('loginErr');e.textContent='\u26A0 Неверный пароль.';e.style.display='block'}}
+function doLogin(){var p=document.getElementById('loginPass').value;if(p===(config.adminPass||'admin')){isAdmin=true;localStorage.setItem('hc_admin','true');document.getElementById('loginOverlay').classList.remove('open');if(!myTrainer)showWhoSelect();else schedRefresh()}else{var e=document.getElementById('loginErr');e.textContent='\u26A0 Неверный пароль.';e.style.display='block'}}
 document.getElementById('loginCancel').addEventListener('click',function(){document.getElementById('loginOverlay').classList.remove('open')});
-document.getElementById('adminBtn').addEventListener('click',openLogin);document.getElementById('adminCfgBtn').addEventListener('click',function(){if(isAdmin)openCfg()});document.getElementById('adminOutBtn').addEventListener('click',function(){if(!isAdmin)return;if(confirm('Выйти?')){isAdmin=false;localStorage.removeItem('hc_admin');closeCfg();closeForm();closeDetail();schedRefresh()}});document.getElementById('statsBtn').addEventListener('click',function(){if(isAdmin)openStats()});
+document.getElementById('adminBtn').addEventListener('click',openLogin);document.getElementById('adminCfgBtn').addEventListener('click',function(){if(isAdmin)openCfg()});document.getElementById('adminOutBtn').addEventListener('click',function(){if(!isAdmin)return;if(confirm('Выйти?')){isAdmin=false;localStorage.removeItem('hc_admin');closeCfg();closeForm();schedRefresh()}});document.getElementById('statsBtn').addEventListener('click',function(){if(isAdmin)openStats()});
 
 /* ===== Конфигуратор ===== */
 var cfgD=null;
@@ -851,9 +890,11 @@ function openCfg(){
   document.getElementById('cfgTgToken').value=cfgD.tgToken||'';
   document.getElementById('cfgTgPublicChat').value=cfgD.tgPublicChat||'';
   document.getElementById('cfgTgAdminChat').value=cfgD.tgAdminChat||'';
+  document.getElementById('cfgBotName').value=cfgD.botName||'';
   populateExportMonths();
   loadCfgProfile();
   renderCfg();
+  renderTgBindArea();
   document.getElementById('cfgOverlay').classList.add('open');
 }
 function closeCfg(){document.getElementById('cfgOverlay').classList.remove('open');cfgD=null}
@@ -868,8 +909,10 @@ document.getElementById('cfgSave').addEventListener('click',function(){
   cfgD.tgToken=document.getElementById('cfgTgToken').value.trim();
   cfgD.tgPublicChat=document.getElementById('cfgTgPublicChat').value.trim();
   cfgD.tgAdminChat=document.getElementById('cfgTgAdminChat').value.trim();
+  cfgD.botName=document.getElementById('cfgBotName').value.trim().replace('@','');
   config=cfgD;
   saveCfg();
+  renderTgBindArea();
   closeCfg();
 });
 document.getElementById('cfgCancel').addEventListener('click',closeCfg);
@@ -879,45 +922,67 @@ document.querySelectorAll('#cfgOverlay .sec h3').forEach(function(h){
   h.addEventListener('click',function(){h.parentElement.classList.toggle('closed')});
 });
 
-/* ===== SW Sync ===== */
-function syncSW(){if(navigator.serviceWorker&&navigator.serviceWorker.controller){var swRemindMin=parseInt(localStorage.getItem('hc_remind_'+myTrainer))||15;var swList=bookings.map(function(b){return{dateKey:b.dateKey,startMin:b.startMin,horse:b.horse,trainer:b.trainer,loadLabel:b.loadLabel,status:b.status,sent:false}});navigator.serviceWorker.controller.postMessage({cmd:'update_schedule',list:swList,remindMin:swRemindMin})}}
-
+/* ===== Профиль уведомлений (Firebase) ===== */
 function loadCfgProfile(){var sel=document.getElementById('cfgWho');sel.innerHTML='';config.trainers.forEach(function(t){var o=document.createElement('option');o.value=t.name;o.textContent=t.name;if(t.name===myTrainer)o.selected=true;sel.appendChild(o)});loadCfgRemind()}
 
-function loadCfgRemind(){var sel=document.getElementById('cfgRemind');var cw=document.getElementById('cfgCustomRemindWrap');var cin=document.getElementById('cfgCustomRemindMin');if(!myTrainer){sel.value='15';cw.style.display='none';return}var v=localStorage.getItem('hc_remind_'+myTrainer)||'15';var has=false;for(var i=0;i<sel.options.length;i++){if(sel.options[i].value===v)has=true}if(has){sel.value=v;cw.style.display='none'}else{sel.value='custom';cw.style.display='block';cin.value=v}}
+function loadCfgRemind(){
+  var sel=document.getElementById('cfgRemind');
+  var cw=document.getElementById('cfgCustomRemindWrap');
+  var cin=document.getElementById('cfgCustomRemindMin');
+  if(!myTrainer){sel.value='15';cw.style.display='none';return}
+  var v='15';
+  if(myRemindCode&&tgRemindCache[myRemindCode]&&tgRemindCache[myRemindCode].minutes)v=String(tgRemindCache[myRemindCode].minutes);
+  var has=false;for(var i=0;i<sel.options.length;i++){if(sel.options[i].value===v)has=true}
+  if(has){sel.value=v;cw.style.display='none'}else{sel.value='custom';cw.style.display='block';cin.value=v}
+}
 
-document.getElementById('cfgWho').addEventListener('change',function(){myTrainer=this.value;localStorage.setItem('hc_me',myTrainer);reqNotif();loadCfgRemind();syncSW();schedRefresh()});
+var tgRemindCache={};
+function watchRemindSettings(){
+  if(!db)return;
+  db.ref('remindSettings').on('value',function(sn){tgRemindCache=sn.val()||{};loadCfgRemind();renderTgBindArea()});
+}
 
-document.getElementById('cfgRemind').addEventListener('change',function(){var cw=document.getElementById('cfgCustomRemindWrap');if(this.value==='custom'){cw.style.display='block';return}cw.style.display='none';if(myTrainer){localStorage.setItem('hc_remind_'+myTrainer,this.value);syncSW()}});
+document.getElementById('cfgWho').addEventListener('change',function(){
+  myTrainer=this.value;localStorage.setItem('hc_me',myTrainer);
+  ensureRemindEntry().then(function(){loadCfgRemind();renderTgBindArea()});
+  schedRefresh();
+});
 
-document.getElementById('cfgCustomRemindMin').addEventListener('input',function(){var v=parseInt(this.value,10);if(myTrainer&&v>0&&v<=720){localStorage.setItem('hc_remind_'+myTrainer,String(v));syncSW()}});
+document.getElementById('cfgRemind').addEventListener('change',function(){
+  var cw=document.getElementById('cfgCustomRemindWrap');
+  if(this.value==='custom'){cw.style.display='block';return}
+  cw.style.display='none';
+  saveRemindSettings(parseInt(this.value,10));
+});
 
-document.getElementById('cfgTestNotifBtn').addEventListener('click',function(){
-  if(!('Notification' in window)){alert('Уведомления не поддерживаются этим браузером');return}
-  Notification.requestPermission(function(p){
-    if(p!=='granted'){alert('Разрешение на уведомления не выдано.\nРазрешите уведомления для этого сайта в настройках браузера.');return}
-    var btn=document.getElementById('cfgTestNotifBtn');var left=30;btn.disabled=true;
-    btn.textContent='⏳ Уведомление через '+left+' сек...';
-    var iv=setInterval(function(){left--;if(left>0){btn.textContent='⏳ Уведомление через '+left+' сек...'}else{clearInterval(iv);btn.disabled=false;btn.textContent='🔔 Тест уведомления (придёт через 30 сек)'}},1000);
-    setTimeout(function(){
-      if(navigator.serviceWorker&&navigator.serviceWorker.controller){navigator.serviceWorker.controller.postMessage({cmd:'test'})}
-      else{try{new Notification('🔔 Тестовое уведомление',{body:'Уведомления работают!'})}catch(e){}}
-    },30000);
-  });
+document.getElementById('cfgCustomRemindMin').addEventListener('input',function(){
+  var v=parseInt(this.value,10);
+  if(v>0&&v<=720)saveRemindSettings(v);
+});
+
+document.getElementById('cfgTestNotifBtn').addEventListener('click',async function(){
+  if(!config.tgToken)return alert('Укажите Bot Token в настройках!');
+  if(!myTrainer)return alert('Сначала выберите «Кто я»');
+  if(!myRemindCode)return alert('Код еще не сгенерирован — выберите «Кто я» и сохраните настройки');
+  var st=myTgStatus();
+  if(!st||!st.confirmed)return alert('Telegram не привязан.\nСначала нажмите «Открыть бота и привязать» и отправьте боту /start '+myRemindCode);
+  var r=await tgSendText(st.chatId,'🔔 <b>Тестовое уведомление</b>\n\nЕсли вы это видите — напоминания о ваших занятиях будут приходить сюда.\n\n👤 '+esc(myTrainer)+' · за '+((tgRemindCache[myRemindCode]&&tgRemindCache[myRemindCode].minutes)||15)+' мин до начала');
+  alert(r&&r.ok?'✅ Отправлено в ваш Telegram!':'Ошибка: '+(r&&r.description||'неизвестно'));
 });
 
 /* ===== Старт ===== */
-if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.register('update.js').catch(function(e){ console.warn('SW ошибка:', e) });
-}
-setInterval(function(){document.getElementById('mskClock').textContent='\uD83D\uDD50 МСК '+mskStr()},1000);document.getElementById('mskClock').textContent='\uD83D\uDD50 МСК '+mskStr();var todayKey=dk(mskNow());for(var i=0;i<dates.length;i++){if(dk(dates[i])===todayKey){curDayOff=i;break}}initFB();if(!myTrainer&&isAdmin)setTimeout(showWhoSelect,500);
-setInterval(pollTg,5000);
+setInterval(function(){document.getElementById('mskClock').textContent='\uD83D\uDD50 МСК '+mskStr()},1000);
+document.getElementById('mskClock').textContent='\uD83D\uDD50 МСК '+mskStr();
+var todayKey=dk(mskNow());
+for(var i=0;i<dates.length;i++){if(dk(dates[i])===todayKey){curDayOff=i;break}}
+initFB();
+watchRemindSettings();
+if(!myTrainer&&isAdmin)setTimeout(showWhoSelect,500);
 
 /* ===== Закрытие модалок: крестик + клик по фону ===== */
 (function(){
-  // Крестик во все открытые модалки
-  var styleTitles=['detailOverlay','statsOverlay','archOverlay','infoOverlay','whoOverlay','loginOverlay','cfgOverlay','overlay'];
-  styleTitles.forEach(function(id){
+  var ids=['detailOverlay','statsOverlay','archOverlay','infoOverlay','whoOverlay','loginOverlay','cfgOverlay','overlay'];
+  ids.forEach(function(id){
     var ov=document.getElementById(id);
     if(!ov)return;
     var modal=ov.querySelector('.modal');
@@ -926,14 +991,7 @@ setInterval(pollTg,5000);
     x.className='modal-x';x.textContent='\u2715';x.title='Закрыть';
     x.addEventListener('click',function(){ov.classList.remove('open')});
     modal.appendChild(x);
-  });
-  // Клик по тёмному фону вокруг окна — тоже закрывает
-  ['detailOverlay','statsOverlay','archOverlay','infoOverlay','whoOverlay','loginOverlay','cfgOverlay','overlay'].forEach(function(id){
-    var ov=document.getElementById(id);
-    if(!ov)return;
-    ov.addEventListener('click',function(e){
-      if(e.target===ov)ov.classList.remove('open');
-    });
+    ov.addEventListener('click',function(e){if(e.target===ov)ov.classList.remove('open')});
   });
 })();
 </script>

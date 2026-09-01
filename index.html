@@ -326,6 +326,7 @@
     <button class="btn-tg-csv" id="csvDownBtn">📥 Скачать таблицу (CSV для Excel)</button>
     <button class="btn-tg-csv" id="tgSendBtn">📨 Отправить таблицу в Телеграм</button>
     <button class="btn-tg-csv" id="archSendBtn">📦 Архив за прошлый месяц → Telegram (сводка + файл)</button>
+    <button class="btn-tg-csv" id="syncArchBtn">🔄 Синхронизировать прошедшие месяцы в архив (копия, без удаления)</button>
     <div style="height:8px"></div>
     <label>Bot Token</label>
     <input type="text" id="cfgTgToken" placeholder="Токен от @BotFather" autocomplete="off">
@@ -475,27 +476,48 @@ async function tgSendDoc(chatId,fileName,csv){
 }
 function chunkText(t){var parts=[],cur='';t.split('\n').forEach(function(l){if((cur+l+'\n').length>3500){parts.push(cur);cur=''}cur+=l+'\n'});if(cur.trim())parts.push(cur);return parts}
 
+function durStr(d){return String(Math.round(d*10)/10).replace('.',',')}
 function buildSummaryText(data,label){
-  var total=0,hours=0,hs={},ts={};
-  data.forEach(function(b){if((b.status||'wait')==='cancel')return;total++;hours+=(b.dur||0);hs[b.horse]=(hs[b.horse]||0)+(b.dur||0);ts[b.trainer]=(ts[b.trainer]||0)+(b.dur||0)});
-  var t='\uD83D\uDCCA <b>Сводный отчет за '+esc(label)+'</b>\n\n';
-  t+='Всего проведенных занятий: <b>'+total+'</b>\n';
-  t+='Общая нагрузка: <b>'+Math.round(hours*10)/10+'</b> часов\n\n';
-  t+='\uD83D\uDC0E Загрузка лошадей:\n';
-  Object.keys(hs).sort(function(a,b){return hs[b]-hs[a]}).forEach(function(k){t+='  '+esc(k)+': '+Math.round(hs[k]*10)/10+' ч\n'});
-  t+='\n\uD83C\uDFC7 Наработанные часы тренеров:\n';
-  Object.keys(ts).sort(function(a,b){return ts[b]-ts[a]}).forEach(function(k){t+='  '+esc(k)+': '+Math.round(ts[k]*10)/10+' ч\n'});
+  var total=0,hours=0,canceled=0,done=0,hs={},ts={},tc={};
+  data.forEach(function(b){
+    var s=b.status||'wait';
+    if(s==='cancel'){canceled++;return}
+    total++;hours+=(b.dur||0);if(s==='done')done++;
+    hs[b.horse]=(hs[b.horse]||0)+(b.dur||0);
+    ts[b.trainer]=(ts[b.trainer]||0)+(b.dur||0);
+    tc[b.trainer]=(tc[b.trainer]||0)+1;
+  });
+  var days={};data.forEach(function(b){days[b.dateKey]=1});
+  var t='\uD83D\uDCCA <b>СВОДНЫЙ ОТЧЕТ</b>\n<b>'+esc(label)+'</b>\n\n';
+  t+='\uD83D\uDCC5 Дней с занятиями: <b>'+Object.keys(days).length+'</b>\n';
+  t+='\uD83D\uDC0E Проведено занятий: <b>'+total+'</b>\n';
+  t+='\u23F1 Общая нагрузка: <b>'+durStr(hours)+' ч</b>\n';
+  t+='\u2705 Выполнено: <b>'+done+'</b> · \u23F3 В ожидании: <b>'+(total-done)+'</b>\n';
+  if(canceled)t+='\uD83D\uDEAB Отменено: <b>'+canceled+'</b>\n';
+  t+='\uD83D\uDCC9 Средняя загрузка в день: <b>'+durStr(Object.keys(days).length?hours/Object.keys(days).length:0)+' ч</b>\n';
+  t+='\n\uD83D\uDC0E <b>Загрузка лошадей:</b>\n';
+  Object.keys(hs).sort(function(a,b){return hs[b]-hs[a]}).forEach(function(k){t+='  \u2022 '+esc(k)+': <b>'+durStr(hs[k])+' ч</b>\n'});
+  t+='\n\uD83C\uDFC7 <b>Часы тренеров:</b>\n';
+  Object.keys(ts).sort(function(a,b){return ts[b]-ts[a]}).forEach(function(k){t+='  \u2022 '+esc(k)+': <b>'+durStr(ts[k])+' ч</b> ('+tc[k]+' зан.)\n'});
   return t;
 }
 function buildDetailedText(data){
-  var t='\n\uD83D\uDCCB <b>Детализация</b>\n',g={};
+  var t='\n\uD83D\uDCCB <b>ДЕТАЛИЗАЦИЯ</b>\n',g={};
   data.forEach(function(b){if(!g[b.dateKey])g[b.dateKey]=[];g[b.dateKey].push(b)});
   Object.keys(g).sort().forEach(function(d){
-    t+='\n\uD83D\uDCC5 <b>'+d+'</b>\n';
-    g[d].forEach(function(b){
-      var tm=m2s(b.startMin)+'-'+m2s(b.startMin+b.dur*60);
+    var items=g[d].sort(function(a,b){return a.startMin-b.startMin});
+    var dayH=0;items.forEach(function(b){if((b.status||'wait')!=='cancel')dayH+=(b.dur||0)});
+    t+='\n\uD83D\uDCC5 <b>'+d+'</b> \u2014 '+items.length+' зан., '+durStr(dayH)+' ч\n';
+    items.forEach(function(b){
+      var tm=m2s(b.startMin)+'\u2013'+m2s(b.startMin+b.dur*60);
       var ic=b.status==='done'?'\u2705':(b.status==='cancel'?'\uD83D\uDEAB':'\u23F3');
-      t+=ic+' '+tm+' | \uD83D\uDC0E '+esc(b.horse)+' | \uD83D\uDC64 '+esc(b.trainer)+(b.loadLabel?' | '+esc(b.loadLabel):'')+(b.comment?' | \uD83D\uDCAC '+esc(b.comment):'')+'\n';
+      t+=ic+' <code>'+tm+'</code> ('+durStr(b.dur)+' ч)\n';
+      t+='   \uD83D\uDC0E '+esc(b.horse)+' | \uD83D\uDC64 '+esc(b.trainer||'\u2014')+'\n';
+      var extra=[];
+      if(b.loadLabel)extra.push('\uD83D\uDCCB '+esc(b.loadLabel));
+      if(b.tempoLabel)extra.push('\uD83C\uDFC7 '+esc(b.tempoLabel));
+      if(extra.length)t+='   '+extra.join(' \u00B7 ')+'\n';
+      if(b.comment)t+='   \uD83D\uDCAC '+esc(b.comment)+'\n';
     });
   });
   return t;
@@ -559,7 +581,20 @@ async function sendMonthlyReport(ym,chatId,btn){
   }
 }
 
-/* ===== Автоархив: 1-го числа отчет за прошлый месяц в чат админа, записи переносятся в архив (не удаляются) ===== */
+/* ===== Архивация: КОПИРОВАНИЕ прошедших месяцев в archive/ (без удаления!) ===== */
+async function copyPastToArchive(){
+  if(!db)return 0;
+  var m=mskNow();
+  var cutoff=m.getFullYear()+'-'+String(m.getMonth()+1).padStart(2,'0')+'-01';
+  var past=bookings.filter(function(b){return b.dateKey<cutoff});
+  if(!past.length)return 0;
+  var upd={};
+  past.forEach(function(b){var ym=b.dateKey.substring(0,7);upd['archive/'+ym+'/'+b.id]=b});
+  await db.ref('/').update(upd);
+  return past.length;
+}
+
+/* Автоархив: 1-го числа отчет за прошлый месяц в чат админа + КОПИЯ в архив (ничего не удаляется) */
 async function autoArchive(){
   if(!db||autoArchTried)return;
   if(!config.tgToken||!config.tgAdminChat)return;
@@ -567,24 +602,15 @@ async function autoArchive(){
   var ym=prevYM();
   try{
     var snap=await db.ref('archived/'+ym).once('value');
-    if(snap.val())return;
+    if(snap.val()){await copyPastToArchive();return}
     var ok=await sendMonthlyReport(ym,config.tgAdminChat,null);
     if(ok){
       await db.ref('archived/'+ym).set({done:true,at:Date.now()});
-      var m=mskNow();
-      var cutoff=m.getFullYear()+'-'+String(m.getMonth()+1).padStart(2,'0')+'-01';
-      var toMove={};
-      bookings.forEach(function(b){if(b.dateKey<cutoff)toMove[b.id]=b});
-      if(Object.keys(toMove).length){
-        var upd={};
-        Object.keys(toMove).forEach(function(id){upd['archive/'+ym+'/'+id]=toMove[id];upd['bookings/'+id]=null});
-        await db.ref('/').update(upd);
-      }
-      console.log('Автоархив за '+ym+' отправлен, записи перенесены в архив');
+      var n=await copyPastToArchive();
+      console.log('Автоархив за '+ym+' отправлен, в архив добавлено записей: '+n);
     }
   }catch(e){console.warn('autoArchive:',e);autoArchTried=false}
 }
-
 /* ===== Telegram-бот: команды /report (пока сайт открыт) ===== */
 async function pollTg(){
   if(!isAdmin||!config.tgToken||!config.tgAdminChat)return;
@@ -629,7 +655,20 @@ document.getElementById('tgSendBtn').addEventListener('click',function(){
   document.getElementById('tgSendBtn').textContent='⏳ Отправка...';fetch("https://api.telegram.org/bot"+BOT_TOKEN+"/sendMessage",{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({chat_id:CHAT_ID,text:text,parse_mode:'HTML'})}).then(function(r){return r.json()}).then(function(res){document.getElementById('tgSendBtn').textContent='📨 Отправить таблицу в Телеграм';alert(res.ok?'Успешно отправлено!':'Ошибка: '+res.description)}).catch(function(e){document.getElementById('tgSendBtn').textContent='📨 Отправить таблицу в Телеграм';alert('Ошибка сети: '+e)})});
 
 document.getElementById('archSendBtn').addEventListener('click',function(){sendMonthlyReport(prevYM(),config.tgAdminChat,this)});
-
+document.getElementById('syncArchBtn').addEventListener('click',async function(){
+  if(!db)return alert('Нет подключения к базе');
+  var m=mskNow();
+  var cutoff=m.getFullYear()+'-'+String(m.getMonth()+1).padStart(2,'0')+'-01';
+  var past=bookings.filter(function(b){return b.dateKey<cutoff});
+  if(!past.length)return alert('Прошедших месяцев в таблице нет — всё уже в архиве 🗂');
+  if(!confirm('Скопировать '+past.length+' записей за прошедшие месяцы в архив?\n\n(Из таблицы записи НЕ удалятся)'))return;
+  var btn=this;var old=btn.textContent;btn.disabled=true;btn.textContent='⏳ Синхронизация...';
+  try{
+    var n=await copyPastToArchive();
+    btn.disabled=false;btn.textContent=old;
+    alert('Готово! '+n+' записей добавлено в архив 🗂\n(в таблице всё осталось на месте)');
+  }catch(e){btn.disabled=false;btn.textContent=old;alert('Ошибка: '+(e.message||e))}
+});
 /* ===== Кто вы ===== */
 function showWhoSelect(){var list=document.getElementById('whoList');list.innerHTML='';config.trainers.forEach(function(t){var d=document.createElement('div');d.className='who-item'+(myTrainer===t.name?' sel':'');var role=t.name.match(/\(([^)]+)\)/);role=role?role[1]:'';d.innerHTML='<span class="stat-dot" style="background:'+esc(t.color)+'"></span><span>'+esc(t.name)+'</span><span class="who-role">'+esc(role)+'</span>';d.addEventListener('click',function(){myTrainer=t.name;localStorage.setItem('hc_me',myTrainer);document.getElementById('whoOverlay').classList.remove('open');reqNotif();syncSW();schedRefresh()});list.appendChild(d)});document.getElementById('whoOverlay').classList.add('open')}
 document.getElementById('whoSkip').addEventListener('click',function(){myTrainer='';localStorage.removeItem('hc_me');document.getElementById('whoOverlay').classList.remove('open');schedRefresh()});

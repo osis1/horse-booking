@@ -121,3 +121,23 @@ async function main() {
 }
 
 main().catch(e => { console.error('Ошибка:', e); process.exit(1); });
+
+const http = require('http');
+
+// 1. Простой веб-сервер для поддержки активности хостинга
+http.createServer((req, res) => {
+  res.writeHead(200, { 'Content-Type': 'text/plain' });
+  res.end('Bot is running!');
+}).listen(process.env.PORT || 3000);
+
+// 2. Функция вашей основной логики парсинга и отправки (назовем её checkAndSend)
+function checkAndSend() {
+  console.log('Проверка записей...');
+  // Здесь находится ваш текущий код проверки времени и отправки сообщений в Telegram
+}
+
+// Запускаем сразу при старте
+checkAndSend();
+
+// Повторяем запуск каждые 5 минут (300 000 миллисекунд)
+setInterval(checkAndSend, 5 * 60 * 1000);

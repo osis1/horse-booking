@@ -27,8 +27,9 @@ function mskNow() {
 async function tg(method, payload) {
   return fetchJSON('https://api.telegram.org/bot' + TG_TOKEN + '/' + method, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' }
-  }, JSON.stringify(payload));
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload)
+  });
 }
 
 async function main() {
@@ -109,6 +110,7 @@ async function main() {
     if (b.tempoLabel) msg += ' · ' + b.tempoLabel;
     if (b.comment) msg += '\n💬 ' + b.comment;
     const r = await tg('sendMessage', { chat_id: chatId, text: msg, parse_mode: 'HTML' });
+    if (r && !r.ok) console.log('Telegram отказал:', r.description, '| chatId:', chatId);
     if (r && r.ok) {
       await fetchJSON(DB_URL + '/sentNotifs/' + key + '.json', { method: 'PUT', body: JSON.stringify(Date.now()) });
       console.log('Отправлено:', b.horse, '->', b.trainer);

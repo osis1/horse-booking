@@ -645,10 +645,17 @@ function renderTgBindArea(){
   var code=getMyCode();
   var st=myTgStatus();
   var bot=config.botName||'';
+  var collapsed=localStorage.getItem('hc_tg_collapsed')==='1';
   var h='';
   if(st&&st.confirmed){
-    h+='<div class="tg-status ok">\u2705 Telegram привязан</div>';
-    h+='<button class="btn-tg-csv" id="unbindBtn">\uD83D\uDD13 Отвязать этот Telegram</button>';
+    if(collapsed){
+      h+='<div id="tgCollapsed" style="display:flex;align-items:center;gap:8px;padding:8px 10px;border:1.5px solid var(--done-bg);background:var(--done-bg);border-radius:10px;cursor:pointer;font-size:13px;font-weight:600;color:var(--done-text)">\u2705 Telegram привязан <span style="margin-left:auto;font-size:11px;color:var(--muted)">развернуть \u203A</span></div>';
+    }else{
+      h+='<div class="tg-status ok">\u2705 Telegram привязан</div>';
+      h+='<p style="font-size:11px;color:var(--muted);margin-bottom:4px">Код этой привязки: <b>'+esc(code)+'</b></p>';
+      h+='<button class="btn-tg-csv" id="unbindBtn">\uD83D\uDD13 Отвязать этот Telegram</button>';
+      h+='<p style="font-size:11px;color:var(--muted);margin-top:4px;cursor:pointer;text-align:center" id="tgCollapseBtn">свернуть \u203A</p>';
+    }
   }else{
     h+='<div class="tg-status wait">\u23F3 Telegram не привязан</div>';
     h+='<p style="font-size:12px;color:var(--muted);margin-bottom:4px">Ваш код привязки:</p>';
@@ -660,6 +667,24 @@ function renderTgBindArea(){
       h+='<p style="font-size:12px;color:var(--muted)">Отправьте боту сообщение: <b>/start '+esc(code)+'</b><br>(имя бота задается в ⚙️ → Экспорт и Telegram)</p>';
     }
   }
+  area.innerHTML=h;
+  var col=document.getElementById('tgCollapsed');
+  if(col)col.addEventListener('click',function(){localStorage.setItem('hc_tg_collapsed','1');renderTgBindArea()});
+  var exp=document.getElementById('tgCollapseBtn');
+  if(exp)exp.addEventListener('click',function(){localStorage.setItem('hc_tg_collapsed','0');renderTgBindArea()});
+  var ub=document.getElementById('unbindBtn');
+  if(ub)ub.addEventListener('click',async function(){
+    if(!confirm('Отвязать Telegram? Напоминания приходить перестанут.'))return;
+    ub.disabled=true;
+    try{
+      await db.ref('tgUsers/'+code).remove();
+      localStorage.setItem('hc_tg_collapsed','0');
+      alert('Отвязано. Теперь здесь снова появится код и кнопка привязки.');
+    }
+    catch(e){alert('Ошибка: '+(e.message||e))}
+    ub.disabled=false;
+  });
+}
   area.innerHTML=h;
   var ub=document.getElementById('unbindBtn');
   if(ub)ub.addEventListener('click',async function(){

@@ -83,10 +83,6 @@ async function main() {
     fetchJSON(DB_URL + '/sentNotifs.json', {})
   ]);
 
-  // индекс: имя тренера -> chatId
-  const chatByTrainer = {};
-  Object.values(users || {}).forEach(u => { if (u.confirmed) chatByTrainer[u.trainer] = u.chatId; });
-
   // индекс: имя тренера -> код
   const codeByTrainer = {};
   Object.entries(settings || {}).forEach(([code, s]) => { if (s.trainer) codeByTrainer[s.trainer] = code; });
@@ -101,7 +97,8 @@ async function main() {
     if (diff < 0 || diff > remindMin) continue;
     const key = today + '_' + b.startMin + '_' + b.horse;
     if (sentN && sentN[key]) continue;
-    const chatId = chatByTrainer[b.trainer];
+    const code = codeByTrainer[b.trainer];
+    const chatId = (code && users[code] && users[code].confirmed) ? users[code].chatId : null;
     if (!chatId) continue;
     const sM = b.startMin, eM = b.startMin + (b.dur || 1) * 60;
     const timeStr = String(Math.floor(sM/60)).padStart(2,'0') + ':' + String(sM%60).padStart(2,'0');

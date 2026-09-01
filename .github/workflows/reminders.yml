@@ -1,1 +1,18 @@
+name: Напоминания о занятиях
 
+on:
+  schedule:
+    - cron: '*/5 * * * *'
+  workflow_dispatch:
+
+jobs:
+  remind:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - run: node reminders.js
+        env:
+          TG_TOKEN: ${{ secrets.TG_TOKEN }}

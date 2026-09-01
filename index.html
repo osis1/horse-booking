@@ -913,22 +913,6 @@ if ('serviceWorker' in navigator) {
 setInterval(function(){document.getElementById('mskClock').textContent='\uD83D\uDD50 МСК '+mskStr()},1000);document.getElementById('mskClock').textContent='\uD83D\uDD50 МСК '+mskStr();var todayKey=dk(mskNow());for(var i=0;i<dates.length;i++){if(dk(dates[i])===todayKey){curDayOff=i;break}}initFB();if(!myTrainer&&isAdmin)setTimeout(showWhoSelect,500);
 setInterval(pollTg,5000);
 
-/* ===== ПИНГ (чтобы убрать — удалите этот блок целиком) ===== */
-setInterval(async function(){
-  if(!db||!wasOnline)return;
-  try{
-    var t0=performance.now();
-    await db.ref('ping').set(firebase.database.ServerValue.TIMESTAMP);
-    var ms=Math.round(performance.now()-t0);
-    var st=document.getElementById('status');
-    if(wasOnline)st.textContent='\u25CF онлайн · '+ms+' мс';
-  }catch(e){}
-},10000);
-/* ===== /ПИНГ ===== */
-</script>
-</body>
-</html>
-
 /* ===== Закрытие модалок: крестик + клик по фону ===== */
 (function(){
   // Крестик во все открытые модалки

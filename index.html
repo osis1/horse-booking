@@ -90,8 +90,8 @@
     color:var(--muted);padding:10px 6px;text-align:center;border-bottom:1.5px solid var(--line);
     display:flex;align-items:center;justify-content:center;min-height:42px;transition:background .3s,border-color .3s,color .3s}
   .gh.corner{background:var(--surface-alt);justify-content:flex-end;padding-right:10px;font-size:11px}
-  .gl{position:sticky;left:0;z-index:4;background:var(--surface-alt);font-size:13px;font-weight:700;
-    padding:8px 10px;border-right:1.5px solid var(--line);border-bottom:1px solid var(--line);
+  .gl{position:sticky;left:0;z-index:4;background:var(--surface-alt);font-size:11px;font-weight:700;
+    padding:8px 8px;border-right:1.5px solid var(--line);border-bottom:1px solid var(--line);
     display:flex;align-items:center;white-space:nowrap;min-height:52px;transition:background .3s,border-color .3s}
   .gc{padding:4px;border-bottom:1px solid var(--line);border-right:1px solid var(--line);
     display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:52px;transition:background .15s}
@@ -234,10 +234,8 @@
   <div class="status" id="status">подключение…</div>
   <button class="hdr-btn" id="themeBtn" title="Тема">🌙</button>
   <button class="hdr-btn" id="infoBtn" title="Справка">❓</button>
-  <button class="hdr-btn" id="statsBtn" style="display:none" title="Статистика">📊</button>
-  <button class="hdr-btn" id="archBtn" style="display:none" title="Архив месяцев">🗂</button>
+  <button class="hdr-btn" id="menuBtn" style="display:none" title="Меню админа">☰</button>
   <button class="adminbtn" id="adminBtn" style="display:none">🔒 Войти</button>
-  <button class="adminbtn on" id="adminCfgBtn" style="display:none">⚙️</button>
   <button class="adminbtn out" id="adminOutBtn" style="display:none">🚪</button>
 </header>
 
@@ -280,7 +278,7 @@
   </div>
 </div></div>
 
-<!-- Конфигуратор -->
+<!-- Конфигуратор: только таблица -->
 <div class="overlay" id="cfgOverlay"><div class="modal">
   <h2>⚙️ Конфигуратор</h2>
 
@@ -320,31 +318,6 @@
     <label>Новый пароль (пусто = не менять)</label>
     <input type="text" id="cfgPass" placeholder="Новый пароль" autocomplete="off"></div></div>
 
-  <div class="sec closed" id="secExport"><h3>📦 Экспорт, архив и Telegram <span class="arr">▾</span></h3><div class="sec-body">
-    <label style="display:block;font-size:12px;font-weight:600;color:var(--muted);margin-bottom:4px;">Выгрузить данные за:</label>
-    <select id="exportMonth" style="width:100%;padding:11px 12px;font-size:15px;border:1.5px solid var(--line);border-radius:10px;background:var(--input-bg);color:var(--ink);margin-bottom:8px;">
-        <option value="all">За все время</option>
-    </select>
-    <label style="display:block;font-size:12px;font-weight:600;color:var(--muted);margin-bottom:4px;">Отправить в Telegram:</label>
-    <select id="tgTarget" style="width:100%;padding:11px 12px;font-size:15px;border:1.5px solid var(--line);border-radius:10px;background:var(--input-bg);color:var(--ink);margin-bottom:12px;">
-        <option value="public">📢 Публичный канал</option>
-        <option value="admin">🔒 Личный чат админа</option>
-    </select>
-    <button class="btn-tg-csv" id="csvDownBtn">📥 Скачать таблицу (CSV для Excel)</button>
-    <button class="btn-tg-csv" id="tgSendBtn">📨 Отправить таблицу в Телеграм</button>
-    <button class="btn-tg-csv" id="archSendBtn">📦 Архив за прошлый месяц → Telegram (сводка + файл)</button>
-    <button class="btn-tg-csv" id="syncArchBtn">🔄 Синхронизировать прошедшие месяцы в архив (копия, без удаления)</button>
-    <div style="height:8px"></div>
-    <label>Bot Token</label>
-    <input type="text" id="cfgTgToken" placeholder="Токен от @BotFather" autocomplete="off">
-    <label>ID публичного канала (например, -100... или @channel)</label>
-    <input type="text" id="cfgTgPublicChat" placeholder="-100123456789" autocomplete="off">
-    <label>ID личного чата админа (для архивов и отчетов)</label>
-    <input type="text" id="cfgTgAdminChat" placeholder="6467332405" autocomplete="off">
-    <label>Имя бота (для ссылок привязки, без @)</label>
-    <input type="text" id="cfgBotName" placeholder="напр: horse_club_reminder_bot" autocomplete="off">
-  </div></div>
-
   <div class="err" id="cfgErr"></div>
   <div class="btnrow">
     <button class="btn cancel" id="cfgCancel">Отмена</button>
@@ -357,6 +330,8 @@
   <div id="archList" style="margin-top:8px"></div>
   <div class="btnrow"><button class="btn cancel" id="archClose">Закрыть</button></div>
 </div></div>
+<div class="overlay" id="finOverlay"><div class="modal" id="finModal"></div></div>
+<div class="overlay" id="tgsOverlay"><div class="modal" id="tgsModal"></div></div>
 
 <div class="overlay" id="statsOverlay"><div class="modal" id="statsModal"></div></div>
 <div class="overlay" id="detailOverlay"><div class="modal" id="detailModal"></div></div>
@@ -402,7 +377,7 @@
 
 /* ===== PWA иконки ===== */
 function genIcon(s){var c=document.createElement('canvas');c.width=s;c.height=s;var x=c.getContext('2d');x.fillStyle='#4a7c59';x.fillRect(0,0,s,s);x.font=Math.round(s*.55)+'px sans-serif';x.textAlign='center';x.textBaseline='middle';x.fillText('\uD83D\uDC0E',s/2,s*.54);return c.toDataURL('image/png')}
-var icon64=genIcon(64),icon192=genIcon(192),icon512=genIcon(512);
+var icon192=genIcon(192),icon512=genIcon(512);
 var al=document.createElement('link');al.rel='apple-touch-icon';al.href=icon192;document.head.appendChild(al);
 var mf={name:'Конный клуб — расписание',short_name:'Конный клуб',start_url:'.',display:'standalone',background_color:'#f4f1ea',theme_color:'#4a7c59',icons:[{src:icon192,sizes:'192x192',type:'image/png'},{src:icon512,sizes:'512x512',type:'image/png'}]};
 var mb=new Blob([JSON.stringify(mf)],{type:'application/json'});var ml=document.createElement('link');ml.rel='manifest';ml.href=URL.createObjectURL(mb);document.head.appendChild(ml);
@@ -434,7 +409,7 @@ var db=null,config=JSON.parse(JSON.stringify(DEF)),bookings=[];
 var isAdmin=localStorage.getItem('hc_admin')==='true';
 var myTrainer=localStorage.getItem('hc_me')||'';
 var dates=getInitDates(),curDayOff=0;
-var curDur=1.5,curLI=0,curTI=0,curSt='wait',lastDK='',editId=null;
+var curDur=1.5,curLI=0,curTI=0,curSt='wait',editId=null;
 var refreshTmr=null,wasOnline=false;
 var autoArchTried=false;
 var myRemindCode=localStorage.getItem('hc_mycode')||'';
@@ -461,7 +436,7 @@ function initFB(){
   if(!firebaseConfig||typeof firebase==='undefined'){st.textContent='демо';schedRefresh();return}
   try{firebase.initializeApp(firebaseConfig);db=firebase.database();
     db.ref('config').on('value',function(sn){var v=sn.val();if(v){config=Object.assign(JSON.parse(JSON.stringify(DEF)),v);if(!Array.isArray(config.loads))config.loads=DEF.loads;if(!Array.isArray(config.tempos))config.tempos=DEF.tempos;if(!Array.isArray(config.horses))config.horses=[];if(!Array.isArray(config.trainers))config.trainers=[];config.loads=config.loads.map(function(l){return typeof l==='string'?{label:l}:{label:l.label||''}});config.tempos=config.tempos.map(function(t){return typeof t==='string'?{label:t}:{label:t.label||''}});config.trainers=config.trainers.map(function(t,i){if(typeof t==='string')return{name:t,color:TP[i%TP.length]};if(!t.color)t.color=TP[i%TP.length];return{name:t.name||'',color:t.color}});delete config.rate}curLI=Math.min(curLI,Math.max(0,config.loads.length-1));curTI=Math.min(curTI,Math.max(0,config.tempos.length-1));schedRefresh()});
-    db.ref('bookings').on('value',function(sn){var v=sn.val();bookings=v?Object.keys(v).map(function(k){return Object.assign({id:k},v[k])}):[];if(!wasOnline){wasOnline=true;st.textContent='\u25CF онлайн';st.className='status ok'}autoArchive();schedRefresh()},function(e){if(wasOnline){st.textContent='переподключение\u2026';st.className='status err'}wasOnline=false});
+    db.ref('bookings').on('value',function(sn){var v=sn.val();bookings=v?Object.keys(v).map(function(k){return Object.assign({id:k},v[k])}):[];if(!wasOnline){wasOnline=true;st.textContent='\u25CF онлайн';st.className='status ok'}autoCompleteBookings();autoArchive();schedRefresh()},function(e){if(wasOnline){st.textContent='переподключение\u2026';st.className='status err'}wasOnline=false});
     db.ref('tgUsers').on('value',function(sn){tgUsersCache=sn.val()||{};renderTgBindArea()});
   }catch(e){st.textContent='ошибка';st.className='status err';db=null;schedRefresh()}
 }
@@ -469,6 +444,20 @@ function saveCfg(){if(db)db.ref('config').set(config);schedRefresh()}
 function pushB(item){if(db)db.ref('bookings').push(item);else{item.id='l_'+Date.now();bookings.push(item);schedRefresh()}}
 function updB(id,d){if(db)db.ref('bookings/'+id).update(d);else{var b=bookings.find(function(x){return x.id===id});if(b)Object.assign(b,d);schedRefresh()}}
 function delB(id){if(db)db.ref('bookings/'+id).remove();else{bookings=bookings.filter(function(b){return b.id!==id});schedRefresh()}}
+
+/* ===== Авто-выполнение: время занятия истекло → статус «Выполнено» ===== */
+function autoCompleteBookings(){
+  if(!db)return;
+  var n=mskNow(),tk=dk(n),nowM=n.getHours()*60+n.getMinutes();
+  var upd={},changed=false;
+  bookings.forEach(function(b){
+    if((b.status||'wait')!=='wait')return;
+    var end=b.startMin+(b.dur||1)*60;
+    var passed=(b.dateKey<tk)||(b.dateKey===tk&&end<=nowM);
+    if(passed){upd['bookings/'+b.id+'/status']='done';changed=true}
+  });
+  if(changed)db.ref('/').update(upd).then(function(){console.log('Авто-выполнено записей:',Object.keys(upd).length)});
+}
 
 /* ===== Telegram: отправка ===== */
 async function tgSendText(chatId,text){
@@ -537,7 +526,6 @@ function buildCSV(data){
   });
   return csv;
 }
-
 async function getMonthData(ym){
   var rel=bookings.filter(function(b){return (b.dateKey||'').substring(0,7)===ym});
   if(rel.length||!db)return rel.sort(function(a,b){return a.dateKey.localeCompare(b.dateKey)||a.startMin-b.startMin});
@@ -561,8 +549,8 @@ function buildDetailHTML(items){
 }
 
 async function sendMonthlyReport(ym,chatId,btn){
-  if(!config.tgToken){alert('Укажите Bot Token в настройках (⚙️ → Экспорт и Telegram)');return false}
-  if(!chatId){alert('Укажите ID чата/канала в настройках (⚙️ → Экспорт и Telegram)');return false}
+  if(!config.tgToken){alert('Укажите Bot Token в настройках (☰ → Telegram и Экспорт)');return false}
+  if(!chatId){alert('Укажите ID чата/канала в настройках (☰ → Telegram и Экспорт)');return false}
   var monthData=await getMonthData(ym);
   var label=ymLabel(ym);
   var oldBtn=btn?btn.textContent:null;
@@ -658,7 +646,7 @@ function renderTgBindArea(){
       h+='<a href="https://t.me/'+esc(bot)+'?start='+esc(code)+'" target="_blank" style="text-decoration:none"><button class="btn-tg-csv" style="background:var(--green);color:#fff;border-color:var(--green)">\u2708 Открыть бота и привязать</button></a>';
       h+='<p style="font-size:11px;color:var(--muted);margin-top:4px">Откроется чат с ботом. Если код не подставился автоматически (бывает, если бот уже был запущен) — отправьте в чат вручную: <b>/start '+esc(code)+'</b></p>';
     }else{
-      h+='<p style="font-size:12px;color:var(--muted)">Отправьте боту сообщение: <b>/start '+esc(code)+'</b><br>(имя бота задается в ⚙️ → Экспорт и Telegram)</p>';
+      h+='<p style="font-size:12px;color:var(--muted)">Отправьте боту сообщение: <b>/start '+esc(code)+'</b><br>(имя бота задается в ☰ → Telegram и Экспорт)</p>';
     }
   }
   area.innerHTML=h;
@@ -680,44 +668,10 @@ function renderTgBindArea(){
   });
 }
 
-/* ===== Экспорт ===== */
-function populateExportMonths(){var sel=document.getElementById('exportMonth');var currentVal=sel.value;sel.innerHTML='<option value="all">За все время</option>';var monthsSet={};bookings.forEach(function(b){var ym=b.dateKey.substring(0,7);monthsSet[ym]=true});Object.keys(monthsSet).sort().reverse().forEach(function(ym){var parts=ym.split('-');var mIndex=parseInt(parts[1],10)-1;var label=MONTH_NOM[mIndex].charAt(0)+MONTH_NOM[mIndex].slice(1).toLowerCase()+' '+parts[0];var opt=document.createElement('option');opt.value=ym;opt.textContent=label;sel.appendChild(opt)});if([...sel.options].some(o=>o.value===currentVal))sel.value=currentVal}
-function getFilteredExportData(){var selVal=document.getElementById('exportMonth').value;var dataToExport=bookings;if(selVal!=='all')dataToExport=bookings.filter(function(b){return b.dateKey.startsWith(selVal)});return dataToExport.sort(function(a,b){return a.dateKey.localeCompare(b.dateKey)||a.startMin-b.startMin})}
-
-document.getElementById('csvDownBtn').addEventListener('click',function(){var data=getFilteredExportData();var monthName=document.getElementById('exportMonth').options[document.getElementById('exportMonth').selectedIndex].text;if(!data.length)return alert("Нет записей за: "+monthName);var csv=buildCSV(data);var fileName=monthName==='За все время'?'Расписание_все.csv':'Расписание_'+document.getElementById('exportMonth').value+'.csv';const blob=new Blob([csv],{type:'text/csv;charset=utf-8;'});const link=document.createElement("a");link.href=URL.createObjectURL(blob);link.download=fileName;link.click()});
-
-document.getElementById('tgSendBtn').addEventListener('click',function(){
-  const BOT_TOKEN=config.tgToken;
-  const targetType=document.getElementById('tgTarget').value;
-  const CHAT_ID=targetType==='public'?config.tgPublicChat:config.tgAdminChat;
-  if(!BOT_TOKEN)return alert('Укажите Bot Token в настройках!');
-  if(!CHAT_ID)return alert('Укажите ID выбранного чата/канала в настройках!');
-  var data=getFilteredExportData();var monthName=document.getElementById('exportMonth').options[document.getElementById('exportMonth').selectedIndex].text;if(!data.length)return alert("Нет записей за: "+monthName);
-  let text="📋 <b>Расписание: "+monthName+"</b>\n\n";let grouped={};data.forEach(function(b){if(!grouped[b.dateKey])grouped[b.dateKey]=[];grouped[b.dateKey].push(b)});
-  for(let date in grouped){text+="📅 <b>"+date+"</b>\n";grouped[date].forEach(function(b){let timeStr=m2s(b.startMin)+'-'+m2s(b.startMin+b.dur*60);let statusIcon=b.status==='done'?'✅':(b.status==='cancel'?'🚫':'⏳');text+="  "+statusIcon+" "+timeStr+" | 🐴 "+b.horse+" | 👤 "+b.trainer+(b.comment ? " | 💬 "+b.comment : "")+"\n"});text+="\n"}
-  document.getElementById('tgSendBtn').textContent='⏳ Отправка...';fetch("https://api.telegram.org/bot"+BOT_TOKEN+"/sendMessage",{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({chat_id:CHAT_ID,text:text,parse_mode:'HTML'})}).then(function(r){return r.json()}).then(function(res){document.getElementById('tgSendBtn').textContent='📨 Отправить таблицу в Телеграм';alert(res.ok?'Успешно отправлено!':'Ошибка: '+res.description)}).catch(function(e){document.getElementById('tgSendBtn').textContent='📨 Отправить таблицу в Телеграм';alert('Ошибка сети: '+e)})});
-
-document.getElementById('archSendBtn').addEventListener('click',function(){sendMonthlyReport(prevYM(),config.tgAdminChat,this)});
-document.getElementById('syncArchBtn').addEventListener('click',async function(){
-  if(!db)return alert('Нет подключения к базе');
-  var m=mskNow();
-  var cutoff=m.getFullYear()+'-'+String(m.getMonth()+1).padStart(2,'0')+'-01';
-  var past=bookings.filter(function(b){return b.dateKey<cutoff});
-  if(!past.length)return alert('Прошедших месяцев в таблице нет — всё уже в архиве 🗂');
-  if(!confirm('Скопировать '+past.length+' записей за прошедшие месяцы в архив?\n\n(Из таблицы записи НЕ удалятся)'))return;
-  var btn=this;var old=btn.textContent;btn.disabled=true;btn.textContent='⏳ Синхронизация...';
-  try{
-    var n=await copyPastToArchive();
-    btn.disabled=false;btn.textContent=old;
-    alert('Готово! '+n+' записей добавлено в архив 🗂\n(в таблице всё осталось на месте)');
-  }catch(e){btn.disabled=false;btn.textContent=old;alert('Ошибка: '+(e.message||e))}
-});
-
 /* ===== Кто вы ===== */
 function showWhoSelect(){var list=document.getElementById('whoList');list.innerHTML='';config.trainers.forEach(function(t){var d=document.createElement('div');d.className='who-item'+(myTrainer===t.name?' sel':'');var role=t.name.match(/\(([^)]+)\)/);role=role?role[1]:'';d.innerHTML='<span class="stat-dot" style="background:'+esc(t.color)+'"></span><span>'+esc(t.name)+'</span><span class="who-role">'+esc(role)+'</span>';d.addEventListener('click',function(){myTrainer=t.name;localStorage.setItem('hc_me',myTrainer);document.getElementById('whoOverlay').classList.remove('open');ensureRemindEntry();schedRefresh()});list.appendChild(d)});document.getElementById('whoOverlay').classList.add('open')}
 document.getElementById('whoSkip').addEventListener('click',function(){myTrainer='';localStorage.removeItem('hc_me');document.getElementById('whoOverlay').classList.remove('open');schedRefresh()});
 
-/* При выборе «кто я» — создать/перенести настройку напоминаний в Firebase */
 async function ensureRemindEntry(){
   if(!db||!myTrainer)return;
   var code=getMyCode();
@@ -732,10 +686,10 @@ async function ensureRemindEntry(){
 /* ===== Справка ===== */
 var HELP=[
  {t:'\uD83D\uDCF1 Установка на телефон',c:'<p>Сайт работает и в браузере, но как приложение — удобнее: своя иконка, без адресной строки, полноэкранный режим.</p><p><strong>iPhone (Safari):</strong></p><ul><li>Откройте сайт в Safari</li><li>Кнопка «Поделиться» (квадрат со стрелкой вверх)</li><li>Выберите «На экран “Домой”» → «Добавить»</li></ul><p><strong>Android (Chrome):</strong></p><ul><li>Откройте сайт в Chrome</li><li>Меню (⋮) → «Установить приложение» / «Добавить на главный экран»</li><li>Подтвердите установку</li></ul><p>Иконка 🐴 появится на рабочем столе — приложение запускается как обычное.</p>'},
- {t:'\uD83D\uDD14 Напоминания в Telegram',c:'<p>Напоминания приходят <strong>в Telegram</strong> и работают всегда — даже если сайт закрыт, телефон спит, а приложение давно свёрнуто.</p><p><strong>Как подключить (один раз):</strong></p><ul><li>Откройте ⚙️ настройки → раздел «🔔 Уведомления (Telegram)» (он первый в списке)</li><li>Выберите «Кто я» и «Напоминать за:» нужное время (от 5 минут до 2 часов или своё значение)</li><li>Нажмите «✈️ Открыть бота и привязать» — откроется чат с ботом, нажмите «Старт»</li><li>Если код не подставился автоматически (бывает, когда бот уже запускался) — отправьте в чат вручную: <code>/start КОД</code> (код показан над кнопкой, тап по нему — копирование)</li><li>Через 1–2 минуты статус станет «✅ Telegram привязан» и свернётся в компактную строку</li></ul><p><strong>Как работают напоминания:</strong></p><ul><li>Приходят только о занятиях, где в поле «Тренер» указано <strong>ровно ваше имя</strong></li><li>Только со статусом «⏳ Ожидание» и только на сегодняшний день</li><li>Заранее — за выбранное вами время</li><li>В сообщении: лошадь, время, длительность, нагрузка, темп, комментарий</li></ul><p>Проверить привязку в любой момент: отправьте боту <code>/status</code>. Работает одинаково на Android и iPhone.</p>'},
- {t:'\uD83D\uDC0E Как читать расписание',c:'<ul><li><strong>Зелёная плашка</strong> — занятие выполнено</li><li><strong>Жёлтая плашка</strong> — ожидание (запланировано)</li><li><strong>Красная плашка</strong> — отменена</li><li>Цветная полоска слева на плашке — цвет тренера (легенда под календарём)</li><li>Рамка вокруг плашки — это <strong>ваше</strong> занятие</li><li>Просветлевшие плашки — занятия, время которых уже прошло</li><li>Нажмите на занятие — откроются подробности: дата, длительность, тренер, нагрузка, темп, комментарий (крестик ✕ или клик мимо окна — закрыть)</li><li>Строка дней прокручивается: текущий и следующий месяц, счётчик занятий на каждый день</li><li>Пустые клетки со знаком «＋» — свободное время, можно забронировать (для администратора)</li></ul>'},
- {t:'\u2699\uFE0F Для администратора',c:'<p><strong>Вход</strong> — кнопка «🔒 Войти» вверху. После входа появляются: ＋ (быстрая бронь), 📊, 🗂 и ⚙️.</p><ul><li><strong>⚙️ Конфигуратор</strong> — всё управление: уведомления (первый раздел), лошади, тренеры с цветами, нагрузки, темпы, пароль</li><li><strong>📦 Экспорт, архив и Telegram</strong> (свернутый раздел внизу) — CSV для Excel за любой месяц, отправка таблицы в канал или чат админа, токен и имя бота, кнопка ручной архивации</li><li><strong>🗂 Архив месяцев</strong> — прошедшие месяцы хранятся вечно: клик по месяцу разворачивает детализацию по дням, можно скачать CSV. Ничего не удаляется</li><li><strong>Автоархив</strong> — при первом открытии сайта в новом месяце отчёт за прошедший (сводка + детализация + CSV-файл) уходит в чат админа, копия записей попадает в архив. Каждый месяц — один раз</li><li><strong>🔄 Синхронизация</strong> — если записи добавлялись в базу вручную (задним числом), кнопка скопирует прошедшие месяцы в архив</li><li><strong>Напоминания</strong> — рассылает бот через облачный планировщик: проверяет базу каждую минуту днём и раз в 5 минут ночью</li></ul>'},
- {t:'\u2753 Частые вопросы',c:'<p><strong>Не приходят напоминания?</strong></p><ul><li>⚙️ → «Уведомления»: статус «✅ Telegram привязан»? Если нет — пройдите привязку заново (код + кнопка)</li><li>Отправьте боту <code>/status</code> — он покажет, к какому имени вы привязаны</li><li>Имя в брони совпадает с «Кто я» посимвольно? (лишний пробел = не совпадает)</li><li>Бронь на сегодня? Статус «⏳ Ожидание»? (отменённые и выполненные не напоминаются)</li><li>«Напоминать за» больше, чем осталось до занятия? Окно уже прошло — не придёт</li></ul><p><strong>Куда деваются старые записи?</strong> Никуда — копируются в архив (🗂 вверху), всегда можно посмотреть или скачать CSV.</p><p><strong>Кнопка «🔔 Тест уведомления» молчит?</strong> Значит, нет привязки — пройдите её сначала.</p><p><strong>Можно ли привязать два имени (тренер + берейтор)?</strong> Да — привяжите оба по очереди, сообщения придут в один чат.</p><p><strong>Сменил телефон — привязка слетела?</strong> Нет: привязывается Telegram-аккаунт, а не устройство.</p><p><strong>Тёмная тема?</strong> Кнопка 🌙 вверху — запоминается на устройстве.</p>'}
+ {t:'\uD83D\uDD14 Напоминания в Telegram',c:'<p>Напоминания приходят <strong>в Telegram</strong> и работают всегда — даже если сайт закрыт, телефон спит, а приложение давно свёрнуто.</p><p><strong>Как подключить (один раз):</strong></p><ul><li>Откройте меню ☰ → «⚙️ Конфигуратор» → раздел «🔔 Уведомления (Telegram)»</li><li>Выберите «Кто я» и «Напоминать за:» нужное время (от 5 минут до 2 часов или своё значение)</li><li>Нажмите «✈️ Открыть бота и привязать» — откроется чат с ботом, нажмите «Старт»</li><li>Если код не подставился автоматически (бывает, когда бот уже запускался) — отправьте в чат вручную: <code>/start КОД</code> (код показан над кнопкой, тап по нему — копирование)</li><li>Через 1–2 минуты статус станет «✅ Telegram привязан» и свернётся в компактную строку</li></ul><p><strong>Как работают напоминания:</strong></p><ul><li>Приходят только о занятиях, где в поле «Тренер» указано <strong>ровно ваше имя</strong></li><li>Только со статусом «⏳ Ожидание» и только на сегодняшний день</li><li>Заранее — за выбранное вами время</li><li>В сообщении: лошадь, время, длительность, нагрузка, темп, комментарий</li></ul><p>Проверить привязку в любой момент: отправьте боту <code>/status</code>. Работает одинаково на Android и iPhone.</p>'},
+ {t:'\uD83D\uDC0E Как читать расписание',c:'<ul><li><strong>Зелёная плашка</strong> — занятие выполнено</li><li><strong>Жёлтая плашка</strong> — ожидание (запланировано)</li><li><strong>Красная плашка</strong> — отменена</li><li>Цветная полоска слева на плашке — цвет тренера (легенда под календарём)</li><li>Рамка вокруг плашки — это <strong>ваше</strong> занятие</li><li>Просветлевшие плашки — занятия, время которых уже прошло</li><li>Нажмите на занятие — откроются подробности: дата, длительность, тренер, нагрузка, темп, комментарий (крестик ✕ или клик мимо окна — закрыть)</li><li>Строка слева показывает диапазон слота: «08:00–08:30» — занятое в этой строке время начинается в 8:00 и заканчивается в 8:30</li><li><strong>Авто-выполнение:</strong> когда время занятия истекло, статус автоматически меняется на «✓ Выполнено»</li><li>Пустые клетки со знаком «＋» — свободное время, можно забронировать (для администратора)</li></ul>'},
+ {t:'\u2699\uFE0F Для администратора',c:'<p><strong>Вход</strong> — кнопка «🔒 Войти» вверху. После входа появляется меню ☰ из пяти разделов.</p><ul><li><strong>⚙️ Конфигуратор</strong> — всё про таблицу: уведомления, лошади, тренеры с цветами, нагрузки, темпы, пароль</li><li><strong>💰 Финансы</strong> — выручка за период (−30…+30 дней или свой), по тренерам (с зарплатами в %), по нагрузкам, по лошадям; цены услуг настраиваются в окне Финансов</li><li><strong>📨 Telegram и Экспорт</strong> — CSV для Excel, отправка таблицы в канал/чат, токен и имя бота, ручная архивация месяца</li><li><strong>🗂 Архив месяцев</strong> — прошедшие месяцы хранятся вечно, клик по месяцу разворачивает детализацию, можно скачать CSV</li><li><strong>Автоархив</strong> — при первом открытии в новом месяце отчёт за прошедший уходит в чат админа, копия записей — в архив</li><li><strong>Авто-выполнение</strong> — когда время занятия истекло, статус автоматически становится «✓ Выполнено»</li><li><strong>📊 Статистика</strong> — за сегодня или за свой период</li></ul>'},
+ {t:'\u2753 Частые вопросы',c:'<p><strong>Не приходят напоминания?</strong></p><ul><li>⚙️ → «Уведомления»: статус «✅ Telegram привязан»? Если нет — пройдите привязку заново (код + кнопка)</li><li>Отправьте боту <code>/status</code> — он покажет, к какому имени вы привязаны</li><li>Имя в брони совпадает с «Кто я» посимвольно? (лишний пробел = не совпадает)</li><li>Бронь на сегодня? Статус «⏳ Ожидание»? (отменённые и выполненные не напоминаются)</li><li>«Напоминать за» больше, чем осталось до занятия? Окно уже прошло — не придёт</li></ul><p><strong>Почему занятие само стало «Выполнено»?</strong> Так задумано: когда время занятия истекло, статус меняется автоматически.</p><p><strong>Куда деваются старые записи?</strong> Никуда — копируются в архив, всегда можно посмотреть или скачать CSV.</p><p><strong>Можно ли привязать два имени?</strong> Да — привяжите оба по очереди, сообщения придут в один чат.</p><p><strong>Тёмная тема?</strong> Кнопка 🌙 вверху — запоминается на устройстве.</p>'}
 ];
 function renderHelp(){var box=document.getElementById('accList');box.innerHTML='';HELP.forEach(function(item,i){var div=document.createElement('div');div.className='acc-item';div.innerHTML='<div class="acc-head" data-i="'+i+'">'+item.t+'</div><div class="acc-body"><div>'+item.c+'</div></div>';box.appendChild(div)});box.querySelectorAll('.acc-head').forEach(function(h){h.addEventListener('click',function(){h.parentElement.classList.toggle('open')})})}
 document.getElementById('infoBtn').addEventListener('click',function(){renderHelp();document.getElementById('infoOverlay').classList.add('open')});
@@ -790,7 +744,7 @@ function renderStatsContent(days){
     rel=bookings.filter(function(b){return datesArr.indexOf(b.dateKey)!==-1&&(b.status||'wait')!=='cancel'});
     periodTxt='Сегодня';
   }
-  if(!rel.length){cont.innerHTML='<div class="stat-total">'+esc(periodTxt)+'</div><p style="color:var(--muted);text-align:center;padding:20px">Нет записей за выбранный период \uD83E\uDD7D<br><span style="font-size:11px">Прошлые месяцы хранятся в архиве (кнопка \uD83D\uDDC2)</span></p>';return}
+  if(!rel.length){cont.innerHTML='<div class="stat-total">'+esc(periodTxt)+'</div><p style="color:var(--muted);text-align:center;padding:20px">Нет записей за выбранный период \uD83E\uDD7D<br><span style="font-size:11px">Прошлые месяцы хранятся в архиве</span></p>';return}
 
   var totalH=0,doneN=0,waitN=0,dd={};
   rel.forEach(function(b){totalH+=(b.dur||0);dd[b.dateKey]=1;if((b.status||'wait')==='done')doneN++;else waitN++});
@@ -825,7 +779,7 @@ function renderStatsContent(days){
   }
   cont.innerHTML=h;
 }
-  
+
 /* ===== Архив: просмотр ===== */
 async function openArchive(){
   document.getElementById('archOverlay').classList.add('open');
@@ -853,14 +807,13 @@ async function openArchive(){
     });
   }catch(e){box.innerHTML='<p style="color:var(--red);text-align:center;padding:20px">Ошибка загрузки архива</p>'}
 }
-document.getElementById('archBtn').addEventListener('click',function(){if(isAdmin)openArchive()});
 document.getElementById('archClose').addEventListener('click',function(){document.getElementById('archOverlay').classList.remove('open')});
 
 /* ===== Отрисовка ===== */
 function renderTL(){var b=document.getElementById('trainerLegend');if(!config.trainers.length){b.innerHTML='';return}b.innerHTML=config.trainers.map(function(t){var extra=(myTrainer===t.name)?'<span class="my-badge">Я</span>':'';return '<span class="tl-item"><span class="tl-dot" style="background:'+esc(t.color)+'"></span>'+esc(t.name)+extra+'</span>'}).join('')}
 function renderDays(){var box=document.getElementById('days');box.innerHTML='';var tk=dk(mskNow()),f=dates[0],l=dates[dates.length-1],mt;if(f.getMonth()===l.getMonth())mt=f.getDate()+' \u2013 '+l.getDate()+' '+MN[f.getMonth()]+' '+f.getFullYear();else mt=f.getDate()+' '+MN[f.getMonth()].substring(0,3)+' \u2013 '+l.getDate()+' '+MN[l.getMonth()].substring(0,3)+' '+l.getFullYear();document.getElementById('monthLabel').textContent=mt;dates.forEach(function(d,i){var key=dk(d),n=bookings.filter(function(b){return b.dateKey===key&&(b.status||'wait')!=='cancel'}).length;var isT=key===tk,isNM=d.getMonth()!==f.getMonth(),isP=key<tk;var t=document.createElement('div');t.className='day-tab'+(i===curDayOff?' active':'')+(isT?' today':'')+(isNM?' new-month':'')+(isP&&!isT?' past-day':'');if(isT)t.title='Сегодня';t.innerHTML='<span class="dname">'+DS[i%7]+'</span><span class="dnum">'+d.getDate()+'</span><span class="cnt">'+n+'</span>';t.addEventListener('click',function(){curDayOff=i;schedRefresh()});box.appendChild(t)});requestAnimationFrame(function(){var a=box.querySelector('.day-tab.active');if(a)a.scrollIntoView({behavior:'smooth',block:'nearest',inline:'center'})})}
-function renderSched(){var box=document.getElementById('sched'),horses=config.horses;if(!horses.length){box.innerHTML='<div class="no-horses">Нет лошадей. Добавьте в \u2699\uFE0F</div>';return}var ad=dates[curDayOff];if(!ad)return;var adk=dk(ad),db2=bookings.filter(function(b){return b.dateKey===adk});var isT=adk===dk(mskNow()),nowM=mskNow().getHours()*60+mskNow().getMinutes(),step=config.slotStep||30,sl=getSlots();var g=document.createElement('div');g.className='grid';g.style.gridTemplateColumns='72px repeat('+horses.length+',1fr)';var co=document.createElement('div');co.className='gh corner';co.textContent='Время';g.appendChild(co);horses.forEach(function(h){var gh=document.createElement('div');gh.className='gh';gh.textContent=h;g.appendChild(gh)});sl.forEach(function(sm){var tc=document.createElement('div');tc.className='gl';tc.textContent=m2s(sm);g.appendChild(tc);horses.forEach(function(horse){var gc=document.createElement('div');gc.className='gc';var se=sm+step;var mt=db2.filter(function(b){return b.horse===horse&&b.startMin<se&&(b.startMin+b.dur*60)>sm});if(!mt.length){gc.classList.add('empty-slot');if(isAdmin){var ph=document.createElement('div');ph.className='add-placeholder';ph.textContent='\uFF0B';ph.addEventListener('click',function(){openFormFor(curDayOff,sm,horse)});gc.appendChild(ph)}}else mt.forEach(function(b){var st=ST[b.status]||ST.wait;var ip=isT&&(b.startMin+b.dur*60)<=nowM;var bl=document.createElement('div');bl.className='bblock s-'+st.cls+(ip?' past':'')+(b.trainer===myTrainer?' mine':'');var tc2=tColor(b.trainer);if(tc2)bl.style.borderLeftColor=tc2;bl.innerHTML='<div class="btime">'+esc(m2s(b.startMin)+'-'+m2s(b.startMin+b.dur*60))+'</div><div class="btrainer">'+esc(b.trainer||'\u2014')+'</div>';bl.addEventListener('click',function(){openDetail(b.id)});gc.appendChild(bl)});g.appendChild(gc)})});var w=document.createElement('div');w.className='grid-wrap';w.appendChild(g);box.innerHTML='';box.appendChild(w)}
-function renderHdr(){document.getElementById('adminBtn').style.display=isAdmin?'none':'inline-block';document.getElementById('adminCfgBtn').style.display=isAdmin?'inline-block':'none';document.getElementById('adminOutBtn').style.display=isAdmin?'inline-block':'none';document.getElementById('statsBtn').style.display=isAdmin?'inline-block':'none';document.getElementById('archBtn').style.display=isAdmin?'inline-block':'none';document.getElementById('guestHint').style.display=isAdmin?'none':'block';document.getElementById('fab').style.display=isAdmin?'block':'none'}
+function renderSched(){var box=document.getElementById('sched'),horses=config.horses;if(!horses.length){box.innerHTML='<div class="no-horses">Нет лошадей. Добавьте в \u2699\uFE0F</div>';return}var ad=dates[curDayOff];if(!ad)return;var adk=dk(ad),db2=bookings.filter(function(b){return b.dateKey===adk});var isT=adk===dk(mskNow()),nowM=mskNow().getHours()*60+mskNow().getMinutes(),step=config.slotStep||30,sl=getSlots();var g=document.createElement('div');g.className='grid';g.style.gridTemplateColumns='95px repeat('+horses.length+',1fr)';var co=document.createElement('div');co.className='gh corner';co.textContent='Время';g.appendChild(co);horses.forEach(function(h){var gh=document.createElement('div');gh.className='gh';gh.textContent=h;g.appendChild(gh)});sl.forEach(function(sm){var tc=document.createElement('div');tc.className='gl';tc.textContent=m2s(sm)+'\u2013'+m2s(sm+step);g.appendChild(tc);horses.forEach(function(horse){var gc=document.createElement('div');gc.className='gc';var se=sm+step;var mt=db2.filter(function(b){return b.horse===horse&&b.startMin<se&&(b.startMin+b.dur*60)>sm});if(!mt.length){gc.classList.add('empty-slot');if(isAdmin){var ph=document.createElement('div');ph.className='add-placeholder';ph.textContent='\uFF0B';ph.addEventListener('click',function(){openFormFor(curDayOff,sm,horse)});gc.appendChild(ph)}}else mt.forEach(function(b){var st=ST[b.status]||ST.wait;var ip=isT&&(b.startMin+b.dur*60)<=nowM;var bl=document.createElement('div');bl.className='bblock s-'+st.cls+(ip?' past':'')+(b.trainer===myTrainer?' mine':'');var tc2=tColor(b.trainer);if(tc2)bl.style.borderLeftColor=tc2;bl.innerHTML='<div class="btime">'+esc(m2s(b.startMin)+'-'+m2s(b.startMin+b.dur*60))+'</div><div class="btrainer">'+esc(b.trainer||'\u2014')+'</div>';bl.addEventListener('click',function(){openDetail(b.id)});gc.appendChild(bl)});g.appendChild(gc)})});var w=document.createElement('div');w.className='grid-wrap';w.appendChild(g);box.innerHTML='';box.appendChild(w)}
+function renderHdr(){document.getElementById('adminBtn').style.display=isAdmin?'none':'inline-block';document.getElementById('adminOutBtn').style.display=isAdmin?'inline-block':'none';document.getElementById('guestHint').style.display=isAdmin?'none':'block';document.getElementById('fab').style.display=isAdmin?'block':'none';document.getElementById('menuBtn').style.display=isAdmin?'inline-block':'none'}
 function refreshUI(){renderHdr();renderTL();renderDays();renderSched()}
 
 /* ===== Детали ===== */
@@ -889,7 +842,7 @@ function openLogin(){document.getElementById('loginErr').style.display='none';do
 document.getElementById('loginGo').addEventListener('click',doLogin);document.getElementById('loginPass').addEventListener('keydown',function(e){if(e.key==='Enter')doLogin()});
 function doLogin(){var p=document.getElementById('loginPass').value;if(p===(config.adminPass||'admin')){isAdmin=true;localStorage.setItem('hc_admin','true');document.getElementById('loginOverlay').classList.remove('open');if(!myTrainer)showWhoSelect();else schedRefresh()}else{var e=document.getElementById('loginErr');e.textContent='\u26A0 Неверный пароль.';e.style.display='block'}}
 document.getElementById('loginCancel').addEventListener('click',function(){document.getElementById('loginOverlay').classList.remove('open')});
-document.getElementById('adminBtn').addEventListener('click',openLogin);document.getElementById('adminCfgBtn').addEventListener('click',function(){if(isAdmin)openCfg()});document.getElementById('adminOutBtn').addEventListener('click',function(){if(!isAdmin)return;if(confirm('Выйти?')){isAdmin=false;localStorage.removeItem('hc_admin');closeCfg();closeForm();schedRefresh()}});document.getElementById('statsBtn').addEventListener('click',function(){if(isAdmin)openStats()});
+document.getElementById('adminBtn').addEventListener('click',openLogin);document.getElementById('adminOutBtn').addEventListener('click',function(){if(!isAdmin)return;if(confirm('Выйти?')){isAdmin=false;localStorage.removeItem('hc_admin');closeCfg();closeForm();document.querySelectorAll('.overlay.open').forEach(function(o){o.classList.remove('open')});schedRefresh()}});
 
 /* ===== Конфигуратор ===== */
 var cfgD=null;
@@ -897,11 +850,6 @@ function openCfg(){
   cfgD=JSON.parse(JSON.stringify(config));
   document.getElementById('cfgErr').style.display='none';
   document.getElementById('cfgPass').value='';
-  document.getElementById('cfgTgToken').value=cfgD.tgToken||'';
-  document.getElementById('cfgTgPublicChat').value=cfgD.tgPublicChat||'';
-  document.getElementById('cfgTgAdminChat').value=cfgD.tgAdminChat||'';
-  document.getElementById('cfgBotName').value=cfgD.botName||'';
-  populateExportMonths();
   loadCfgProfile();
   renderCfg();
   renderTgBindArea();
@@ -916,10 +864,6 @@ document.getElementById('cfgTrainerAdd').addEventListener('click',function(){var
 document.getElementById('cfgSave').addEventListener('click',function(){
   var np=document.getElementById('cfgPass').value.trim();
   if(np)cfgD.adminPass=np;
-  cfgD.tgToken=document.getElementById('cfgTgToken').value.trim();
-  cfgD.tgPublicChat=document.getElementById('cfgTgPublicChat').value.trim();
-  cfgD.tgAdminChat=document.getElementById('cfgTgAdminChat').value.trim();
-  cfgD.botName=document.getElementById('cfgBotName').value.trim().replace('@','');
   config=cfgD;
   saveCfg();
   renderTgBindArea();
@@ -989,9 +933,277 @@ initFB();
 watchRemindSettings();
 if(!myTrainer&&isAdmin)setTimeout(showWhoSelect,500);
 
+/* ===== Меню админа + Финансы + Telegram и Экспорт ===== */
+function fmtMoney(n){return Math.round(n).toLocaleString('ru-RU')+' ₽'}
+function finKey(l){return String(l).replace(/[.\/#$\[\]]/g,'_')}
+function finPrices(){config.prices=config.prices||{};return config.prices}
+function bookingPrice(b){
+  var p=(config.prices||{})[finKey(b.loadLabel)];if(!p)return null;
+  var map={'1':'d1','1.5':'d15','2':'d2','3':'d3'},k=map[String(b.dur)];
+  if(k&&p[k])return p[k];
+  if(p.ph)return Math.round(p.ph*(b.dur||1));
+  return null;
+}
+function addX2(ov){var m=ov.querySelector('.modal');if(!m||m.querySelector('.modal-x'))return;var x=document.createElement('button');x.className='modal-x';x.textContent='\u2715';x.addEventListener('click',function(){ov.classList.remove('open')});m.appendChild(x);ov.addEventListener('click',function(e){if(e.target===ov)ov.classList.remove('open')})}
+
+function openMenu(){
+  var ov=document.getElementById('menuOverlay');
+  if(!ov){
+    ov=document.createElement('div');ov.className='overlay';ov.id='menuOverlay';
+    ov.innerHTML='<div class="modal"><h2>☰ Меню</h2><div id="menuList"></div><div class="btnrow"><button class="btn cancel" id="menuClose">Закрыть</button></div></div>';
+    document.body.appendChild(ov);
+  }
+  var items=[
+    ['\u2699\uFE0F Конфигуратор',function(){ov.classList.remove('open');openCfg()}],
+    ['\uD83D\uDCB0 Финансы',function(){ov.classList.remove('open');openFinance()}],
+    ['\uD83D\uDCCA Статистика',function(){ov.classList.remove('open');openStats()}],
+    ['\uD83D\uDDC2 Архив месяцев',function(){ov.classList.remove('open');openArchive()}],
+    ['\uD83D\uDCE8 Telegram и Экспорт',function(){ov.classList.remove('open');openTgs()}]
+  ];
+  var list=ov.querySelector('#menuList');list.innerHTML='';
+  items.forEach(function(it){
+    var d=document.createElement('div');d.className='who-item';d.textContent=it[0];
+    d.addEventListener('click',it[1]);list.appendChild(d);
+  });
+  ov.querySelector('#menuClose').onclick=function(){ov.classList.remove('open')};
+  addX2(ov);
+  ov.classList.add('open');
+}
+
+var finMode='t';
+function finRange(mode){
+  var n=mskNow(),tk=dk(n);
+  function add(d){return dk(new Date(n.getTime()+d*24*60*60*1000))}
+  if(mode==='p30')return{f:add(-30),t:tk,l:'30 дней назад \u2014 сегодня'};
+  if(mode==='p7')return{f:add(-7),t:tk,l:'7 дней назад \u2014 сегодня'};
+  if(mode==='f7')return{f:tk,t:add(7),l:'сегодня \u2014 7 дней вперед'};
+  if(mode==='f30')return{f:tk,t:add(30),l:'сегодня \u2014 30 дней вперед'};
+  return{f:tk,t:tk,l:'Сегодня'};
+}
+function finFilter(){
+  var from,to,label;
+  if(finMode==='custom'){
+    from=document.getElementById('finFrom').value;to=document.getElementById('finTo').value;
+    if(!from||!to)return null;
+    label='Период: '+from+' \u2014 '+to;
+  }else{
+    var r=finRange(finMode);from=r.f;to=r.t;label=r.l+' ('+r.f+' \u2014 '+r.t+')';
+  }
+  var rel=bookings.filter(function(b){return b.dateKey>=from&&b.dateKey<=to&&(b.status||'wait')!=='cancel'});
+  rel.__label=label;return rel;
+}
+function renderFinance(){
+  var cont=document.getElementById('finContent');
+  var rel=finFilter();
+  if(!rel){cont.innerHTML='<p style="color:var(--muted);text-align:center;padding:16px">Выберите обе даты</p>';return}
+  var earned=0,pending=0,cnt=0,noPrice=0,byTr={},byLoad={},byHorse={};
+  rel.forEach(function(b){
+    var pr=bookingPrice(b);
+    if(pr==null){noPrice++;pr=0}
+    if((b.status||'wait')==='done')earned+=pr;else pending+=pr;
+    cnt++;
+    var bt=byTr[b.trainer]||(byTr[b.trainer]={sum:0,n:0});bt.sum+=pr;bt.n++;
+    var bl=byLoad[b.loadLabel||'\u2014']||(byLoad[b.loadLabel||'\u2014']={sum:0,n:0});bl.sum+=pr;bl.n++;
+    var bh=byHorse[b.horse]||(byHorse[b.horse]={sum:0,n:0});bh.sum+=pr;bh.n++;
+  });
+  var pay={},payTotal=0;
+  Object.keys(byTr).forEach(function(n){var pct=(config.payouts||{})[finKey(n)]||0;pay[n]=Math.round(byTr[n].sum*pct/100);payTotal+=pay[n]});
+  var h='<div style="font-size:12px;color:var(--muted);text-align:center;margin-bottom:10px">'+esc(rel.__label)+'</div>';
+  h+='<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px">';
+  h+='<div style="flex:1;min-width:110px;background:var(--done-bg);border-radius:12px;padding:10px;text-align:center"><div style="font-size:18px;font-weight:800;color:var(--done-text)">'+fmtMoney(earned)+'</div><div style="font-size:11px;color:var(--muted)">заработано</div></div>';
+  h+='<div style="flex:1;min-width:110px;background:var(--wait-bg);border-radius:12px;padding:10px;text-align:center"><div style="font-size:18px;font-weight:800;color:var(--wait-text)">'+fmtMoney(pending)+'</div><div style="font-size:11px;color:var(--muted)">ожидается</div></div>';
+  h+='<div style="flex:1;min-width:100px;background:var(--input-bg);border:1.5px solid var(--line);border-radius:12px;padding:10px;text-align:center"><div style="font-size:18px;font-weight:800">'+cnt+'</div><div style="font-size:11px;color:var(--muted)">занятий</div></div>';
+  h+='<div style="flex:1;min-width:100px;background:var(--input-bg);border:1.5px solid var(--line);border-radius:12px;padding:10px;text-align:center"><div style="font-size:18px;font-weight:800">'+(cnt?fmtMoney((earned+pending)/cnt):'\u2014')+'</div><div style="font-size:11px;color:var(--muted)">средний чек</div></div>';
+  h+='</div>';
+  if(noPrice)h+='<p style="font-size:12px;color:var(--red);margin-bottom:8px">\u26A0 '+noPrice+' зан. без цены \u2014 задайте в настройках ниже</p>';
+  h+='<div class="sec"><h3>\uD83C\uDFC7 По тренерам</h3>';
+  Object.keys(byTr).sort(function(a,b){return byTr[b].sum-byTr[a].sum}).forEach(function(n){
+    var t=byTr[n];
+    h+='<div class="stat-row"><span class="stat-name">'+esc(n)+'</span><span class="stat-nums">'+t.n+' зан.</span><span class="stat-hours">'+fmtMoney(t.sum)+'</span></div>';
+    if(pay[n])h+='<div class="stat-row" style="padding-left:20px;font-size:12px"><span class="stat-name" style="font-weight:400;color:var(--muted)">\u21B3 зарплата '+((config.payouts||{})[finKey(n)])+'%</span><span class="stat-nums"></span><span class="stat-hours" style="color:var(--red)">-'+fmtMoney(pay[n])+'</span></div>';
+  });
+  h+='</div><div class="sec"><h3>\uD83D\uDCCB По нагрузкам</h3>';
+  Object.keys(byLoad).sort(function(a,b){return byLoad[b].sum-byLoad[a].sum}).forEach(function(n){var t=byLoad[n];h+='<div class="stat-row"><span class="stat-name">'+esc(n)+'</span><span class="stat-nums">'+t.n+' зан.</span><span class="stat-hours">'+fmtMoney(t.sum)+'</span></div>'});
+  h+='</div><div class="sec"><h3>\uD83D\uDC0E По лошадям</h3>';
+  Object.keys(byHorse).sort(function(a,b){return byHorse[b].sum-byHorse[a].sum}).forEach(function(n){var t=byHorse[n];h+='<div class="stat-row"><span class="stat-name">'+esc(n)+'</span><span class="stat-nums">'+t.n+' зан.</span><span class="stat-hours">'+fmtMoney(t.sum)+'</span></div>'});
+  h+='</div>';
+  if(payTotal)h+='<div class="stat-total">Итог: выручка '+fmtMoney(earned+pending)+' \u00B7 зарплаты '+fmtMoney(payTotal)+' \u00B7 остаётся '+fmtMoney(earned+pending-payTotal)+'</div>';
+  cont.innerHTML=h;
+}
+function renderFinSettings(){
+  var box=document.getElementById('finSettingsBody');
+  var P=finPrices(),po=config.payouts||{};
+  var h='<p style="font-size:11px;color:var(--muted);margin-bottom:6px">Ставка за 1 ч и точные цены за длительность (пусто = ставка \u00D7 часы):</p>';
+  config.loads.forEach(function(l){
+    var k=finKey(l.label),p=P[k]||{};
+    h+='<div style="margin-bottom:8px"><b style="font-size:13px">'+esc(l.label)+'</b><div style="display:flex;gap:4px;flex-wrap:wrap;margin-top:4px">';
+    h+='<input class="finP" data-load="'+esc(k)+'" data-k="ph" type="number" placeholder="1 ч ставка" value="'+(p.ph||'')+'" style="width:86px;padding:6px;border:1.5px solid var(--line);border-radius:8px;background:var(--input-bg);color:var(--ink);font-size:12px">';
+    [['d15','1,5 ч'],['d2','2 ч'],['d3','3 ч']].forEach(function(t){
+      h+='<input class="finP" data-load="'+esc(k)+'" data-k="'+t[0]+'" type="number" placeholder="'+t[1]+'" value="'+(p[t[0]]||'')+'" style="width:70px;padding:6px;border:1.5px solid var(--line);border-radius:8px;background:var(--input-bg);color:var(--ink);font-size:12px">';
+    });
+    h+='</div></div>';
+  });
+  h+='<p style="font-size:11px;color:var(--muted);margin:8px 0 6px">Зарплата тренеров (% от выручки):</p>';
+  config.trainers.forEach(function(t){
+    var tk=finKey(t.name);
+    h+='<div style="display:flex;gap:6px;align-items:center;margin-bottom:4px"><span style="flex:1;font-size:13px">'+esc(t.name)+'</span><input class="finPay" data-tr="'+esc(tk)+'" type="number" value="'+(po[tk]||0)+'" style="width:70px;padding:6px;border:1.5px solid var(--line);border-radius:8px;background:var(--input-bg);color:var(--ink);font-size:12px"> %</div>';
+  });
+  h+='<button class="btn-tg-csv" id="finSaveBtn" style="background:var(--green);color:#fff;border-color:var(--green);margin-top:8px">\uD83D\uDCBE Сохранить цены и зарплаты</button>';
+  box.innerHTML=h;
+  document.getElementById('finSaveBtn').addEventListener('click',function(){
+    try{
+      config.prices=config.prices||{};config.payouts=config.payouts||{};
+      document.querySelectorAll('.finP').forEach(function(inp){
+        var load=inp.dataset.load,kk=inp.dataset.k,v=parseFloat(inp.value);
+        config.prices[load]=config.prices[load]||{};
+        if(v>0)config.prices[load][kk]=v;else delete config.prices[load][kk];
+      });
+      document.querySelectorAll('.finPay').forEach(function(inp){
+        var tr=inp.dataset.tr,v=parseFloat(inp.value)||0;
+        if(v>0)config.payouts[tr]=v;else delete config.payouts[tr];
+      });
+      if(!db){alert('\u26A0 Нет подключения к базе \u2014 не сохранено');return}
+      db.ref('config/prices').set(config.prices).then(function(){
+        return db.ref('config/payouts').set(config.payouts);
+      }).then(function(){
+        alert('\u2705 Сохранено');renderFinance();
+      }).catch(function(e){
+        alert('\u274C Ошибка сохранения: '+(e.message||e));
+      });
+    }catch(e){alert('\u274C Ошибка: '+(e.message||e))}
+  });
+}
+function openFinance(){
+  var m=document.getElementById('finModal');
+  var h='<h2>\uD83D\uDCB0 Финансы</h2>';
+  h+='<div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px" id="finChips">';
+  h+='<div class="chip" data-r="p30">-30 дн</div><div class="chip" data-r="p7">-7 дн</div><div class="chip sel" data-r="t">Сегодня</div><div class="chip" data-r="f7">+7 дн</div><div class="chip" data-r="f30">+30 дн</div><div class="chip" data-r="custom">Период</div></div>';
+  h+='<div style="display:flex;gap:8px;margin-bottom:14px;align-items:center;display:none" id="finDates">';
+  h+='<input type="date" id="finFrom" style="flex:1;padding:8px;border:1.5px solid var(--line);border-radius:8px;background:var(--input-bg);color:var(--ink);font-size:14px">';
+  h+='<span style="color:var(--muted)">\u2014</span>';
+  h+='<input type="date" id="finTo" style="flex:1;padding:8px;border:1.5px solid var(--line);border-radius:8px;background:var(--input-bg);color:var(--ink);font-size:14px"></div>';
+  h+='<div id="finContent"></div>';
+  h+='<p id="finSetToggle" style="font-size:13px;color:var(--muted);cursor:pointer;margin-top:10px">\u2699\uFE0F Цены услуг и зарплаты тренеров \u25B8</p>';
+  h+='<div id="finSettings" style="display:none;border:1.5px solid var(--line);border-radius:12px;padding:10px;margin-top:6px"><div id="finSettingsBody"></div></div>';
+  h+='<div class="btnrow"><button class="btn cancel" id="finClose">Закрыть</button></div>';
+  m.innerHTML=h;addX2(document.getElementById('finOverlay'));
+  document.getElementById('finOverlay').classList.add('open');
+  m.querySelectorAll('#finChips .chip').forEach(function(c){
+    c.addEventListener('click',function(){
+      m.querySelectorAll('#finChips .chip').forEach(function(x){x.classList.remove('sel')});
+      c.classList.add('sel');finMode=c.dataset.r;
+      document.getElementById('finDates').style.display=finMode==='custom'?'flex':'none';
+      renderFinance();
+    });
+  });
+  ['finFrom','finTo'].forEach(function(id){document.getElementById(id).addEventListener('change',renderFinance)});
+  document.getElementById('finSetToggle').addEventListener('click',function(){
+    var s=document.getElementById('finSettings');var open=s.style.display==='none';
+    s.style.display=open?'block':'none';if(open)renderFinSettings();
+  });
+  document.getElementById('finClose').addEventListener('click',function(){document.getElementById('finOverlay').classList.remove('open')});
+  renderFinance();
+}
+
+/* --- Telegram и Экспорт (новый дизайн, уникальные ID) --- */
+function tgsPopulateMonths(){
+  var sel=document.getElementById('tgsMonth');
+  var monthsSet={};bookings.forEach(function(b){var ym=(b.dateKey||'').substring(0,7);if(ym)monthsSet[ym]=true});
+  Object.keys(monthsSet).sort().reverse().forEach(function(ym){
+    var parts=ym.split('-');var mIndex=parseInt(parts[1],10)-1;
+    var label=MONTH_NOM[mIndex].charAt(0)+MONTH_NOM[mIndex].slice(1).toLowerCase()+' '+parts[0];
+    var opt=document.createElement('option');opt.value=ym;opt.textContent=label;sel.appendChild(opt);
+  });
+}
+function tgsGetData(){
+  var selVal=document.getElementById('tgsMonth').value;
+  var data=bookings;
+  if(selVal!=='all')data=bookings.filter(function(b){return (b.dateKey||'').startsWith(selVal)});
+  return data.sort(function(a,b){return a.dateKey.localeCompare(b.dateKey)||a.startMin-b.startMin});
+}
+function openTgs(){
+  var m=document.getElementById('tgsModal');
+  var h='<h2>📨 Telegram и Экспорт</h2>';
+  h+='<div class="sec"><h3>📤 Экспорт данных <span class="arr">▾</span></h3><div class="sec-body">';
+  h+='<label>Период:</label>';
+  h+='<select id="tgsMonth" style="width:100%;padding:11px 12px;font-size:15px;border:1.5px solid var(--line);border-radius:10px;background:var(--input-bg);color:var(--ink);margin-bottom:8px;"><option value="all">За все время</option></select>';
+  h+='<label>Получатель:</label>';
+  h+='<select id="tgsTarget" style="width:100%;padding:11px 12px;font-size:15px;border:1.5px solid var(--line);border-radius:10px;background:var(--input-bg);color:var(--ink);margin-bottom:12px;"><option value="admin">🔒 Личный чат админа</option><option value="public">📢 Публичный канал</option></select>';
+  h+='<button class="btn-tg-csv" id="tgsCsv">📥 Скачать таблицу (CSV для Excel)</button>';
+  h+='<button class="btn-tg-csv" id="tgsTable">📨 Отправить таблицу в Телеграм</button>';
+  h+='<button class="btn-tg-csv" id="tgsArch">📦 Архив за прошлый месяц → Telegram (сводка + файл)</button>';
+  h+='<button class="btn-tg-csv" id="tgsSync">🔄 Синхронизировать прошедшие месяцы в архив (копия, без удаления)</button>';
+  h+='</div></div>';
+  h+='<div class="sec"><h3>🤖 Настройки бота <span class="arr">▾</span></h3><div class="sec-body">';
+  h+='<label>Bot Token</label>';
+  h+='<input type="text" id="tgsToken" placeholder="Токен от @BotFather" autocomplete="off">';
+  h+='<label>ID публичного канала (например, -100... или @channel)</label>';
+  h+='<input type="text" id="tgsPublic" placeholder="-100123456789" autocomplete="off">';
+  h+='<label>ID личного чата админа (для архивов и отчетов)</label>';
+  h+='<input type="text" id="tgsAdmin" placeholder="6467332405" autocomplete="off">';
+  h+='<label>Имя бота (для ссылок привязки, без @)</label>';
+  h+='<input type="text" id="tgsBotName" placeholder="напр: horse_club_reminder_bot" autocomplete="off">';
+  h+='<button class="btn-tg-csv" id="tgsSave" style="background:var(--green);color:#fff;border-color:var(--green);margin-top:8px">💾 Сохранить настройки бота</button>';
+  h+='</div></div>';
+  h+='<div class="btnrow"><button class="btn cancel" id="tgsClose">Закрыть</button></div>';
+  m.innerHTML=h;
+  addX2(document.getElementById('tgsOverlay'));
+  document.getElementById('tgsOverlay').classList.add('open');
+  tgsPopulateMonths();
+  document.getElementById('tgsToken').value=config.tgToken||'';
+  document.getElementById('tgsPublic').value=config.tgPublicChat||'';
+  document.getElementById('tgsAdmin').value=config.tgAdminChat||'';
+  document.getElementById('tgsBotName').value=config.botName||'';
+  document.getElementById('tgsCsv').addEventListener('click',function(){
+    var data=tgsGetData();var monthName=document.getElementById('tgsMonth').options[document.getElementById('tgsMonth').selectedIndex].text;
+    if(!data.length)return alert('Нет записей за: '+monthName);
+    var csv=buildCSV(data);var fileName=monthName==='За все время'?'Расписание_все.csv':'Расписание_'+document.getElementById('tgsMonth').value+'.csv';
+    const blob=new Blob([csv],{type:'text/csv;charset=utf-8;'});const link=document.createElement("a");link.href=URL.createObjectURL(blob);link.download=fileName;link.click();
+  });
+  document.getElementById('tgsTable').addEventListener('click',function(){
+    const BOT_TOKEN=config.tgToken;
+    const CHAT_ID=document.getElementById('tgsTarget').value==='public'?config.tgPublicChat:config.tgAdminChat;
+    if(!BOT_TOKEN)return alert('Укажите Bot Token и сохраните!');
+    if(!CHAT_ID)return alert('Укажите ID выбранного чата/канала и сохраните!');
+    var data=tgsGetData();var monthName=document.getElementById('tgsMonth').options[document.getElementById('tgsMonth').selectedIndex].text;
+    if(!data.length)return alert('Нет записей за: '+monthName);
+    let text="📋 <b>Расписание: "+monthName+"</b>\n\n";let grouped={};data.forEach(function(b){if(!grouped[b.dateKey])grouped[b.dateKey]=[];grouped[b.dateKey].push(b)});
+    for(let date in grouped){text+="📅 <b>"+date+"</b>\n";grouped[date].forEach(function(b){let timeStr=m2s(b.startMin)+'-'+m2s(b.startMin+b.dur*60);let statusIcon=b.status==='done'?'✅':(b.status==='cancel'?'🚫':'⏳');text+="  "+statusIcon+" "+timeStr+" | 🐴 "+b.horse+" | 👤 "+b.trainer+(b.comment ? " | 💬 "+b.comment : "")+"\n"});text+="\n"}
+    document.getElementById('tgsTable').textContent='⏳ Отправка...';
+    fetch("https://api.telegram.org/bot"+BOT_TOKEN+"/sendMessage",{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({chat_id:CHAT_ID,text:text,parse_mode:'HTML'})}).then(function(r){return r.json()}).then(function(res){document.getElementById('tgsTable').textContent='📨 Отправить таблицу в Телеграм';alert(res.ok?'Успешно отправлено!':'Ошибка: '+res.description)}).catch(function(e){document.getElementById('tgsTable').textContent='📨 Отправить таблицу в Телеграм';alert('Ошибка сети: '+e)});
+  });
+  document.getElementById('tgsArch').addEventListener('click',function(){sendMonthlyReport(prevYM(),config.tgAdminChat,this)});
+  document.getElementById('tgsSync').addEventListener('click',async function(){
+    if(!db)return alert('Нет подключения к базе');
+    var m=mskNow();
+    var cutoff=m.getFullYear()+'-'+String(m.getMonth()+1).padStart(2,'0')+'-01';
+    var past=bookings.filter(function(b){return b.dateKey<cutoff});
+    if(!past.length)return alert('Прошедших месяцев в таблице нет — всё уже в архиве 🗂');
+    if(!confirm('Скопировать '+past.length+' записей за прошедшие месяцы в архив?\n\n(Из таблицы записи НЕ удалятся)'))return;
+    var btn=this;var old=btn.textContent;btn.disabled=true;btn.textContent='⏳ Синхронизация...';
+    try{
+      var n=await copyPastToArchive();
+      btn.disabled=false;btn.textContent=old;
+      alert('Готово! '+n+' записей добавлено в архив 🗂\n(в таблице всё осталось на месте)');
+    }catch(e){btn.disabled=false;btn.textContent=old;alert('Ошибка: '+(e.message||e))}
+  });
+  document.getElementById('tgsSave').addEventListener('click',function(){
+    config.tgToken=document.getElementById('tgsToken').value.trim();
+    config.tgPublicChat=document.getElementById('tgsPublic').value.trim();
+    config.tgAdminChat=document.getElementById('tgsAdmin').value.trim();
+    config.botName=document.getElementById('tgsBotName').value.trim().replace('@','');
+    saveCfg();
+    renderTgBindArea();
+    alert('✅ Настройки бота сохранены');
+  });
+  document.getElementById('tgsClose').addEventListener('click',function(){document.getElementById('tgsOverlay').classList.remove('open')});
+}
+
+document.getElementById('menuBtn').addEventListener('click',function(){if(isAdmin)openMenu()});
+
 /* ===== Закрытие модалок: крестик + клик по фону ===== */
 (function(){
-  var ids=['detailOverlay','statsOverlay','archOverlay','infoOverlay','whoOverlay','loginOverlay','cfgOverlay','overlay'];
+  var ids=['detailOverlay','statsOverlay','archOverlay','finOverlay','tgsOverlay','infoOverlay','whoOverlay','loginOverlay','cfgOverlay','overlay'];
   ids.forEach(function(id){
     var ov=document.getElementById(id);
     if(!ov)return;

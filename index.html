@@ -372,6 +372,7 @@
 
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
 <script>
 'use strict';
 
@@ -436,8 +437,19 @@ function initFB(){
   var st=document.getElementById('status');
   if(!firebaseConfig||typeof firebase==='undefined'){st.textContent='демо';schedRefresh();return}
   try{firebase.initializeApp(firebaseConfig);db=firebase.database();
+    firebase.auth().onAuthStateChanged(function(user){
+      isAdmin=!!user;
+      if(user){
+        localStorage.setItem('hc_admin','true');
+        autoArchive();
+        autoCompleteBookings();
+      }else{
+        localStorage.removeItem('hc_admin');
+      }
+      schedRefresh();
+    });
     db.ref('config').on('value',function(sn){var v=sn.val();if(v){config=Object.assign(JSON.parse(JSON.stringify(DEF)),v);if(!Array.isArray(config.loads))config.loads=DEF.loads;if(!Array.isArray(config.tempos))config.tempos=DEF.tempos;if(!Array.isArray(config.horses))config.horses=[];if(!Array.isArray(config.trainers))config.trainers=[];config.loads=config.loads.map(function(l){return typeof l==='string'?{label:l}:{label:l.label||''}});config.tempos=config.tempos.map(function(t){return typeof t==='string'?{label:t}:{label:t.label||''}});config.trainers=config.trainers.map(function(t,i){if(typeof t==='string')return{name:t,color:TP[i%TP.length]};if(!t.color)t.color=TP[i%TP.length];return{name:t.name||'',color:t.color}});delete config.rate}curLI=Math.min(curLI,Math.max(0,config.loads.length-1));curTI=Math.min(curTI,Math.max(0,config.tempos.length-1));schedRefresh()});
-    db.ref('bookings').on('value',function(sn){var v=sn.val();bookings=v?Object.keys(v).map(function(k){return Object.assign({id:k},v[k])}):[];if(!wasOnline){wasOnline=true;st.textContent='\u25CF онлайн';st.className='status ok'}autoCompleteBookings();autoArchive();schedRefresh()},function(e){if(wasOnline){st.textContent='переподключение\u2026';st.className='status err'}wasOnline=false});
+    db.ref('bookings').on('value',function(sn){var v=sn.val();bookings=v?Object.keys(v).map(function(k){return Object.assign({id:k},v[k])}):[];if(!wasOnline){wasOnline=true;st.textContent='\u25CF онлайн';st.className='status ok'}if(isAdmin){autoCompleteBookings();autoArchive();}schedRefresh()},function(e){if(wasOnline){st.textContent='переподключение\u2026';st.className='status err'}wasOnline=false});
     db.ref('tgUsers').on('value',function(sn){tgUsersCache=sn.val()||{};renderTgBindArea()});
   }catch(e){st.textContent='ошибка';st.className='status err';db=null;schedRefresh()}
 }
@@ -575,32 +587,37 @@ async function sendMonthlyReport(ym,chatId,btn){
   }
 }
 
-/* ===== Архивация: копирование без удаления ===== */
-async function copyPastToArchive(){
+/* ===== Архивация: перенос в архив и очистка старых записей ===== */
+async function copyPastToArchive(cleanBookings){
   if(!db)return 0;
   var m=mskNow();
   var cutoff=m.getFullYear()+'-'+String(m.getMonth()+1).padStart(2,'0')+'-01';
   var past=bookings.filter(function(b){return b.dateKey<cutoff});
   if(!past.length)return 0;
   var upd={};
-  past.forEach(function(b){var ym=b.dateKey.substring(0,7);upd['archive/'+ym+'/'+b.id]=b});
+  past.forEach(function(b){
+    var ym=b.dateKey.substring(0,7);
+    upd['archive/'+ym+'/'+b.id]=b;
+    if(cleanBookings) upd['bookings/'+b.id]=null;
+  });
   await db.ref('/').update(upd);
   return past.length;
 }
 
 async function autoArchive(){
-  if(!db||autoArchTried)return;
+  if(!db||!isAdmin||autoArchTried)return;
   if(!config.tgToken||!config.tgAdminChat)return;
   autoArchTried=true;
   var ym=prevYM();
   try{
     var snap=await db.ref('archived/'+ym).once('value');
-    if(snap.val()){await copyPastToArchive();return}
+    if(snap.val()){await copyPastToArchive(true);return}
     var ok=await sendMonthlyReport(ym,config.tgAdminChat,null);
     if(ok){
       await db.ref('archived/'+ym).set({done:true,at:Date.now()});
-      var n=await copyPastToArchive();
-      console.log('Автоархив за '+ym+' отправлен, в архив добавлено записей: '+n);
+      var n=await copyPastToArchive(true);
+      console.log('Автоархив за '+ym+' отправлен, записей перенесено в архив: '+n);
+      alert('📦 Записи за прошлый месяц ('+ymLabel(ym)+') заархивированы и отправлены вам в Telegram!');
     }
   }catch(e){console.warn('autoArchive:',e);autoArchTried=false}
 }
@@ -840,9 +857,35 @@ if(editId)updB(editId,data);else pushB(data);closeForm()});
 /* ===== Вход ===== */
 function openLogin(){document.getElementById('loginErr').style.display='none';document.getElementById('loginPass').value='';document.getElementById('loginOverlay').classList.add('open');setTimeout(function(){document.getElementById('loginPass').focus()},50)}
 document.getElementById('loginGo').addEventListener('click',doLogin);document.getElementById('loginPass').addEventListener('keydown',function(e){if(e.key==='Enter')doLogin()});
-function doLogin(){var p=document.getElementById('loginPass').value;if(p===(config.adminPass||'admin')){isAdmin=true;localStorage.setItem('hc_admin','true');document.getElementById('loginOverlay').classList.remove('open');if(!myTrainer)showWhoSelect();else schedRefresh()}else{var e=document.getElementById('loginErr');e.textContent='\u26A0 Неверный пароль.';e.style.display='block'}}
+function doLogin(){
+  var p=document.getElementById('loginPass').value;
+  var err=document.getElementById('loginErr');
+  err.style.display='none';
+  if(!p){err.textContent='⚠️ Введите пароль.';err.style.display='block';return}
+  var btn=document.getElementById('loginGo');
+  btn.disabled=true;btn.textContent='Вход...';
+  firebase.auth().signInWithEmailAndPassword('admin@courage.club',p).then(function(){
+    btn.disabled=false;btn.textContent='Войти';
+    document.getElementById('loginOverlay').classList.remove('open');
+    if(!myTrainer)showWhoSelect();else schedRefresh();
+  }).catch(function(e){
+    btn.disabled=false;btn.textContent='Войти';
+    err.textContent='⚠️ Неверный пароль.';
+    err.style.display='block';
+  });
+}
 document.getElementById('loginCancel').addEventListener('click',function(){document.getElementById('loginOverlay').classList.remove('open')});
-document.getElementById('adminBtn').addEventListener('click',openLogin);document.getElementById('adminOutBtn').addEventListener('click',function(){if(!isAdmin)return;if(confirm('Выйти?')){isAdmin=false;localStorage.removeItem('hc_admin');closeCfg();closeForm();document.querySelectorAll('.overlay.open').forEach(function(o){o.classList.remove('open')});schedRefresh()}});
+document.getElementById('adminBtn').addEventListener('click',openLogin);
+document.getElementById('adminOutBtn').addEventListener('click',function(){
+  if(!isAdmin)return;
+  if(confirm('Выйти из режима админа?')){
+    firebase.auth().signOut().then(function(){
+      closeCfg();closeForm();
+      document.querySelectorAll('.overlay.open').forEach(function(o){o.classList.remove('open')});
+      schedRefresh();
+    });
+  }
+});
 
 /* ===== Конфигуратор ===== */
 var cfgD=null;
@@ -863,7 +906,16 @@ document.getElementById('cfgHorseAdd').addEventListener('click',function(){var v
 document.getElementById('cfgTrainerAdd').addEventListener('click',function(){var n=document.getElementById('cfgTrainerName').value.trim();if(n){cfgD.trainers.push({name:n,color:document.getElementById('cfgTrainerColor').value});document.getElementById('cfgTrainerName').value='';renderCfg()}});
 document.getElementById('cfgSave').addEventListener('click',function(){
   var np=document.getElementById('cfgPass').value.trim();
-  if(np)cfgD.adminPass=np;
+  if(np){
+    if(firebase.auth().currentUser){
+      firebase.auth().currentUser.updatePassword(np).then(function(){
+        alert('✅ Пароль администратора успешно изменен в Firebase');
+      }).catch(function(e){
+        alert('⚠️ Ошибка смены пароля: '+(e.message||e));
+      });
+    }
+  }
+  delete cfgD.adminPass;
   config=cfgD;
   saveCfg();
   renderTgBindArea();

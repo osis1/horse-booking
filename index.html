@@ -91,15 +91,63 @@
   .btn-menu-action svg{width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
   .fin-metrics-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px}
   @media(max-width:380px){.fin-metrics-grid{grid-template-columns:1fr}}
-  .fin-metric-tile{border-radius:12px;padding:12px 10px;text-align:center;border:1.5px solid var(--line)}
+  .fin-metric-tile{border-radius:12px;padding:12px 10px;text-align:center;border:1.5px solid var(--line);background:var(--input-bg);transition:background .2s,border-color .2s}
+  .fin-metric-tile.done{background:var(--done-bg);border-color:var(--done-text)}
+  .fin-metric-tile.wait{background:var(--wait-bg);border-color:var(--yellow-dark)}
   .fin-metric-val{font-size:20px;font-weight:800;line-height:1.2}
-  .fin-metric-lbl{font-size:11px;color:var(--muted);margin-top:4px}
+  .fin-metric-lbl{font-size:11px;color:var(--muted);margin-top:4px;font-weight:600}
+  .fin-summary-box{background:var(--input-bg);border:1.5px solid var(--line);border-radius:12px;padding:12px 14px;margin-top:12px}
+  .fin-summary-row{display:flex;justify-content:space-between;align-items:center;padding:5px 0;font-size:13px;color:var(--muted)}
+  .fin-summary-row .fin-sum-val{font-weight:700;color:var(--ink);font-size:14px}
+  .fin-summary-row.fin-summary-total{border-top:1.5px dashed var(--line);margin-top:6px;padding-top:8px;font-weight:800;font-size:14px;color:var(--ink)}
+  .fin-summary-row.fin-summary-total .fin-sum-val{font-size:16px;color:var(--green)}
   .fin-price-card{background:var(--input-bg);border:1.5px solid var(--line);border-radius:12px;padding:12px;margin-bottom:10px}
   .fin-price-title{font-size:14px;font-weight:700;margin-bottom:8px}
   .fin-price-inputs{display:grid;grid-template-columns:repeat(auto-fit,minmax(80px,1fr));gap:6px}
   .fin-price-input-wrap{display:flex;flex-direction:column;gap:3px}
   .fin-price-input-wrap span{font-size:10px;color:var(--muted);font-weight:600}
   .fin-price-input-wrap input{width:100%;padding:9px 6px;border:1.5px solid var(--line);border-radius:8px;background:var(--card);color:var(--ink);font-size:13px;text-align:center;font-weight:600}
+
+  /* Form Time & Horse Multi-Select */
+  .form-time-badge{display:inline-flex;align-items:center;gap:6px;padding:6px 12px;border-radius:10px;background:var(--surface);border:1.5px solid var(--line);font-size:12.5px;font-weight:700;color:var(--ink);margin:6px 0 10px;transition:all .2s}
+  .form-time-badge svg{color:var(--green);flex-shrink:0}
+  .f-horse-header{display:flex;justify-content:space-between;align-items:center;margin:10px 0 6px}
+  .f-horse-badge{font-size:11.5px;font-weight:700;color:var(--green);background:var(--done-bg);padding:3px 8px;border-radius:6px}
+  .f-horse-chips{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px}
+  .f-horse-chip{display:inline-flex;align-items:center;gap:6px;padding:8px 12px;border:1.5px solid var(--line);border-radius:10px;background:var(--input-bg);color:var(--ink);font-size:13.5px;font-weight:600;cursor:pointer;user-select:none;transition:all .2s;min-height:42px}
+  .f-horse-chip:hover{border-color:var(--green)}
+  .f-horse-chip.sel{background:var(--green);border-color:var(--green);color:#fff}
+  .f-horse-chip .f-h-badge{font-size:11px;opacity:0.8;font-weight:500;padding-left:2px}
+  .f-horse-chip.sel .f-h-badge{color:rgba(255,255,255,0.9)}
+  .f-horse-chip.busy{opacity:0.45;background:var(--surface);border-color:var(--line);cursor:not-allowed}
+  .f-horse-chip.busy .f-h-name{text-decoration:line-through}
+  .f-horse-chip.busy .f-h-badge{color:var(--red);opacity:1;font-weight:600}
+
+  /* Archive Modern Accordion */
+  .arch-card{border:1.5px solid var(--line);border-radius:12px;margin-bottom:10px;overflow:hidden;background:var(--card);transition:border-color .2s}
+  .arch-card:hover{border-color:var(--green)}
+  .arch-card-head{display:flex;justify-content:space-between;align-items:center;padding:12px 14px;cursor:pointer;user-select:none;background:var(--input-bg)}
+  .arch-card-title{font-size:14px;font-weight:700;color:var(--ink)}
+  .arch-card-badge{font-size:11px;font-weight:600;color:var(--muted);background:var(--surface);padding:3px 8px;border-radius:6px;margin-left:auto;margin-right:8px}
+  .arch-card-arr{transition:transform .25s;display:inline-flex;align-items:center;color:var(--muted)}
+  .arch-card.open .arch-card-arr{transform:rotate(180deg)}
+  .arch-card-body{display:none;padding:12px;border-top:1px solid var(--line)}
+  .arch-card.open .arch-card-body{display:block}
+  .arch-day-title{font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin:12px 0 6px;padding-bottom:4px;border-bottom:1px dashed var(--line)}
+  .arch-day-title:first-child{margin-top:0}
+  .arch-row{display:flex;align-items:center;gap:8px;padding:6px 0;font-size:13px;border-bottom:1px solid var(--line)}
+  .arch-row:last-child{border-bottom:none}
+  .arch-pill{font-size:10.5px;font-weight:700;padding:2px 7px;border-radius:6px;display:inline-flex;align-items:center}
+  .arch-pill.done{background:var(--done-bg);color:var(--done-text)}
+  .arch-pill.wait{background:var(--wait-bg);color:var(--wait-text)}
+  .arch-pill.cancel{background:var(--cancel-bg);color:var(--red)}
+
+  /* TGS / Export Sections */
+  .tgs-card-sec{border:1.5px solid var(--line);border-radius:12px;padding:14px;margin-bottom:12px;background:var(--card)}
+  .tgs-card-sec h3{font-size:12.5px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px;display:flex;align-items:center;gap:8px}
+  .tgs-card-sec h3 svg{color:var(--green);flex-shrink:0}
+  .tgs-btn-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+  @media(max-width:440px){.tgs-btn-grid{grid-template-columns:1fr}}
   .legend{display:flex;gap:14px;flex-wrap:wrap;justify-content:center;align-items:center;
     font-size:12px;color:var(--muted);margin-bottom:4px}
   .legend .dot{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:5px;vertical-align:-1px}
@@ -133,20 +181,23 @@
   .day-tab.active.past-day{opacity:1}
   .guesthint{font-size:12px;color:var(--line);text-align:center;margin-top:14px}
   .grid-wrap{overflow-x:auto;margin-top:12px;border-radius:12px;border:1.5px solid var(--line);
-    background:var(--card);transition:background .3s,border-color .3s}
-  .grid{display:grid;min-width:600px}
+    background:var(--card);transition:background .3s,border-color .3s;-webkit-overflow-scrolling:touch}
+  .grid{display:grid}
   .gh{position:sticky;top:0;z-index:5;background:var(--surface);font-size:12px;font-weight:700;
-    color:var(--muted);padding:10px 6px;text-align:center;border-bottom:1.5px solid var(--line);
+    color:var(--muted);padding:8px 4px;text-align:center;border-bottom:1.5px solid var(--line);
+    border-right:1px solid var(--line);
     display:flex;align-items:center;justify-content:center;min-height:42px;transition:background .3s,border-color .3s,color .3s}
-  .gh.corner{background:var(--surface-alt);justify-content:flex-end;padding-right:10px;font-size:11px}
-  .gl{position:sticky;left:0;z-index:4;background:var(--surface-alt);font-size:11px;font-weight:700;
-    padding:8px 8px;border-right:1.5px solid var(--line);border-bottom:1px solid var(--line);
-    display:flex;align-items:center;white-space:nowrap;min-height:52px;transition:background .3s,border-color .3s}
-  .gc{padding:4px;border-bottom:1px solid var(--line);border-right:1px solid var(--line);
+  .gh.corner{position:sticky;top:0;left:0;z-index:7;background:var(--surface-alt);border-right:1.5px solid var(--line);justify-content:center;padding:0}
+  .gl{position:sticky;left:0;z-index:4;background:var(--surface-alt);
+    padding:3px 2px;border-right:1.5px solid var(--line);border-bottom:1px solid var(--line);
+    display:flex;align-items:center;justify-content:center;white-space:nowrap;min-height:52px;transition:background .3s,border-color .3s}
+  .gl-hour{font-size:11.5px;font-weight:800;color:var(--ink)}
+  .gl-half{font-size:10px;font-weight:600;color:var(--muted);opacity:0.85}
+  .gc{padding:3px;border-bottom:1px solid var(--line);border-right:1px solid var(--line);
     display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:52px;transition:background .15s}
   .gc:hover{background:var(--cell-hover)}.gc.empty-slot{background:var(--cell-empty)}
-  .gc .btime{font-size:10px;color:var(--muted);line-height:1.2}
-  .gc .btrainer{font-size:10px;color:var(--ink);font-weight:600;margin-top:1px;white-space:nowrap;
+  .gc .btime{font-size:10px;color:var(--muted);line-height:1.2;font-weight:600}
+  .gc .btrainer{font-size:10.5px;color:var(--ink);font-weight:700;margin-top:1px;white-space:nowrap;
     overflow:hidden;text-overflow:ellipsis;max-width:100%;text-align:center}
   .gc .bblock{width:100%;padding:3px 4px;border-radius:6px;text-align:center;cursor:pointer;
     margin-bottom:2px;border-left:4px solid var(--line);transition:transform .1s,background .3s}
@@ -337,27 +388,6 @@
 <div class="overlay" id="cfgOverlay"><div class="modal">
   <h2>Конфигуратор</h2>
 
-  <div class="sec"><h3>Уведомления (Telegram) <span class="arr">▾</span></h3><div class="sec-body">
-    <label>Кто я (напоминания будут о моих занятиях)</label>
-    <select id="cfgWho" style="width:100%;padding:11px 12px;font-size:15px;border:1.5px solid var(--line);border-radius:10px;background:var(--input-bg);color:var(--ink);"></select>
-    <label>Напоминать за:</label>
-    <select id="cfgRemind" style="width:100%;padding:11px 12px;font-size:15px;border:1.5px solid var(--line);border-radius:10px;background:var(--input-bg);color:var(--ink);">
-      <option value="5">5 минут</option>
-      <option value="15">15 минут</option>
-      <option value="30">30 минут</option>
-      <option value="45">45 минут</option>
-      <option value="60">1 час (60 мин)</option>
-      <option value="90">1,5 часа (90 мин)</option>
-      <option value="120">2 часа (120 мин)</option>
-      <option value="custom">Свое значение…</option>
-    </select>
-    <div id="cfgCustomRemindWrap" style="display:none;margin-top:8px;">
-      <input type="number" id="cfgCustomRemindMin" min="1" max="720" placeholder="Минут до занятия, напр. 20" style="width:100%;padding:11px 12px;font-size:15px;border:1.5px solid var(--line);border-radius:10px;background:var(--input-bg);color:var(--ink);">
-    </div>
-    <div id="tgBindArea" style="margin-top:12px"></div>
-    <button class="btn-tg-csv" id="cfgTestNotifBtn" style="margin-top:10px;">Тест уведомления (в Telegram)</button>
-  </div></div>
-
   <div class="sec"><h3>Нагрузки <span class="arr">▾</span></h3><div class="sec-body"><div id="cfgLoads"></div>
     <div class="addrow"><input type="text" id="cfgLoadName" placeholder="Название"><button id="cfgLoadAdd">＋</button></div></div></div>
   <div class="sec"><h3>Темп <span class="arr">▾</span></h3><div class="sec-body"><div id="cfgTempos"></div>
@@ -377,7 +407,15 @@
 </div></div>
 
 <div class="overlay" id="archOverlay"><div class="modal">
-  <h2>Архив месяцев</h2>
+  <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px">
+    <div class="menu-item-icon" style="background:var(--surface);color:var(--green)">
+      <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" fill="none" stroke-width="2"><polyline points="21 8 21 21 3 21 3 8"></polyline><rect x="1" y="3" width="22" height="5"></rect><line x1="10" y1="12" x2="14" y2="12"></line></svg>
+    </div>
+    <div style="flex:1">
+      <h2 style="margin:0;font-size:18px">Архив месяцев</h2>
+      <div style="font-size:11px;color:var(--muted)">История завершенных периодов и выгрузка CSV</div>
+    </div>
+  </div>
   <div id="archList" style="margin-top:8px"></div>
   <div class="btnrow"><button class="btn cancel" id="archClose">Закрыть</button></div>
 </div></div>
@@ -389,10 +427,12 @@
 
 <!-- Форма брони -->
 <div class="overlay" id="overlay"><div class="modal">
-  <h2 id="formTitle">Новая запись</h2>
-  <div id="fDayInfo" class="form-day-badge"></div>
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
+    <h2 id="formTitle" style="margin:0">Новая запись</h2>
+    <div id="fDayInfo" class="form-day-badge" style="margin:0"></div>
+  </div>
 
-  <div class="form-grid-2">
+  <div class="form-grid-2" style="margin-top:10px">
     <div>
       <label>Время начала</label>
       <select id="fTime"></select>
@@ -408,15 +448,21 @@
     </div>
   </div>
 
-  <div class="form-grid-2">
-    <div>
-      <label>Лошадь</label>
-      <select id="fHorse"></select>
-    </div>
-    <div>
-      <label>Тренер</label>
-      <select id="fTrainer"></select>
-    </div>
+  <div id="fTimeRangeBadge" class="form-time-badge">
+    <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" fill="none" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+    <span id="fTimeRangeTxt">08:00 – 09:30 (1,5 ч)</span>
+  </div>
+
+  <div class="f-horse-header">
+    <label style="margin:0" id="fHorseLabel">Лошади (выберите одну или несколько)</label>
+    <span id="fHorseCountBadge" class="f-horse-badge">1 выбрана</span>
+  </div>
+  <div class="f-horse-chips" id="fHorseChips"></div>
+  <select id="fHorse" style="display:none"></select>
+
+  <div>
+    <label>Тренер</label>
+    <select id="fTrainer"></select>
   </div>
 
   <label>Нагрузка</label>
@@ -446,7 +492,7 @@
   <div class="err" id="fErr"></div>
   <div class="btnrow">
     <button class="btn cancel" id="fCancel">Отмена</button>
-    <button class="btn save" id="fSave">Сохранить запись</button>
+    <button class="btn save" id="fSave">Забронировать</button>
   </div>
 </div></div>
 
@@ -509,7 +555,7 @@ var ST={done:{label:'Выполнено',cls:'done'},wait:{label:'Ожидани
 var DEF={loads:[{label:'Плац'},{label:'Поле'},{label:'Лес'}],tempos:[{label:'Шаг'},{label:'Рысь'},{label:'Галоп'}],
   horses:['Рокки','Изюм','Форсаж','Дон','Былина','Армани','Падуб','Хаммер'],
   trainers:[{name:'Ольга (тренер)',color:'#ef75ff'},{name:'Алиса (тренер)',color:'#6528d7'},{name:'Наталья (тренер)',color:'#f49480'},{name:'Ангелина (тренер)',color:'#63ff0f'},{name:'Эльвира (берейтор)',color:'#5b7fb5'}],
-  startHour:8,endHour:21,slotStep:30,
+  startHour:8,endHour:20,slotStep:30,
   tgToken:'8314548735:AAF4muTvWtLH-UMKZ0MOIhAoflneENsowIA',
   tgPublicChat:'',
   tgAdminChat:'6467332405',
@@ -535,7 +581,7 @@ function dk(d){return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')
 function m2s(m){return String(Math.floor(m/60)).padStart(2,'0')+':'+String(m%60).padStart(2,'0')}
 function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})}
 function tColor(n){if(!n)return null;var t=config.trainers.find(function(x){return x.name===n});return t?t.color:null}
-function getSlots(){var a=[],s=(config.startHour||8)*60,e=(config.endHour||21)*60,st=config.slotStep||30;for(var m=s;m<e;m+=st)a.push(m);return a}
+function getSlots(){var a=[],s=(config.startHour||8)*60,e=(config.endHour&&config.endHour<=20?config.endHour:20)*60,st=config.slotStep||30;for(var m=s;m<e;m+=st)a.push(m);return a}
 function schedRefresh(){if(refreshTmr)return;refreshTmr=setTimeout(function(){refreshTmr=null;refreshUI()},250)}
 function prevYM(){var m=mskNow(),y=m.getFullYear(),mo=m.getMonth()-1;if(mo<0){mo=11;y--}return y+'-'+String(mo+1).padStart(2,'0')}
 function ymLabel(ym){var p=ym.split('-');return (MONTH_NOM[parseInt(p[1],10)-1]||p[1])+' '+p[0]}
@@ -579,6 +625,10 @@ function initFB(){
         config.tempos=config.tempos.map(function(t){return typeof t==='string'?{label:t}:{label:t.label||''}});
         config.trainers=config.trainers.map(function(t,i){if(typeof t==='string')return{name:t,color:TP[i%TP.length]};if(!t.color)t.color=TP[i%TP.length];return{name:t.name||'',color:t.color}});
       }
+      if(!config.endHour||config.endHour>20){
+        config.endHour=20;
+        if(isAdmin&&db)db.ref('config/endHour').set(20);
+      }
       if(myTrainer&&config.trainers.length&&!config.trainers.some(function(t){return t.name===myTrainer})){
         myTrainer='';
         localStorage.removeItem('hc_me');
@@ -590,7 +640,7 @@ function initFB(){
       schedRefresh();
     });
     db.ref('bookings').on('value',function(sn){var v=sn.val();bookings=v?Object.keys(v).map(function(k){return Object.assign({id:k},v[k])}):[];try{localStorage.setItem('hc_bookings_cache',JSON.stringify(bookings))}catch(e){}if(!wasOnline){wasOnline=true;st.textContent='\u25CF онлайн';st.className='status ok'}if(isAdmin){autoCompleteBookings();autoArchive();}schedRefresh()},function(e){if(wasOnline){st.textContent='переподключение\u2026';st.className='status err'}wasOnline=false});
-    db.ref('tgUsers').on('value',function(sn){tgUsersCache=sn.val()||{};renderTgBindArea()});
+    db.ref('tgUsers').on('value',function(sn){tgUsersCache=sn.val()||{}});
   }catch(e){st.textContent=navigator.onLine?'ошибка':'\u25CF офлайн (кэш)';st.className=navigator.onLine?'status err':'status wait';db=null;schedRefresh()}
 }
 function saveCfg(){if(db)db.ref('config').set(config);schedRefresh()}
@@ -691,11 +741,25 @@ function buildDetailHTML(items){
   var h='',g={};
   items.forEach(function(b){if(!g[b.dateKey])g[b.dateKey]=[];g[b.dateKey].push(b)});
   Object.keys(g).sort().forEach(function(d){
-    h+='<div style="font-weight:700;margin:10px 0 4px">\uD83D\uDCC5 '+d+'</div>';
-    g[d].forEach(function(b){
-      var tm=m2s(b.startMin)+'-'+m2s(b.startMin+b.dur*60);
-      var ic=b.status==='done'?'\u2705':(b.status==='cancel'?'\uD83D\uDEAB':'\u23F3');
-      h+='<div style="font-size:13px;padding:2px 0">'+ic+' '+tm+' | \uD83D\uDC0E '+esc(b.horse)+' | \uD83D\uDC64 '+esc(b.trainer)+(b.loadLabel?' | '+esc(b.loadLabel):'')+(b.comment?' | \uD83D\uDCAC '+esc(b.comment):'')+'</div>';
+    var dayItems=g[d];
+    var dp=d.split('-');
+    var dTitle=parseInt(dp[2],10)+' '+MN[parseInt(dp[1],10)-1]+' '+dp[0];
+    h+='<div class="arch-day-title">'+esc(dTitle)+' · '+dayItems.length+' зан.</div>';
+    dayItems.forEach(function(b){
+      var tm=m2s(b.startMin)+' – '+m2s(b.startMin+b.dur*60);
+      var st=b.status||'wait';
+      var pillClass=st==='done'?'done':(st==='cancel'?'cancel':'wait');
+      var pillText=st==='done'?'Выполнено':(st==='cancel'?'Отменено':'Ожидание');
+      var tc=tColor(b.trainer);
+      h+='<div class="arch-row">';
+      h+='<span class="arch-pill '+pillClass+'">'+pillText+'</span>';
+      h+='<span style="font-weight:700;font-size:12.5px;color:var(--ink);min-width:85px">'+tm+'</span>';
+      h+='<span style="font-weight:700;color:var(--ink)">'+esc(b.horse)+'</span>';
+      h+='<span style="display:inline-flex;align-items:center;gap:4px;color:var(--muted);font-size:12px;margin-left:auto">'+(tc?'<span style="width:8px;height:8px;border-radius:2px;background:'+esc(tc)+';display:inline-block"></span>':'')+esc(b.trainer||'\u2014')+'</span>';
+      h+='</div>';
+      if(b.loadLabel || b.comment){
+        h+='<div style="font-size:11px;color:var(--muted);padding-left:4px;margin-bottom:6px">'+(b.loadLabel ? 'Нагрузка: '+esc(b.loadLabel) : '')+(b.comment ? (b.loadLabel ? ' · ' : '')+esc(b.comment) : '')+'</div>';
+      }
     });
   });
   return h;
@@ -778,53 +842,7 @@ function myTgStatus(){
   if(!myRemindCode)return null;
   return tgUsersCache[myRemindCode]||null;
 }
-function renderTgBindArea(){
-  var area=document.getElementById('tgBindArea');
-  if(!area)return;
-  if(!myTrainer){area.innerHTML='<p style="font-size:12px;color:var(--muted)">Сначала выберите «Кто я» — и здесь появится привязка Telegram.</p>';return}
-  var code=getMyCode();
-  var st=myTgStatus();
-  var bot=config.botName||'';
-  var collapsed=localStorage.getItem('hc_tg_collapsed')==='1';
-  var h='';
-  if(st&&st.confirmed){
-    if(collapsed){
-      h+='<div id="tgCollapsed" style="display:flex;align-items:center;gap:8px;padding:8px 10px;border:1.5px solid var(--done-bg);background:var(--done-bg);border-radius:10px;cursor:pointer;font-size:13px;font-weight:600;color:var(--done-text)">\u2705 Telegram привязан <span style="margin-left:auto;font-size:11px;color:var(--muted)">развернуть \u203A</span></div>';
-    }else{
-      h+='<div class="tg-status ok">\u2705 Telegram привязан</div>';
-      h+='<p style="font-size:11px;color:var(--muted);margin-bottom:4px">Код этой привязки: <b>'+esc(code)+'</b></p>';
-      h+='<button class="btn-tg-csv" id="unbindBtn">\uD83D\uDD13 Отвязать этот Telegram</button>';
-      h+='<p style="font-size:11px;color:var(--muted);margin-top:4px;cursor:pointer;text-align:center" id="tgCollapseBtn">свернуть \u203A</p>';
-    }
-  }else{
-    h+='<div class="tg-status wait">\u23F3 Telegram не привязан</div>';
-    h+='<p style="font-size:12px;color:var(--muted);margin-bottom:4px">Ваш код привязки:</p>';
-    h+='<div class="tg-code">'+esc(code)+'</div>';
-    if(bot){
-      h+='<a href="https://t.me/'+esc(bot)+'?start='+esc(code)+'" target="_blank" style="text-decoration:none"><button class="btn-tg-csv" style="background:var(--green);color:#fff;border-color:var(--green)">\u2708 Открыть бота и привязать</button></a>';
-      h+='<p style="font-size:11px;color:var(--muted);margin-top:4px">Откроется чат с ботом. Если код не подставился автоматически (бывает, если бот уже был запущен) — отправьте в чат вручную: <b>/start '+esc(code)+'</b></p>';
-    }else{
-      h+='<p style="font-size:12px;color:var(--muted)">Отправьте боту сообщение: <b>/start '+esc(code)+'</b><br>(имя бота задается в ☰ → Telegram и Экспорт)</p>';
-    }
-  }
-  area.innerHTML=h;
-  var col=document.getElementById('tgCollapsed');
-  if(col)col.addEventListener('click',function(){localStorage.setItem('hc_tg_collapsed','1');renderTgBindArea()});
-  var exp=document.getElementById('tgCollapseBtn');
-  if(exp)exp.addEventListener('click',function(){localStorage.setItem('hc_tg_collapsed','0');renderTgBindArea()});
-  var ub=document.getElementById('unbindBtn');
-  if(ub)ub.addEventListener('click',async function(){
-    if(!confirm('Отвязать Telegram? Напоминания приходить перестанут.'))return;
-    ub.disabled=true;
-    try{
-      await db.ref('tgUsers/'+code).remove();
-      localStorage.setItem('hc_tg_collapsed','0');
-      alert('Отвязано. Теперь здесь снова появится код и кнопка привязки.');
-    }
-    catch(e){alert('Ошибка: '+(e.message||e))}
-    ub.disabled=false;
-  });
-}
+function renderTgBindArea(){}
 
 /* ===== Кто вы ===== */
 function showWhoSelect(){
@@ -865,7 +883,7 @@ async function ensureRemindEntry(){
 var HELP=[
  {t:'\uD83D\uDCF1 Как установить на телефон',c:'<p>Сайт работает и в браузере, но как приложение — удобнее: своя иконка, без адресной строки, полноэкранный режим.</p><p><strong>iPhone (Safari):</strong></p><ul><li>Откройте сайт в Safari</li><li>Кнопка «Поделиться» (квадрат со стрелкой вверх)</li><li>Выберите «На экран “Домой”» → «Добавить»</li></ul><p><strong>Android (Chrome):</strong></p><ul><li>Откройте сайт в Chrome</li><li>Меню (⋮) → «Установить приложение» / «Добавить на главный экран»</li><li>Подтвердите установку</li></ul><p>Иконка 🐴 появится на рабочем столе — приложение запускается как обычное.</p>'},
  {t:'\uD83D\uDD14 Как подключить уведомления',c:'<p>Напоминания приходят <strong>в Telegram</strong> и работают всегда — даже если сайт закрыт, телефон спит, а приложение давно свёрнуто.</p><p><strong>Подключение (один раз):</strong></p><ul><li>Откройте меню ☰ → «⚙️ Конфигуратор» → «🔔 Уведомления (Telegram)»</li><li>Выберите «Кто я» и «Напоминать за:» нужное время</li><li>Нажмите «✈️ Открыть бота и привязать» → в чате нажмите «Старт»</li><li>Если код не подставился (бот уже запускался) — отправьте вручную <code>/start КОД</code></li><li>Через 1–2 минуты статус станет «✅ Telegram привязан»</li></ul><p><strong>Как работают:</strong></p><ul><li>Только о занятиях, где «Тренер» — ровно ваше имя</li><li>Только «⏳ Ожидание», только на сегодня</li><li>За выбранное вами время, с деталями: лошадь, время, нагрузка</li></ul><p>Проверка привязки: <code>/status</code> боту.</p>'},
- {t:'\uD83D\uDC0E Как читать таблицу',c:'<ul><li><strong>Зелёная плашка</strong> — занятие выполнено</li><li><strong>Жёлтая плашка</strong> — ожидание</li><li><strong>Красная плашка</strong> — отменена</li><li>Цветная полоска слева — цвет тренера (легенда под календарём)</li><li>Рамка вокруг плашки — это <strong>ваше</strong> занятие</li><li>Просветлевшие плашки — время уже прошло</li><li>Клик по занятию — подробности; ✕ или клик мимо — закрыть</li><li>Строка слева — диапазон слота: «08:00–08:30» значит время идёт с 8:00 до 8:30</li><li>Строка дней прокручивается — текущий и следующий месяц</li><li>Когда время занятия истекло, статус сам меняется на «✓ Выполнено»</li></ul>'},
+  {t:'\uD83D\uDC0E Как читать таблицу',c:'<ul><li><strong>Зелёная плашка</strong> — занятие выполнено</li><li><strong>Жёлтая плашка</strong> — ожидание</li><li><strong>Красная плашка</strong> — отменена</li><li>Цветная полоска слева — цвет тренера (легенда под календарём)</li><li>Рамка вокруг плашки — это <strong>ваше</strong> занятие</li><li>Просветлевшие плашки — время уже прошло</li><li>Клик по занятию — подробности; ✕ или клик мимо — закрыть</li><li>Колонка слева — время начала каждого слота (рабочее время с 8:00 до 20:00)</li><li>Строка дней прокручивается — текущий и следующий месяц</li><li>Когда время занятия истекло, статус сам меняется на «✓ Выполнено»</li></ul>'},
  {t:'\u2753 Частые вопросы',c:'<p><strong>Не приходят напоминания?</strong></p><ul><li>⚙️ → «Уведомления»: статус «✅ Telegram привязан»?</li><li><code>/status</code> боту — покажет, к какому имени вы привязаны</li><li>Имя в брони = «Кто я» посимвольно? (пробел = не совпадает)</li><li>Бронь на сегодня? Статус «⏳ Ожидание»?</li></ul><p><strong>Почему занятие само стало «Выполнено»?</strong> Так задумано: время истекло — статус меняется автоматически.</p><p><strong>Сменил телефон — привязка слетела?</strong> Нет: привязывается Telegram-аккаунт, а не устройство.</p><p><strong>Тёмная тема?</strong> Кнопка 🌙 вверху — запоминается на устройстве.</p>'}
 ];
 function renderHelp(){var box=document.getElementById('accList');box.innerHTML='';HELP.forEach(function(item,i){var div=document.createElement('div');div.className='acc-item';div.innerHTML='<div class="acc-head" data-i="'+i+'">'+item.t+'</div><div class="acc-body"><div>'+item.c+'</div></div>';box.appendChild(div)});box.querySelectorAll('.acc-head').forEach(function(h){h.addEventListener('click',function(){h.parentElement.classList.toggle('open')})})}
@@ -875,29 +893,48 @@ document.getElementById('infoClose').addEventListener('click',function(){documen
 /* ===== Статистика ===== */
 function openStats(){
   var m=document.getElementById('statsModal');
-  var h='<h2>Статистика</h2>';
-  h+='<div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px;" id="statChips">';
-  h+='<div class="chip sel" data-d="1">Сегодня</div></div>';
-  h+='<div style="display:flex;gap:8px;margin-bottom:16px;align-items:center;">';
+  var h='<div style="display:flex;align-items:center;gap:10px;margin-bottom:14px">'+
+    '<div class="menu-item-icon" style="background:var(--surface);color:var(--green)">'+
+      '<svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" fill="none" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg>'+
+    '</div>'+
+    '<div style="flex:1">'+
+      '<h2 style="margin:0;font-size:18px">Статистика клуба</h2>'+
+      '<div style="font-size:11px;color:var(--muted)">Активность, часы и загруженность лошадей</div>'+
+    '</div>'+
+  '</div>';
+  h+='<div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px;" id="statChips">';
+  h+='<div class="chip sel" data-d="1">Сегодня</div>';
+  h+='<div class="chip" data-d="7">7 дней</div>';
+  h+='<div class="chip" data-d="30">30 дней</div>';
+  h+='<div class="chip" data-d="custom">Период</div></div>';
+  h+='<div style="display:none;gap:8px;margin-bottom:14px;align-items:center;" id="statDatesRow">';
   h+='<input type="date" id="statFrom" style="flex:1;padding:8px 10px;border:1.5px solid var(--line);border-radius:8px;background:var(--input-bg);color:var(--ink);font-size:14px;">';
   h+='<span style="color:var(--muted);font-weight:600;">—</span>';
   h+='<input type="date" id="statTo" style="flex:1;padding:8px 10px;border:1.5px solid var(--line);border-radius:8px;background:var(--input-bg);color:var(--ink);font-size:14px;"></div>';
   h+='<div id="statsContent"></div>';
   h+='<div class="btnrow"><button class="btn cancel" id="statsClose">Закрыть</button></div>';
   m.innerHTML=h;
+  addX2(document.getElementById('statsOverlay'));
   document.getElementById('statsOverlay').classList.add('open');
   m.querySelectorAll('#statChips .chip').forEach(function(c){
     c.addEventListener('click',function(){
       m.querySelectorAll('#statChips .chip').forEach(function(x){x.classList.remove('sel')});
       c.classList.add('sel');
-      document.getElementById('statFrom').value='';
-      document.getElementById('statTo').value='';
-      renderStatsContent(parseInt(c.dataset.d,10));
+      var val=c.dataset.d;
+      var dRow=document.getElementById('statDatesRow');
+      if(val==='custom'){
+        dRow.style.display='flex';
+        renderStatsContent(null);
+      } else {
+        dRow.style.display='none';
+        document.getElementById('statFrom').value='';
+        document.getElementById('statTo').value='';
+        renderStatsContent(parseInt(val,10));
+      }
     });
   });
   ['statFrom','statTo'].forEach(function(id){
     document.getElementById(id).addEventListener('change',function(){
-      m.querySelectorAll('#statChips .chip').forEach(function(x){x.classList.remove('sel')});
       renderStatsContent(null);
     });
   });
@@ -911,7 +948,7 @@ function renderStatsContent(days){
   if(days===null){
     var from=document.getElementById('statFrom').value;
     var to=document.getElementById('statTo').value;
-    if(!from||!to){cont.innerHTML='<p style="color:var(--muted);text-align:center;padding:20px">Выберите обе даты для выборки</p>';return}
+    if(!from||!to){cont.innerHTML='<p style="color:var(--muted);text-align:center;padding:24px 16px">Выберите обе даты для построения статистики</p>';return}
     rel=bookings.filter(function(b){return b.dateKey>=from&&b.dateKey<=to&&(b.status||'wait')!=='cancel'});
     var fp=from.split('-'),tp=to.split('-');
     periodTxt=parseInt(fp[2],10)+' '+MN[parseInt(fp[1],10)-1]+' — '+parseInt(tp[2],10)+' '+MN[parseInt(tp[1],10)-1]+' '+tp[0];
@@ -919,28 +956,45 @@ function renderStatsContent(days){
     var datesArr=[];
     for(var i=0;i<days;i++){var d=new Date(mskNow().getTime()-i*24*60*60*1000);datesArr.push(dk(d))}
     rel=bookings.filter(function(b){return datesArr.indexOf(b.dateKey)!==-1&&(b.status||'wait')!=='cancel'});
-    periodTxt='Сегодня';
+    periodTxt=days===1?'Сегодня':(days===7?'Последние 7 дней':'Последние 30 дней');
   }
-  if(!rel.length){cont.innerHTML='<div class="stat-total">'+esc(periodTxt)+'</div><p style="color:var(--muted);text-align:center;padding:20px">Нет записей за выбранный период<br><span style="font-size:11px">Прошлые месяцы хранятся в архиве</span></p>';return}
+  if(!rel.length){
+    cont.innerHTML='<div style="text-align:center;padding:24px 10px;color:var(--muted)">'+
+      '<div style="font-size:13px;font-weight:700;color:var(--ink);margin-bottom:6px">'+esc(periodTxt)+'</div>'+
+      '<p style="font-size:13px;margin:0">Нет записей за выбранный период.<br><span style="font-size:11px">Записи прошлых месяцев переносятся в архив</span></p>'+
+    '</div>';
+    return;
+  }
 
   var totalH=0,doneN=0,waitN=0,dd={};
   rel.forEach(function(b){totalH+=(b.dur||0);dd[b.dateKey]=1;if((b.status||'wait')==='done')doneN++;else waitN++});
+  var daysCount=Object.keys(dd).length;
+  var avgPerDay=daysCount?totalH/daysCount:0;
+
   var h='<div class="fin-metrics-grid">';
-  h+='<div class="fin-metric-tile" style="background:var(--input-bg)"><div class="fin-metric-val" style="color:var(--green)">'+durStr(totalH)+'</div><div class="fin-metric-lbl">часов всего</div></div>';
-  h+='<div class="fin-metric-tile" style="background:var(--input-bg)"><div class="fin-metric-val">'+rel.length+'</div><div class="fin-metric-lbl">занятий</div></div>';
-  h+='<div class="fin-metric-tile" style="background:var(--input-bg)"><div class="fin-metric-val">'+Object.keys(dd).length+'</div><div class="fin-metric-lbl">дней</div></div>';
-  h+='<div class="fin-metric-tile" style="background:var(--input-bg)"><div class="fin-metric-val">'+durStr(Object.keys(dd).length?totalH/Object.keys(dd).length:0)+'</div><div class="fin-metric-lbl">ч в день</div></div>';
+  h+='<div class="fin-metric-tile done"><div class="fin-metric-val" style="color:var(--green)">'+durStr(totalH)+' ч</div><div class="fin-metric-lbl">часов тренировок</div></div>';
+  h+='<div class="fin-metric-tile"><div class="fin-metric-val">'+rel.length+'</div><div class="fin-metric-lbl">всего занятий</div></div>';
+  h+='<div class="fin-metric-tile"><div class="fin-metric-val">'+daysCount+'</div><div class="fin-metric-lbl">активных дней</div></div>';
+  h+='<div class="fin-metric-tile"><div class="fin-metric-val">'+durStr(avgPerDay)+' ч</div><div class="fin-metric-lbl">в день (среднее)</div></div>';
   h+='</div>';
-  h+='<div style="font-size:12px;color:var(--muted);text-align:center;margin-bottom:12px">'+esc(periodTxt)+' · выполнено: '+doneN+' · ожидание: '+waitN+'</div>';
+  h+='<div style="font-size:12px;color:var(--muted);text-align:center;margin-bottom:12px;background:var(--input-bg);padding:6px 10px;border-radius:8px;border:1px solid var(--line)">'+
+    esc(periodTxt)+' · <b style="color:var(--done-text)">выполнено: '+doneN+'</b> · <b style="color:var(--wait-text)">ожидание: '+waitN+'</b>'+
+  '</div>';
 
   var ts={};
   rel.forEach(function(b){var n=b.trainer||'\u2014';if(!ts[n])ts[n]={hours:0,n:0,done:0,color:(tColor(b.trainer)||'#999')};ts[n].hours+=(b.dur||0);ts[n].n++;if((b.status||'wait')==='done')ts[n].done++});
   var tArr=Object.keys(ts).sort(function(a,b){return ts[b].hours-ts[a].hours});
   if(tArr.length){
     var mxT=ts[tArr[0]].hours;
-    h+='<div class="sec"><h3>Тренеры</h3>';
+    h+='<div class="sec"><h3>Часы тренеров</h3>';
     tArr.forEach(function(n){var t=ts[n],pct=mxT>0?Math.round(t.hours/mxT*100):0;
-      h+='<div class="stat-row"><span class="stat-dot" style="background:'+esc(t.color)+'"></span><span class="stat-name">'+esc(n)+(t.done===t.n?'':' <span style="font-size:10px;color:var(--wait-text)">('+(t.n-t.done)+' план)</span>')+'</span><div class="stat-bar-wrap"><div class="stat-bar" style="width:'+pct+'%"></div></div><span class="stat-nums">'+t.n+' зан.</span><span class="stat-hours">'+durStr(t.hours)+' ч</span></div>'});
+      h+='<div class="stat-row">'+
+        '<span class="stat-dot" style="background:'+esc(t.color)+'"></span>'+
+        '<span class="stat-name">'+esc(n)+(t.done===t.n?'':' <span style="font-size:10px;color:var(--wait-text)">('+(t.n-t.done)+' план)</span>')+'</span>'+
+        '<div class="stat-bar-wrap"><div class="stat-bar" style="width:'+pct+'%;background:'+esc(t.color)+'"></div></div>'+
+        '<span class="stat-nums">'+t.n+' зан.</span>'+
+        '<span class="stat-hours">'+durStr(t.hours)+' ч</span>'+
+      '</div>'});
     h+='</div>';
   }
 
@@ -951,7 +1005,12 @@ function renderStatsContent(days){
     var mxH=hs[hArr[0]].hours;
     h+='<div class="sec"><h3>Загруженность лошадей</h3>';
     hArr.forEach(function(n){var v=hs[n],pct=mxH>0?Math.round(v.hours/mxH*100):0;
-      h+='<div class="stat-row"><span class="stat-name">'+esc(n)+'</span><div class="stat-bar-wrap"><div class="stat-bar" style="width:'+pct+'%"></div></div><span class="stat-nums">'+v.n+' зан.</span><span class="stat-hours">'+durStr(v.hours)+' ч</span></div>'});
+      h+='<div class="stat-row">'+
+        '<span class="stat-name">'+esc(n)+'</span>'+
+        '<div class="stat-bar-wrap"><div class="stat-bar" style="width:'+pct+'%"></div></div>'+
+        '<span class="stat-nums">'+v.n+' зан.</span>'+
+        '<span class="stat-hours">'+durStr(v.hours)+' ч</span>'+
+      '</div>'});
     h+='</div>';
   }
   cont.innerHTML=h;
@@ -961,35 +1020,111 @@ function renderStatsContent(days){
 async function openArchive(){
   document.getElementById('archOverlay').classList.add('open');
   var box=document.getElementById('archList');
-  box.innerHTML='<p style="color:var(--muted);text-align:center;padding:20px">Загрузка…</p>';
-  if(!db){box.innerHTML='<p style="color:var(--muted);text-align:center;padding:20px">Нет подключения к базе</p>';return}
+  box.innerHTML='<p style="color:var(--muted);text-align:center;padding:24px">Загрузка архива…</p>';
+  if(!db){box.innerHTML='<p style="color:var(--muted);text-align:center;padding:24px">Нет подключения к базе данных</p>';return}
   try{
     var sn=await db.ref('archive').once('value');
     var v=sn.val()||{};
     var yms=Object.keys(v).sort().reverse();
-    if(!yms.length){box.innerHTML='<p style="color:var(--muted);text-align:center;padding:20px">Архив пуст. Прошлые месяцы появятся здесь после автоархивации</p>';return}
+    if(!yms.length){
+      box.innerHTML='<div style="text-align:center;padding:32px 16px;color:var(--muted)">'+
+        '<svg viewBox="0 0 24 24" width="36" height="36" stroke="currentColor" fill="none" stroke-width="1.5" style="margin-bottom:8px;opacity:0.6"><polyline points="21 8 21 21 3 21 3 8"></polyline><rect x="1" y="3" width="22" height="5"></rect><line x1="10" y1="12" x2="14" y2="12"></line></svg>'+
+        '<div style="font-weight:700;color:var(--ink);font-size:15px;margin-bottom:4px">Архив пуст</div>'+
+        '<div style="font-size:12px">Прошлые месяцы автоматически переносятся сюда после завершения</div>'+
+      '</div>';
+      return;
+    }
     box.innerHTML='';
     yms.forEach(function(ym){
       var items=Object.keys(v[ym]).map(function(k){return Object.assign({id:k},v[ym][k])}).sort(function(a,b){return a.dateKey.localeCompare(b.dateKey)||a.startMin-b.startMin});
-      var acc=document.createElement('div');acc.className='acc-item';
-      acc.innerHTML='<div class="acc-head"><span>'+esc(ymLabel(ym))+' \u00B7 '+items.length+' зап. \u00B7 '+Math.round(items.reduce(function(s,b){return s+(b.dur||0)},0)*10)/10+' ч</span></div><div class="acc-body"><div>'+buildDetailHTML(items)+'<button class="btn-tg-csv" data-ym="'+ym+'" style="margin:10px 0;display:inline-flex;align-items:center;justify-content:center;gap:6px"><svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" fill="none" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg> Скачать CSV за этот месяц</button></div></div>';
-      acc.querySelector('.acc-head').addEventListener('click',function(){acc.classList.toggle('open')});
-      acc.querySelector('[data-ym]').addEventListener('click',function(e){
+      var totalH=Math.round(items.reduce(function(s,b){return s+(b.dur||0)},0)*10)/10;
+      var card=document.createElement('div');card.className='arch-card';
+      card.innerHTML='<div class="arch-card-head">'+
+        '<span class="arch-card-title">'+esc(ymLabel(ym))+'</span>'+
+        '<span class="arch-card-badge">'+items.length+' зан. · '+totalH+' ч</span>'+
+        '<span class="arch-card-arr"><svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" fill="none" stroke-width="2.5"><polyline points="6 9 12 15 18 9"></polyline></svg></span>'+
+      '</div>'+
+      '<div class="arch-card-body">'+
+        '<button class="btn-menu-action" data-ym="'+ym+'" style="margin-bottom:12px;width:100%"><svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg> Скачать CSV за этот месяц</button>'+
+        '<div>'+buildDetailHTML(items)+'</div>'+
+      '</div>';
+      card.querySelector('.arch-card-head').addEventListener('click',function(){card.classList.toggle('open')});
+      card.querySelector('[data-ym]').addEventListener('click',function(e){
         e.stopPropagation();
         var csv=buildCSV(items);
         var blob=new Blob([csv],{type:'text/csv;charset=utf-8;'});
         var link=document.createElement('a');link.href=URL.createObjectURL(blob);link.download='Архив_'+ym+'.csv';link.click();
       });
-      box.appendChild(acc);
+      box.appendChild(card);
     });
-  }catch(e){box.innerHTML='<p style="color:var(--red);text-align:center;padding:20px">Ошибка загрузки архива</p>'}
+  }catch(e){box.innerHTML='<p style="color:var(--red);text-align:center;padding:24px">Ошибка загрузки архива</p>'}
 }
 document.getElementById('archClose').addEventListener('click',function(){document.getElementById('archOverlay').classList.remove('open')});
 
 /* ===== Отрисовка ===== */
 function renderTL(){var b=document.getElementById('trainerLegend');if(!config.trainers.length){b.innerHTML='';return}b.innerHTML=config.trainers.map(function(t){var extra=(myTrainer===t.name)?'<span class="my-badge">Я</span>':'';return '<span class="tl-item"><span class="tl-dot" style="background:'+esc(t.color)+'"></span>'+esc(t.name)+extra+'</span>'}).join('')}
 function renderDays(){var box=document.getElementById('days');box.innerHTML='';var tk=dk(mskNow()),f=dates[0],l=dates[dates.length-1],mt;if(f.getMonth()===l.getMonth())mt=f.getDate()+' \u2013 '+l.getDate()+' '+MN[f.getMonth()]+' '+f.getFullYear();else mt=f.getDate()+' '+MN[f.getMonth()].substring(0,3)+' \u2013 '+l.getDate()+' '+MN[l.getMonth()].substring(0,3)+' '+l.getFullYear();document.getElementById('monthLabel').textContent=mt;dates.forEach(function(d,i){var key=dk(d),n=bookings.filter(function(b){return b.dateKey===key&&(b.status||'wait')!=='cancel'}).length;var isT=key===tk,isNM=d.getMonth()!==f.getMonth(),isP=key<tk;var t=document.createElement('div');t.className='day-tab'+(i===curDayOff?' active':'')+(isT?' today':'')+(isNM?' new-month':'')+(isP&&!isT?' past-day':'');if(isT)t.title='Сегодня';t.innerHTML='<span class="dname">'+WD[d.getDay()]+'</span><span class="dnum">'+d.getDate()+'</span><span class="cnt">'+n+'</span>';t.addEventListener('click',function(){curDayOff=i;schedRefresh()});box.appendChild(t)});requestAnimationFrame(function(){var a=box.querySelector('.day-tab.active');if(a)a.scrollIntoView({behavior:'smooth',block:'nearest',inline:'center'})})}
-function renderSched(){var box=document.getElementById('sched'),horses=config.horses;if(!horses.length){box.innerHTML='<div class="no-horses">Нет лошадей. Добавьте в настройках</div>';return}var ad=dates[curDayOff];if(!ad)return;var adk=dk(ad),db2=bookings.filter(function(b){return b.dateKey===adk});var isT=adk===dk(mskNow()),nowM=mskNow().getHours()*60+mskNow().getMinutes(),step=config.slotStep||30,sl=getSlots();var g=document.createElement('div');g.className='grid';g.style.gridTemplateColumns='95px repeat('+horses.length+',1fr)';var co=document.createElement('div');co.className='gh corner';co.textContent='Время';g.appendChild(co);horses.forEach(function(h){var gh=document.createElement('div');gh.className='gh';gh.textContent=h;g.appendChild(gh)});sl.forEach(function(sm){var tc=document.createElement('div');tc.className='gl';tc.textContent=m2s(sm)+'\u2013'+m2s(sm+step);g.appendChild(tc);horses.forEach(function(horse){var gc=document.createElement('div');gc.className='gc';var se=sm+step;var mt=db2.filter(function(b){return b.horse===horse&&b.startMin<se&&(b.startMin+b.dur*60)>sm});if(!mt.length){gc.classList.add('empty-slot');if(isAdmin){var ph=document.createElement('div');ph.className='add-placeholder';ph.textContent='\uFF0B';ph.addEventListener('click',function(){openFormFor(curDayOff,sm,horse)});gc.appendChild(ph)}}else mt.forEach(function(b){var st=ST[b.status]||ST.wait;var ip=isT&&(b.startMin+b.dur*60)<=nowM;var bl=document.createElement('div');bl.className='bblock s-'+st.cls+(ip?' past':'')+(b.trainer===myTrainer?' mine':'');var tc2=tColor(b.trainer);if(tc2)bl.style.borderLeftColor=tc2;bl.innerHTML='<div class="btime">'+esc(m2s(b.startMin)+'-'+m2s(b.startMin+b.dur*60))+'</div><div class="btrainer">'+esc(b.trainer||'\u2014')+'</div>';bl.addEventListener('click',function(){openDetail(b.id)});gc.appendChild(bl)});g.appendChild(gc)})});var w=document.createElement('div');w.className='grid-wrap';w.appendChild(g);box.innerHTML='';box.appendChild(w)}
+function renderSched(){
+  var box=document.getElementById('sched'),horses=config.horses;
+  if(!horses.length){box.innerHTML='<div class="no-horses">Нет лошадей. Добавьте в настройках</div>';return}
+  var ad=dates[curDayOff];
+  if(!ad)return;
+  var adk=dk(ad),db2=bookings.filter(function(b){return b.dateKey===adk});
+  var isT=adk===dk(mskNow()),nowM=mskNow().getHours()*60+mskNow().getMinutes(),step=config.slotStep||30,sl=getSlots();
+  var g=document.createElement('div');
+  g.className='grid';
+  g.style.gridTemplateColumns='48px repeat('+horses.length+',minmax(84px,1fr))';
+  var co=document.createElement('div');
+  co.className='gh corner';
+  co.innerHTML='<svg viewBox="0 0 24 24" width="15" height="15" stroke="currentColor" fill="none" stroke-width="2.2" style="opacity:0.75"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>';
+  co.title='Время';
+  g.appendChild(co);
+  horses.forEach(function(h){
+    var gh=document.createElement('div');
+    gh.className='gh';
+    gh.textContent=h;
+    g.appendChild(gh);
+  });
+  sl.forEach(function(sm){
+    var tc=document.createElement('div');
+    tc.className='gl';
+    var isHour=(sm%60===0);
+    tc.innerHTML='<span class="'+(isHour?'gl-hour':'gl-half')+'">'+m2s(sm)+'</span>';
+    g.appendChild(tc);
+    horses.forEach(function(horse){
+      var gc=document.createElement('div');
+      gc.className='gc';
+      var se=sm+step;
+      var mt=db2.filter(function(b){return b.horse===horse&&b.startMin<se&&(b.startMin+b.dur*60)>sm});
+      if(!mt.length){
+        gc.classList.add('empty-slot');
+        if(isAdmin){
+          var ph=document.createElement('div');
+          ph.className='add-placeholder';
+          ph.textContent='\uFF0B';
+          ph.addEventListener('click',function(){openFormFor(curDayOff,sm,horse)});
+          gc.appendChild(ph);
+        }
+      }else mt.forEach(function(b){
+        var st=ST[b.status]||ST.wait;
+        var ip=isT&&(b.startMin+b.dur*60)<=nowM;
+        var bl=document.createElement('div');
+        bl.className='bblock s-'+st.cls+(ip?' past':'')+(b.trainer===myTrainer?' mine':'');
+        var tc2=tColor(b.trainer);
+        if(tc2)bl.style.borderLeftColor=tc2;
+        bl.innerHTML='<div class="btime">'+esc(m2s(b.startMin)+'-'+m2s(b.startMin+b.dur*60))+'</div><div class="btrainer">'+esc(b.trainer||'\u2014')+'</div>';
+        bl.addEventListener('click',function(){openDetail(b.id)});
+        gc.appendChild(bl);
+      });
+      g.appendChild(gc);
+    });
+  });
+  var w=document.createElement('div');
+  w.className='grid-wrap';
+  w.appendChild(g);
+  box.innerHTML='';
+  box.appendChild(w);
+}
 function renderHdr(){
   document.getElementById('adminBtn').style.display=isAdmin?'none':'inline-flex';
   document.getElementById('adminOutBtn').style.display=isAdmin?'inline-flex':'none';
@@ -1095,8 +1230,112 @@ function openDetail(id){
 }
 
 /* ===== Форма брони ===== */
+var selectedHorses = [];
+
+function updateTimeRangeAndHorseChips(){
+  var timeSel = document.getElementById('fTime');
+  if(!timeSel) return;
+  var sm = parseInt(timeSel.value, 10);
+  if(isNaN(sm)) sm = 480;
+  var em = sm + Math.round(curDur * 60);
+
+  // Time range badge
+  var badgeTxt = document.getElementById('fTimeRangeTxt');
+  if(badgeTxt){
+    badgeTxt.textContent = m2s(sm) + ' – ' + m2s(em) + ' (' + durStr(curDur) + ' ч)';
+  }
+
+  // Conflict and daily stats map
+  var ad = dates[curDayOff];
+  var adk = ad ? dk(ad) : '';
+  var busyMap = {};
+  var horseH = {};
+
+  bookings.forEach(function(b){
+    if(b.dateKey === adk && b.id !== editId && (b.status||'wait') !== 'cancel'){
+      horseH[b.horse] = (horseH[b.horse] || 0) + (b.dur || 0);
+      var bEnd = b.startMin + Math.round((b.dur || 0) * 60);
+      if(b.startMin < em && sm < bEnd){
+        busyMap[b.horse] = { start: b.startMin, end: bEnd, trainer: b.trainer };
+      }
+    }
+  });
+
+  // Filter out any selected horse that became busy
+  if(editId === null){
+    selectedHorses = selectedHorses.filter(function(h){ return !busyMap[h]; });
+  }
+
+  // Render horse chips
+  var container = document.getElementById('fHorseChips');
+  if(container){
+    container.innerHTML = config.horses.map(function(h){
+      var isBusy = !!busyMap[h];
+      var isSel = selectedHorses.indexOf(h) !== -1;
+      var label = isBusy ? ('занят ' + m2s(busyMap[h].start) + '–' + m2s(busyMap[h].end)) : ((horseH[h] || 0) > 0 ? (durStr(horseH[h]) + ' ч') : 'свободен');
+      return '<div class="f-horse-chip' + (isSel ? ' sel' : '') + (isBusy ? ' busy' : '') + '" data-h="' + esc(h) + '"' + (isBusy ? ' title="Занята в это время: ' + m2s(busyMap[h].start) + '–' + m2s(busyMap[h].end) + '"' : '') + '>' +
+        '<span class="f-h-name">' + esc(h) + '</span>' +
+        '<span class="f-h-badge">' + esc(label) + '</span>' +
+      '</div>';
+    }).join('') || '<div style="color:var(--muted);font-size:13px">Нет добавленных лошадей</div>';
+
+    container.querySelectorAll('.f-horse-chip').forEach(function(chip){
+      chip.addEventListener('click', function(){
+        var hName = chip.dataset.h;
+        if(chip.classList.contains('busy')){
+          var err = document.getElementById('fErr');
+          err.textContent = 'Лошадь «' + hName + '» уже занята в выбранный интервал времени.';
+          err.style.display = 'block';
+          haptic('warning');
+          return;
+        }
+        document.getElementById('fErr').style.display = 'none';
+        haptic('tap');
+        if(editId !== null){
+          selectedHorses = [hName];
+        } else {
+          var idx = selectedHorses.indexOf(hName);
+          if(idx !== -1){
+            if(selectedHorses.length > 1){
+              selectedHorses.splice(idx, 1);
+            }
+          } else {
+            selectedHorses.push(hName);
+          }
+        }
+        var hs = document.getElementById('fHorse');
+        if(hs && selectedHorses.length) hs.value = selectedHorses[0];
+        updateTimeRangeAndHorseChips();
+      });
+    });
+  }
+
+  // Update badge & save button text
+  var countBadge = document.getElementById('fHorseCountBadge');
+  if(countBadge){
+    if(editId !== null){
+      countBadge.textContent = selectedHorses[0] || '1 выбрана';
+    } else {
+      var n = selectedHorses.length;
+      countBadge.textContent = n + ' ' + (n === 1 ? 'выбрана' : (n >= 2 && n <= 4 ? 'выбрано' : 'выбрано'));
+    }
+  }
+
+  var saveBtn = document.getElementById('fSave');
+  if(saveBtn){
+    if(editId !== null){
+      saveBtn.textContent = 'Сохранить запись';
+    } else if(selectedHorses.length > 1){
+      saveBtn.textContent = 'Забронировать (' + selectedHorses.length + ' записи)';
+    } else {
+      saveBtn.textContent = 'Забронировать';
+    }
+  }
+}
+
 function openForm(){
   editId=null;
+  selectedHorses=[];
   document.getElementById('formTitle').textContent='Новая запись';
   document.getElementById('fSave').textContent='Забронировать';
   _fill(curDayOff,480,config.horses[0]||'',1.5,myTrainer||'',0,0,'wait','');
@@ -1104,6 +1343,7 @@ function openForm(){
 }
 function openFormFor(off,sm,horse){
   editId=null;
+  selectedHorses=[horse];
   document.getElementById('formTitle').textContent='Новая запись';
   document.getElementById('fSave').textContent='Забронировать';
   _fill(off,sm,horse,1.5,myTrainer||'',0,0,'wait','');
@@ -1111,8 +1351,9 @@ function openFormFor(off,sm,horse){
 }
 function openFormEdit(b){
   editId=b.id;
+  selectedHorses=[b.horse];
   document.getElementById('formTitle').textContent='Редактирование';
-  document.getElementById('fSave').textContent='Сохранить';
+  document.getElementById('fSave').textContent='Сохранить запись';
   var li=0,ti=0;
   config.loads.forEach(function(l,i){if(l.label===b.loadLabel)li=i});
   config.tempos.forEach(function(t,i){if(t.label===b.tempoLabel)ti=i});
@@ -1136,20 +1377,14 @@ function _fill(off,sm,horse,dur,trainer,li,ti,status,comment){
     var o=document.createElement('option');o.value=m;o.textContent=m2s(m);if(m===sm)o.selected=true;ts.appendChild(o);
   });
 
-  // Подсчет нагрузки лошадей на выбранный день
-  var horseH={};
-  bookings.forEach(function(b){
-    if(b.dateKey===adk && b.id!==editId && (b.status||'wait')!=='cancel'){
-      horseH[b.horse]=(horseH[b.horse]||0)+(b.dur||0);
+  if(editId !== null){
+    selectedHorses = [horse];
+    document.getElementById('fHorseLabel').textContent = 'Лошадь';
+  } else {
+    if(!selectedHorses.length){
+      selectedHorses = horse ? [horse] : (config.horses[0] ? [config.horses[0]] : []);
     }
-  });
-  var hs=document.getElementById('fHorse');
-  if(hs){
-    hs.innerHTML=config.horses.map(function(h){
-      var used=horseH[h]||0;
-      var hint=used===0?'свободен (0 ч)':durStr(used)+' ч';
-      return '<option value="'+esc(h)+'"'+(h===horse?' selected':'')+'>'+esc(h)+' · '+hint+'</option>';
-    }).join('')||'<option value="">— нет лошадей —</option>';
+    document.getElementById('fHorseLabel').textContent = 'Лошади (выберите одну или несколько)';
   }
 
   // Заполнение тренеров в select
@@ -1178,30 +1413,57 @@ function _fill(off,sm,horse,dur,trainer,li,ti,status,comment){
   curSt=status;curLI=li;curTI=ti;curDayOff=off;
   document.getElementById('fErr').style.display='none';
   document.getElementById('fComment').value=comment||'';
+
+  updateTimeRangeAndHorseChips();
 }
 
-function closeForm(){document.getElementById('overlay').classList.remove('open');editId=null}
+function closeForm(){document.getElementById('overlay').classList.remove('open');editId=null;selectedHorses=[]}
 
 function bindC(id,cb){document.getElementById(id).addEventListener('click',function(e){var c=e.target.closest('.chip');if(!c)return;c.parentElement.querySelectorAll('.chip').forEach(function(x){x.classList.remove('sel')});c.classList.add('sel');cb(c)})}
-bindC('fDur',function(c){curDur=parseFloat(c.dataset.h)});bindC('fLoad',function(c){curLI=parseInt(c.dataset.i,10)});bindC('fTempo',function(c){curTI=parseInt(c.dataset.i,10)});bindC('fStatus',function(c){curSt=c.dataset.s});
+bindC('fDur',function(c){curDur=parseFloat(c.dataset.h);updateTimeRangeAndHorseChips()});
+bindC('fLoad',function(c){curLI=parseInt(c.dataset.i,10)});
+bindC('fTempo',function(c){curTI=parseInt(c.dataset.i,10)});
+bindC('fStatus',function(c){curSt=c.dataset.s});
+document.getElementById('fTime').addEventListener('change', updateTimeRangeAndHorseChips);
 
 document.getElementById('fCancel').addEventListener('click', closeForm);
 
 document.getElementById('fSave').addEventListener('click',function(){
   var err=document.getElementById('fErr'),ad=dates[curDayOff];
   if(!ad)return;
-  var key=dk(ad),sm=parseInt(document.getElementById('fTime').value,10),horse=document.getElementById('fHorse').value;
+  var key=dk(ad),sm=parseInt(document.getElementById('fTime').value,10);
   var trInp=document.getElementById('fTrainer');
   var trainer=trInp?trInp.value.trim():'';
-  var em=sm+curDur*60;
+  var em=sm+Math.round(curDur*60);
   var L=config.loads[curLI]||{label:''},T=config.tempos[curTI]||{label:''};
-  if(!trainer){err.textContent='⚠️ Укажите тренера.';err.style.display='block';return}
-  var cl=bookings.find(function(b){return b.id!==editId&&(b.status||'wait')!=='cancel'&&b.dateKey===key&&b.horse===horse&&b.startMin<em&&sm<b.startMin+b.dur*60});
-  if(cl){err.textContent='⚠️ «'+horse+'» занята с '+m2s(cl.startMin)+' до '+m2s(cl.startMin+cl.dur*60)+'.';err.style.display='block';return}
+  if(!trainer){err.textContent='Укажите тренера.';err.style.display='block';return}
+  if(!selectedHorses.length){err.textContent='Выберите хотя бы одну лошадь.';err.style.display='block';return}
+
+  // Conflict check for all selected horses
+  for(var i=0; i<selectedHorses.length; i++){
+    var h = selectedHorses[i];
+    var cl = bookings.find(function(b){return b.id!==editId&&(b.status||'wait')!=='cancel'&&b.dateKey===key&&b.horse===h&&b.startMin<em&&sm<b.startMin+b.dur*60});
+    if(cl){
+      err.textContent='Лошадь «'+h+'» занята с '+m2s(cl.startMin)+' до '+m2s(cl.startMin+cl.dur*60)+'.';
+      err.style.display='block';
+      haptic('warning');
+      return;
+    }
+  }
+
   err.style.display='none';
-  var data={dateKey:key,startMin:sm,dur:curDur,horse:horse,trainer:trainer,loadLabel:L.label,tempoLabel:T.label,status:curSt,comment:document.getElementById('fComment').value.trim()};
+  var comment = document.getElementById('fComment').value.trim();
   haptic('success');
-  if(editId)updB(editId,data);else pushB(data);
+
+  if(editId){
+    var data={dateKey:key,startMin:sm,dur:curDur,horse:selectedHorses[0],trainer:trainer,loadLabel:L.label,tempoLabel:T.label,status:curSt,comment:comment};
+    updB(editId,data);
+  } else {
+    selectedHorses.forEach(function(h){
+      var data={dateKey:key,startMin:sm,dur:curDur,horse:h,trainer:trainer,loadLabel:L.label,tempoLabel:T.label,status:curSt,comment:comment};
+      pushB(data);
+    });
+  }
   closeForm();
 });
 
@@ -1243,9 +1505,7 @@ var cfgD=null;
 function openCfg(){
   cfgD=JSON.parse(JSON.stringify(config));
   document.getElementById('cfgErr').style.display='none';
-  loadCfgProfile();
   renderCfg();
-  renderTgBindArea();
   document.getElementById('cfgOverlay').classList.add('open');
 }
 function closeCfg(){document.getElementById('cfgOverlay').classList.remove('open');cfgD=null}
@@ -1257,7 +1517,6 @@ document.getElementById('cfgTrainerAdd').addEventListener('click',function(){var
 document.getElementById('cfgSave').addEventListener('click',function(){
   config=cfgD;
   saveCfg();
-  renderTgBindArea();
   closeCfg();
 });
 document.getElementById('cfgCancel').addEventListener('click',closeCfg);
@@ -1265,54 +1524,6 @@ document.getElementById('cfgCancel').addEventListener('click',closeCfg);
 /* Сворачивание секций настроек */
 document.querySelectorAll('#cfgOverlay .sec h3').forEach(function(h){
   h.addEventListener('click',function(){h.parentElement.classList.toggle('closed')});
-});
-
-/* ===== Профиль уведомлений (Firebase) ===== */
-function loadCfgProfile(){var sel=document.getElementById('cfgWho');sel.innerHTML='';config.trainers.forEach(function(t){var o=document.createElement('option');o.value=t.name;o.textContent=t.name;if(t.name===myTrainer)o.selected=true;sel.appendChild(o)});loadCfgRemind()}
-
-function loadCfgRemind(){
-  var sel=document.getElementById('cfgRemind');
-  var cw=document.getElementById('cfgCustomRemindWrap');
-  var cin=document.getElementById('cfgCustomRemindMin');
-  if(!myTrainer){sel.value='15';cw.style.display='none';return}
-  var v='15';
-  if(myRemindCode&&tgRemindCache[myRemindCode]&&tgRemindCache[myRemindCode].minutes)v=String(tgRemindCache[myRemindCode].minutes);
-  var has=false;for(var i=0;i<sel.options.length;i++){if(sel.options[i].value===v)has=true}
-  if(has){sel.value=v;cw.style.display='none'}else{sel.value='custom';cw.style.display='block';cin.value=v}
-}
-
-var tgRemindCache={};
-function watchRemindSettings(){
-  if(!db)return;
-  db.ref('remindSettings').on('value',function(sn){tgRemindCache=sn.val()||{};loadCfgRemind();renderTgBindArea()});
-}
-
-document.getElementById('cfgWho').addEventListener('change',function(){
-  myTrainer=this.value;localStorage.setItem('hc_me',myTrainer);
-  ensureRemindEntry().then(function(){loadCfgRemind();renderTgBindArea()});
-  schedRefresh();
-});
-
-document.getElementById('cfgRemind').addEventListener('change',function(){
-  var cw=document.getElementById('cfgCustomRemindWrap');
-  if(this.value==='custom'){cw.style.display='block';return}
-  cw.style.display='none';
-  saveRemindSettings(parseInt(this.value,10));
-});
-
-document.getElementById('cfgCustomRemindMin').addEventListener('input',function(){
-  var v=parseInt(this.value,10);
-  if(v>0&&v<=720)saveRemindSettings(v);
-});
-
-document.getElementById('cfgTestNotifBtn').addEventListener('click',async function(){
-  if(!config.tgToken)return alert('Укажите Bot Token в настройках!');
-  if(!myTrainer)return alert('Сначала выберите «Кто я»');
-  if(!myRemindCode)return alert('Код еще не сгенерирован — выберите «Кто я» и сохраните настройки');
-  var st=myTgStatus();
-  if(!st||!st.confirmed)return alert('Telegram не привязан.\nСначала нажмите «Открыть бота и привязать» и отправьте боту /start '+myRemindCode);
-  var r=await tgSendText(st.chatId,'🔔 <b>Тестовое уведомление</b>\n\nЕсли вы это видите — напоминания о ваших занятиях будут приходить сюда.\n\n👤 '+esc(myTrainer)+' · за '+((tgRemindCache[myRemindCode]&&tgRemindCache[myRemindCode].minutes)||15)+' мин до начала');
-  alert(r&&r.ok?'✅ Отправлено в ваш Telegram!':'Ошибка: '+(r&&r.description||'неизвестно'));
 });
 
 /* ===== Старт ===== */
@@ -1325,7 +1536,6 @@ updateClock();
 var todayKey=dk(mskNow());
 for(var i=0;i<dates.length;i++){if(dk(dates[i])===todayKey){curDayOff=i;break}}
 initFB();
-watchRemindSettings();
 if(!myTrainer&&isAdmin)setTimeout(showWhoSelect,500);
 
 /* ===== Меню админа + Финансы + Telegram и Экспорт ===== */
@@ -1496,10 +1706,10 @@ var finMode='t';
 function finRange(mode){
   var n=mskNow(),tk=dk(n);
   function add(d){return dk(new Date(n.getTime()+d*24*60*60*1000))}
-  if(mode==='p30')return{f:add(-30),t:tk,l:'30 дней назад \u2014 сегодня'};
-  if(mode==='p7')return{f:add(-7),t:tk,l:'7 дней назад \u2014 сегодня'};
-  if(mode==='f7')return{f:tk,t:add(7),l:'сегодня \u2014 7 дней вперед'};
-  if(mode==='f30')return{f:tk,t:add(30),l:'сегодня \u2014 30 дней вперед'};
+  if(mode==='p30')return{f:add(-30),t:tk,l:'Последние 30 дней'};
+  if(mode==='p7')return{f:add(-7),t:tk,l:'Последние 7 дней'};
+  if(mode==='f7')return{f:tk,t:add(7),l:'Следующие 7 дней'};
+  if(mode==='f30')return{f:tk,t:add(30),l:'Следующие 30 дней'};
   return{f:tk,t:tk,l:'Сегодня'};
 }
 function finFilter(){
@@ -1507,9 +1717,9 @@ function finFilter(){
   if(finMode==='custom'){
     from=document.getElementById('finFrom').value;to=document.getElementById('finTo').value;
     if(!from||!to)return null;
-    label='Период: '+from+' \u2014 '+to;
+    label='Период: '+from+' — '+to;
   }else{
-    var r=finRange(finMode);from=r.f;to=r.t;label=r.l+' ('+r.f+' \u2014 '+r.t+')';
+    var r=finRange(finMode);from=r.f;to=r.t;label=r.l+' ('+r.f+' — '+r.t+')';
   }
   var rel=bookings.filter(function(b){return b.dateKey>=from&&b.dateKey<=to&&(b.status||'wait')!=='cancel'});
   rel.__label=label;return rel;
@@ -1517,7 +1727,7 @@ function finFilter(){
 function renderFinance(){
   var cont=document.getElementById('finContent');
   var rel=finFilter();
-  if(!rel){cont.innerHTML='<p style="color:var(--muted);text-align:center;padding:16px">Выберите обе даты</p>';return}
+  if(!rel){cont.innerHTML='<p style="color:var(--muted);text-align:center;padding:24px 16px">Выберите обе даты для расчета финансов</p>';return}
   var earned=0,pending=0,cnt=0,noPrice=0,byTr={},byLoad={},byHorse={};
   rel.forEach(function(b){
     var pr=bookingPrice(b);
@@ -1530,32 +1740,66 @@ function renderFinance(){
   });
   var pay={},payTotal=0;
   Object.keys(byTr).forEach(function(n){var pct=(config.payouts||{})[finKey(n)]||0;pay[n]=Math.round(byTr[n].sum*pct/100);payTotal+=pay[n]});
-  var h='<div style="font-size:12px;color:var(--muted);text-align:center;margin-bottom:10px">'+esc(rel.__label)+'</div>';
+  
+  var h='<div style="font-size:12px;color:var(--muted);text-align:center;margin-bottom:12px;background:var(--input-bg);padding:6px 10px;border-radius:8px;border:1px solid var(--line)">'+esc(rel.__label)+'</div>';
   h+='<div class="fin-metrics-grid">';
-  h+='<div class="fin-metric-tile" style="background:var(--done-bg);border-color:var(--done-text)"><div class="fin-metric-val" style="color:var(--done-text)">'+fmtMoney(earned)+'</div><div class="fin-metric-lbl">заработано</div></div>';
-  h+='<div class="fin-metric-tile" style="background:var(--wait-bg);border-color:var(--yellow-dark)"><div class="fin-metric-val" style="color:var(--wait-text)">'+fmtMoney(pending)+'</div><div class="fin-metric-lbl">ожидается</div></div>';
-  h+='<div class="fin-metric-tile" style="background:var(--input-bg)"><div class="fin-metric-val">'+cnt+'</div><div class="fin-metric-lbl">занятий</div></div>';
-  h+='<div class="fin-metric-tile" style="background:var(--input-bg)"><div class="fin-metric-val">'+(cnt?fmtMoney((earned+pending)/cnt):'\u2014')+'</div><div class="fin-metric-lbl">средний чек</div></div>';
+  h+='<div class="fin-metric-tile done"><div class="fin-metric-val" style="color:var(--done-text)">'+fmtMoney(earned)+'</div><div class="fin-metric-lbl">заработано (выполнено)</div></div>';
+  h+='<div class="fin-metric-tile wait"><div class="fin-metric-val" style="color:var(--wait-text)">'+fmtMoney(pending)+'</div><div class="fin-metric-lbl">ожидается (план)</div></div>';
+  h+='<div class="fin-metric-tile"><div class="fin-metric-val">'+cnt+'</div><div class="fin-metric-lbl">всего занятий</div></div>';
+  h+='<div class="fin-metric-tile"><div class="fin-metric-val">'+(cnt?fmtMoney((earned+pending)/cnt):'\u2014')+'</div><div class="fin-metric-lbl">средний чек</div></div>';
   h+='</div>';
-  if(noPrice)h+='<p style="font-size:12px;color:var(--red);margin-bottom:8px">Внимание: '+noPrice+' зан. без цены — задайте в настройках ниже</p>';
-  h+='<div class="sec"><h3>По тренерам</h3>';
-  Object.keys(byTr).sort(function(a,b){return byTr[b].sum-byTr[a].sum}).forEach(function(n){
+
+  if(noPrice)h+='<div style="font-size:12px;color:var(--red);background:var(--cancel-bg);padding:8px 12px;border-radius:8px;margin-bottom:10px">Внимание: '+noPrice+' зан. без установленной цены. Задайте ставки в тарифах ниже.</div>';
+
+  h+='<div class="sec"><h3>Зарплаты тренеров</h3><div class="sec-body">';
+  var trKeys=Object.keys(byTr).sort(function(a,b){return byTr[b].sum-byTr[a].sum});
+  if(!trKeys.length){h+='<div style="color:var(--muted);font-size:13px;text-align:center;padding:12px">Нет данных по тренерам</div>'}
+  trKeys.forEach(function(n){
     var t=byTr[n];
-    h+='<div class="stat-row"><span class="stat-name">'+esc(n)+'</span><span class="stat-nums">'+t.n+' зан.</span><span class="stat-hours">'+fmtMoney(t.sum)+'</span></div>';
-    if(pay[n])h+='<div class="stat-row" style="padding-left:20px;font-size:12px"><span class="stat-name" style="font-weight:400;color:var(--muted)">↳ зарплата '+((config.payouts||{})[finKey(n)])+'%</span><span class="stat-nums"></span><span class="stat-hours" style="color:var(--red)">-'+fmtMoney(pay[n])+'</span></div>';
+    var col=tColor(n);
+    var pct=(config.payouts||{})[finKey(n)]||0;
+    h+='<div class="stat-row">';
+    h+='<span class="stat-dot" style="background:'+esc(col||'#999')+'"></span>';
+    h+='<span class="stat-name">'+esc(n)+'</span>';
+    h+='<span class="stat-nums">'+t.n+' зан.</span>';
+    h+='<span class="stat-hours" style="color:var(--ink)">'+fmtMoney(t.sum)+'</span>';
+    h+='</div>';
+    if(pay[n]){
+      h+='<div class="stat-row" style="padding-left:18px;font-size:12px;background:var(--surface);border-radius:6px;margin:2px 0 6px">';
+      h+='<span style="color:var(--muted);flex:1">↳ Ставка '+pct+'% от выручки</span>';
+      h+='<span class="stat-hours" style="color:var(--red);font-weight:700">-'+fmtMoney(pay[n])+'</span>';
+      h+='</div>';
+    }
   });
-  h+='</div><div class="sec"><h3>По видам нагрузки</h3>';
-  Object.keys(byLoad).sort(function(a,b){return byLoad[b].sum-byLoad[a].sum}).forEach(function(n){var t=byLoad[n];h+='<div class="stat-row"><span class="stat-name">'+esc(n)+'</span><span class="stat-nums">'+t.n+' зан.</span><span class="stat-hours">'+fmtMoney(t.sum)+'</span></div>'});
-  h+='</div><div class="sec"><h3>По лошадям</h3>';
-  Object.keys(byHorse).sort(function(a,b){return byHorse[b].sum-byHorse[a].sum}).forEach(function(n){var t=byHorse[n];h+='<div class="stat-row"><span class="stat-name">'+esc(n)+'</span><span class="stat-nums">'+t.n+' зан.</span><span class="stat-hours">'+fmtMoney(t.sum)+'</span></div>'});
-  h+='</div>';
-  if(payTotal)h+='<div class="stat-total">Итог: выручка '+fmtMoney(earned+pending)+' · зарплаты '+fmtMoney(payTotal)+' · остаётся клубу '+fmtMoney(earned+pending-payTotal)+'</div>';
+  h+='</div></div>';
+
+  h+='<div class="sec"><h3>По видам нагрузки</h3><div class="sec-body">';
+  Object.keys(byLoad).sort(function(a,b){return byLoad[b].sum-byLoad[a].sum}).forEach(function(n){
+    var t=byLoad[n];
+    h+='<div class="stat-row"><span class="stat-name">'+esc(n)+'</span><span class="stat-nums">'+t.n+' зан.</span><span class="stat-hours" style="color:var(--ink)">'+fmtMoney(t.sum)+'</span></div>';
+  });
+  h+='</div></div>';
+
+  h+='<div class="sec"><h3>По лошадям</h3><div class="sec-body">';
+  Object.keys(byHorse).sort(function(a,b){return byHorse[b].sum-byHorse[a].sum}).forEach(function(n){
+    var t=byHorse[n];
+    h+='<div class="stat-row"><span class="stat-name">'+esc(n)+'</span><span class="stat-nums">'+t.n+' зан.</span><span class="stat-hours" style="color:var(--ink)">'+fmtMoney(t.sum)+'</span></div>';
+  });
+  h+='</div></div>';
+
+  h+='<div class="fin-summary-box">'+
+    '<div class="fin-summary-row"><span>Общая выручка:</span><span class="fin-sum-val">'+fmtMoney(earned+pending)+'</span></div>'+
+    '<div class="fin-summary-row"><span>К выплате тренерам:</span><span class="fin-sum-val" style="color:var(--red)">-'+fmtMoney(payTotal)+'</span></div>'+
+    '<div class="fin-summary-row fin-summary-total"><span>Прибыль клуба:</span><span class="fin-sum-val">'+fmtMoney(earned+pending-payTotal)+'</span></div>'+
+  '</div>';
+
   cont.innerHTML=h;
 }
+
 function renderFinSettings(){
   var box=document.getElementById('finSettingsBody');
   var P=finPrices(),po=config.payouts||{};
-  var h='<p style="font-size:12px;color:var(--muted);margin-bottom:8px">Ставка за 1 ч и точные цены за длительность (пусто = ставка × часы):</p>';
+  var h='<div style="font-size:12px;color:var(--muted);margin-bottom:10px">Укажите базовую ставку за 1 час или точные цены на длительность (если поле пустое, действует ставка × часы):</div>';
   config.loads.forEach(function(l){
     var k=finKey(l.label),p=P[k]||{};
     h+='<div class="fin-price-card"><div class="fin-price-title">'+esc(l.label)+'</div><div class="fin-price-inputs">';
@@ -1565,15 +1809,15 @@ function renderFinSettings(){
     });
     h+='</div></div>';
   });
-  h+='<p style="font-size:12px;color:var(--muted);margin:12px 0 8px">Зарплата тренеров (% от выручки):</p>';
+  h+='<div style="font-size:12px;color:var(--muted);margin:14px 0 8px;font-weight:700;text-transform:uppercase;letter-spacing:.5px">Проценты тренеров (% от выручки):</div>';
   config.trainers.forEach(function(t){
     var tk=finKey(t.name);
-    h+='<div style="display:flex;gap:10px;align-items:center;margin-bottom:8px;padding:8px 10px;background:var(--input-bg);border:1.5px solid var(--line);border-radius:10px">';
+    h+='<div style="display:flex;gap:10px;align-items:center;margin-bottom:8px;padding:8px 12px;background:var(--input-bg);border:1.5px solid var(--line);border-radius:10px">';
     h+='<span class="stat-dot" style="background:'+esc(t.color)+'"></span>';
-    h+='<span style="flex:1;font-size:14px;font-weight:600">'+esc(t.name)+'</span>';
+    h+='<span style="flex:1;font-size:14px;font-weight:700">'+esc(t.name)+'</span>';
     h+='<input class="finPay" data-tr="'+esc(tk)+'" type="number" value="'+(po[tk]||0)+'" style="width:70px;padding:8px;border:1.5px solid var(--line);border-radius:8px;background:var(--card);color:var(--ink);font-size:14px;font-weight:700;text-align:center"> <span style="font-weight:700;color:var(--muted)">%</span></div>';
   });
-  h+='<button class="btn-tg-csv" id="finSaveBtn" style="background:var(--green);color:#fff;border-color:var(--green);margin-top:10px;min-height:46px;font-size:15px">Сохранить цены и зарплаты</button>';
+  h+='<button class="btn-menu-action" id="finSaveBtn" style="background:var(--green);color:#fff;border-color:var(--green);margin-top:12px;min-height:46px;font-size:14.5px;width:100%"><svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" fill="none" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg> Сохранить тарифы и зарплаты</button>';
   box.innerHTML=h;
   document.getElementById('finSaveBtn').addEventListener('click',function(){
     try{
@@ -1591,16 +1835,27 @@ function renderFinSettings(){
       db.ref('config/prices').set(config.prices).then(function(){
         return db.ref('config/payouts').set(config.payouts);
       }).then(function(){
-        alert('Сохранено');renderFinance();
+        haptic('success');
+        alert('Тарифы и проценты сохранены');
+        renderFinance();
       }).catch(function(e){
         alert('Ошибка сохранения: '+(e.message||e));
       });
     }catch(e){alert('Ошибка: '+(e.message||e))}
   });
 }
+
 function openFinance(){
   var m=document.getElementById('finModal');
-  var h='<h2>Финансы</h2>';
+  var h='<div style="display:flex;align-items:center;gap:10px;margin-bottom:14px">'+
+    '<div class="menu-item-icon" style="background:var(--done-bg);color:var(--done-text)">'+
+      '<svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" fill="none" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"></line><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg>'+
+    '</div>'+
+    '<div style="flex:1">'+
+      '<h2 style="margin:0;font-size:18px">Финансы и зарплаты</h2>'+
+      '<div style="font-size:11px;color:var(--muted)">Выручка клуба, проценты тренеров и ставки</div>'+
+    '</div>'+
+  '</div>';
   h+='<div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px" id="finChips">';
   h+='<div class="chip" data-r="p30">-30 дн</div><div class="chip" data-r="p7">-7 дн</div><div class="chip sel" data-r="t">Сегодня</div><div class="chip" data-r="f7">+7 дн</div><div class="chip" data-r="f30">+30 дн</div><div class="chip" data-r="custom">Период</div></div>';
   h+='<div style="display:flex;gap:8px;margin-bottom:14px;align-items:center;display:none" id="finDates">';
@@ -1608,8 +1863,11 @@ function openFinance(){
   h+='<span style="color:var(--muted)">—</span>';
   h+='<input type="date" id="finTo" style="flex:1;padding:8px;border:1.5px solid var(--line);border-radius:8px;background:var(--input-bg);color:var(--ink);font-size:14px"></div>';
   h+='<div id="finContent"></div>';
-  h+='<p id="finSetToggle" style="font-size:13px;color:var(--muted);cursor:pointer;margin-top:10px">Настройки тарифов и зарплат тренеров ▾</p>';
-  h+='<div id="finSettings" style="display:none;border:1.5px solid var(--line);border-radius:12px;padding:10px;margin-top:6px"><div id="finSettingsBody"></div></div>';
+  h+='<div id="finSetToggle" style="display:flex;align-items:center;justify-content:space-between;padding:12px;background:var(--input-bg);border:1.5px solid var(--line);border-radius:12px;margin-top:12px;cursor:pointer">'+
+    '<span style="font-size:13px;font-weight:700;color:var(--ink)">Настройки тарифов и зарплат</span>'+
+    '<svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" fill="none" stroke-width="2.5" style="color:var(--muted)"><polyline points="6 9 12 15 18 9"></polyline></svg>'+
+  '</div>';
+  h+='<div id="finSettings" style="display:none;border:1.5px solid var(--line);border-radius:12px;padding:12px;margin-top:8px"><div id="finSettingsBody"></div></div>';
   h+='<div class="btnrow"><button class="btn cancel" id="finClose">Закрыть</button></div>';
   m.innerHTML=h;addX2(document.getElementById('finOverlay'));
   document.getElementById('finOverlay').classList.add('open');
@@ -1630,7 +1888,7 @@ function openFinance(){
   renderFinance();
 }
 
-/* --- Telegram и Экспорт (новый дизайн, уникальные ID) --- */
+/* --- Telegram и Экспорт --- */
 function tgsPopulateMonths(){
   var sel=document.getElementById('tgsMonth');
   var monthsSet={};bookings.forEach(function(b){var ym=(b.dateKey||'').substring(0,7);if(ym)monthsSet[ym]=true});
@@ -1648,30 +1906,49 @@ function tgsGetData(){
 }
 function openTgs(){
   var m=document.getElementById('tgsModal');
-  var h='<h2>Telegram и Экспорт</h2>';
-  h+='<div class="sec"><h3>Экспорт данных <span class="arr">▾</span></h3><div class="sec-body">';
-  h+='<label>Период:</label>';
-  h+='<select id="tgsMonth" style="width:100%;padding:11px 12px;font-size:15px;border:1.5px solid var(--line);border-radius:10px;background:var(--input-bg);color:var(--ink);margin-bottom:8px;"><option value="all">За все время</option></select>';
-  h+='<label>Получатель:</label>';
-  h+='<select id="tgsTarget" style="width:100%;padding:11px 12px;font-size:15px;border:1.5px solid var(--line);border-radius:10px;background:var(--input-bg);color:var(--ink);margin-bottom:12px;"><option value="admin">Личный чат админа</option><option value="public">Публичный канал</option></select>';
-  h+='<button class="btn-tg-csv" id="tgsCsv" style="display:inline-flex;align-items:center;justify-content:center;gap:8px"><svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" fill="none" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg> Скачать таблицу (CSV для Excel)</button>';
-  h+='<button class="btn-tg-csv" id="tgsTable" style="display:inline-flex;align-items:center;justify-content:center;gap:8px"><svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" fill="none" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg> Отправить таблицу в Telegram</button>';
-  h+='<button class="btn-tg-csv" id="tgsArch" style="display:inline-flex;align-items:center;justify-content:center;gap:8px"><svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" fill="none" stroke-width="2"><polyline points="21 8 21 21 3 21 3 8"></polyline><rect x="1" y="3" width="22" height="5"></rect><line x1="10" y1="12" x2="14" y2="12"></line></svg> Архив за прошлый месяц → Telegram</button>';
-  h+='<button class="btn-tg-csv" id="tgsSync" style="display:inline-flex;align-items:center;justify-content:center;gap:8px"><svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" fill="none" stroke-width="2"><polyline points="23 4 23 10 17 10"></polyline><polyline points="1 20 1 14 7 14"></polyline><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path></svg> Синхронизировать период в архив</button>';
-  h+='<button class="btn-tg-csv" id="tgsBackup" style="display:inline-flex;align-items:center;justify-content:center;gap:8px"><svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" fill="none" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg> Резервная копия базы (JSON)</button>';
-  h+='<button class="btn-tg-csv" id="tgsRestore" style="display:inline-flex;align-items:center;justify-content:center;gap:8px"><svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" fill="none" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg> Восстановить базу из бэкапа (JSON)</button>';
-  h+='</div></div>';
-  h+='<div class="sec"><h3>Настройки бота <span class="arr">▾</span></h3><div class="sec-body">';
-  h+='<label>Bot Token</label>';
-  h+='<input type="text" id="tgsToken" placeholder="Токен от @BotFather" autocomplete="off">';
-  h+='<label>ID публичного канала (например, -100... или @channel)</label>';
-  h+='<input type="text" id="tgsPublic" placeholder="-100123456789" autocomplete="off">';
-  h+='<label>ID личного чата админа (для архивов и отчетов)</label>';
-  h+='<input type="text" id="tgsAdmin" placeholder="6467332405" autocomplete="off">';
-  h+='<label>Имя бота (для ссылок привязки, без @)</label>';
-  h+='<input type="text" id="tgsBotName" placeholder="напр: horse_club_reminder_bot" autocomplete="off">';
-  h+='<button class="btn-tg-csv" id="tgsSave" style="background:var(--green);color:#fff;border-color:var(--green);margin-top:8px">Сохранить настройки бота</button>';
-  h+='</div></div>';
+  var h='<div style="display:flex;align-items:center;gap:10px;margin-bottom:14px">'+
+    '<div class="menu-item-icon" style="background:var(--surface);color:var(--green)">'+
+      '<svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" fill="none" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>'+
+    '</div>'+
+    '<div style="flex:1">'+
+      '<h2 style="margin:0;font-size:18px">Telegram и Экспорт</h2>'+
+      '<div style="font-size:11px;color:var(--muted)">Отчеты в каналы, выгрузка Excel и резервные копии</div>'+
+    '</div>'+
+  '</div>';
+
+  h+='<div class="tgs-card-sec"><h3><svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" fill="none" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg> Экспорт данных и Telegram</h3>'+
+    '<label style="margin-top:0">Период:</label>'+
+    '<select id="tgsMonth" style="margin-bottom:10px"><option value="all">За все время</option></select>'+
+    '<label>Получатель в Telegram:</label>'+
+    '<select id="tgsTarget" style="margin-bottom:12px"><option value="admin">Личный чат админа</option><option value="public">Публичный канал</option></select>'+
+    '<button class="btn-menu-action" id="tgsCsv" style="width:100%;margin-bottom:8px"><svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg> Скачать таблицу (CSV для Excel)</button>'+
+    '<button class="btn-menu-action" id="tgsTable" style="width:100%"><svg viewBox="0 0 24 24"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg> Отправить расписание в Telegram</button>'+
+  '</div>';
+
+  h+='<div class="tgs-card-sec"><h3><svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" fill="none" stroke-width="2"><polyline points="21 8 21 21 3 21 3 8"></polyline><rect x="1" y="3" width="22" height="5"></rect><line x1="10" y1="12" x2="14" y2="12"></line></svg> Синхронизация и архив</h3>'+
+    '<button class="btn-menu-action" id="tgsArch" style="width:100%;margin-bottom:8px"><svg viewBox="0 0 24 24"><polyline points="21 8 21 21 3 21 3 8"></polyline><rect x="1" y="3" width="22" height="5"></rect><line x1="10" y1="12" x2="14" y2="12"></line></svg> Архив за прошлый месяц → Telegram</button>'+
+    '<button class="btn-menu-action" id="tgsSync" style="width:100%"><svg viewBox="0 0 24 24"><polyline points="23 4 23 10 17 10"></polyline><polyline points="1 20 1 14 7 14"></polyline><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path></svg> Синхронизировать период в архив</button>'+
+  '</div>';
+
+  h+='<div class="tgs-card-sec"><h3><svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" fill="none" stroke-width="2"><ellipse cx="12" cy="5" rx="9" ry="3"></ellipse><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"></path><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"></path></svg> Резервные копии базы</h3>'+
+    '<div class="tgs-btn-grid">'+
+      '<button class="btn-menu-action" id="tgsBackup"><svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg> Скачать JSON</button>'+
+      '<button class="btn-menu-action" id="tgsRestore"><svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg> Восстановить</button>'+
+    '</div>'+
+  '</div>';
+
+  h+='<div class="tgs-card-sec"><h3><svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" fill="none" stroke-width="2"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg> Настройки бота</h3>'+
+    '<label style="margin-top:0">Bot Token</label>'+
+    '<input type="text" id="tgsToken" placeholder="Токен от @BotFather" autocomplete="off">'+
+    '<label>ID публичного канала (например, -100... или @channel)</label>'+
+    '<input type="text" id="tgsPublic" placeholder="-100123456789" autocomplete="off">'+
+    '<label>ID личного чата админа (для архивов и отчетов)</label>'+
+    '<input type="text" id="tgsAdmin" placeholder="6467332405" autocomplete="off">'+
+    '<label>Имя бота (для ссылок привязки, без @)</label>'+
+    '<input type="text" id="tgsBotName" placeholder="напр: horse_club_reminder_bot" autocomplete="off">'+
+    '<button class="btn-menu-action" id="tgsSave" style="background:var(--green);color:#fff;border-color:var(--green);margin-top:10px;width:100%"><svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" fill="none" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg> Сохранить настройки бота</button>'+
+  '</div>';
+
   h+='<div class="btnrow"><button class="btn cancel" id="tgsClose">Закрыть</button></div>';
   m.innerHTML=h;
   addX2(document.getElementById('tgsOverlay'));
@@ -1696,8 +1973,11 @@ function openTgs(){
     if(!data.length)return alert('Нет записей за: '+monthName);
     let text="📋 <b>Расписание: "+monthName+"</b>\n\n";let grouped={};data.forEach(function(b){if(!grouped[b.dateKey])grouped[b.dateKey]=[];grouped[b.dateKey].push(b)});
     for(let date in grouped){text+="📅 <b>"+date+"</b>\n";grouped[date].forEach(function(b){let timeStr=m2s(b.startMin)+'-'+m2s(b.startMin+b.dur*60);let statusIcon=b.status==='done'?'✅':(b.status==='cancel'?'🚫':'⏳');text+="  "+statusIcon+" "+timeStr+" | 🐴 "+b.horse+" | 👤 "+b.trainer+(b.comment ? " | 💬 "+b.comment : "")+"\n"});text+="\n"}
-    document.getElementById('tgsTable').textContent='⏳ Отправка...';
-    fetch("https://api.telegram.org/bot"+BOT_TOKEN+"/sendMessage",{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({chat_id:CHAT_ID,text:text,parse_mode:'HTML'})}).then(function(r){return r.json()}).then(function(res){document.getElementById('tgsTable').textContent='📨 Отправить таблицу в Телеграм';alert(res.ok?'Успешно отправлено!':'Ошибка: '+res.description)}).catch(function(e){document.getElementById('tgsTable').textContent='📨 Отправить таблицу в Телеграм';alert('Ошибка сети: '+e)});
+    var origText=this.innerHTML;
+    this.disabled=true;
+    this.textContent='Отправка...';
+    var btn=this;
+    fetch("https://api.telegram.org/bot"+BOT_TOKEN+"/sendMessage",{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({chat_id:CHAT_ID,text:text,parse_mode:'HTML'})}).then(function(r){return r.json()}).then(function(res){btn.disabled=false;btn.innerHTML=origText;alert(res.ok?'Успешно отправлено!':'Ошибка: '+res.description)}).catch(function(e){btn.disabled=false;btn.innerHTML=origText;alert('Ошибка сети: '+e)});
   });
   document.getElementById('tgsArch').addEventListener('click',function(){sendMonthlyReport(prevYM(),config.tgAdminChat,this)});
   document.getElementById('tgsSync').addEventListener('click',async function(){
@@ -1706,7 +1986,7 @@ function openTgs(){
     var selText=document.getElementById('tgsMonth').options[document.getElementById('tgsMonth').selectedIndex].text;
     if(!data.length)return alert('Нет записей для синхронизации за: '+selText);
     if(!confirm('Скопировать/обновить '+data.length+' записей в архив за период «'+selText+'»?\n\n(Из основной таблицы ничего НЕ удалится)'))return;
-    var btn=this;var old=btn.textContent;btn.disabled=true;btn.textContent='⏳ Синхронизация...';
+    var btn=this;var old=btn.textContent;btn.disabled=true;btn.textContent='Синхронизация...';
     try{
       var upd={};
       data.forEach(function(b){
@@ -1715,7 +1995,7 @@ function openTgs(){
       });
       await db.ref('/').update(upd);
       btn.disabled=false;btn.textContent=old;
-      alert('✅ Успешно синхронизировано '+data.length+' записей в архив за «'+selText+'»!\n(В активной таблице всё осталось на месте)');
+      alert('Успешно синхронизировано '+data.length+' записей в архив за «'+selText+'»!');
     }catch(e){btn.disabled=false;btn.textContent=old;alert('Ошибка: '+(e.message||e))}
   });
   document.getElementById('tgsBackup').addEventListener('click',backupDatabase);
@@ -1726,8 +2006,8 @@ function openTgs(){
     config.tgAdminChat=document.getElementById('tgsAdmin').value.trim();
     config.botName=document.getElementById('tgsBotName').value.trim().replace('@','');
     saveCfg();
-    renderTgBindArea();
-    alert('✅ Настройки бота сохранены');
+    haptic('success');
+    alert('Настройки бота сохранены');
   });
   document.getElementById('tgsClose').addEventListener('click',function(){document.getElementById('tgsOverlay').classList.remove('open')});
 }

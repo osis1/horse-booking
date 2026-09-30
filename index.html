@@ -1184,7 +1184,7 @@ function openTgs(){
   h+='<button class="btn-tg-csv" id="tgsCsv">📥 Скачать таблицу (CSV для Excel)</button>';
   h+='<button class="btn-tg-csv" id="tgsTable">📨 Отправить таблицу в Телеграм</button>';
   h+='<button class="btn-tg-csv" id="tgsArch">📦 Архив за прошлый месяц → Telegram (сводка + файл)</button>';
-  h+='<button class="btn-tg-csv" id="tgsSync">🔄 Синхронизировать прошедшие месяцы в архив (копия, без удаления)</button>';
+  h+='<button class="btn-tg-csv" id="tgsSync">🔄 Синхронизировать выбранный период в архив (копия, без удаления)</button>';
   h+='</div></div>';
   h+='<div class="sec"><h3>🤖 Настройки бота <span class="arr">▾</span></h3><div class="sec-body">';
   h+='<label>Bot Token</label>';
@@ -1227,16 +1227,20 @@ function openTgs(){
   document.getElementById('tgsArch').addEventListener('click',function(){sendMonthlyReport(prevYM(),config.tgAdminChat,this)});
   document.getElementById('tgsSync').addEventListener('click',async function(){
     if(!db)return alert('Нет подключения к базе');
-    var m=mskNow();
-    var cutoff=m.getFullYear()+'-'+String(m.getMonth()+1).padStart(2,'0')+'-01';
-    var past=bookings.filter(function(b){return b.dateKey<cutoff});
-    if(!past.length)return alert('Прошедших месяцев в таблице нет — всё уже в архиве 🗂');
-    if(!confirm('Скопировать '+past.length+' записей за прошедшие месяцы в архив?\n\n(Из таблицы записи НЕ удалятся)'))return;
+    var data=tgsGetData();
+    var selText=document.getElementById('tgsMonth').options[document.getElementById('tgsMonth').selectedIndex].text;
+    if(!data.length)return alert('Нет записей для синхронизации за: '+selText);
+    if(!confirm('Скопировать/обновить '+data.length+' записей в архив за период «'+selText+'»?\n\n(Из основной таблицы ничего НЕ удалится)'))return;
     var btn=this;var old=btn.textContent;btn.disabled=true;btn.textContent='⏳ Синхронизация...';
     try{
-      var n=await copyPastToArchive();
+      var upd={};
+      data.forEach(function(b){
+        var ym=(b.dateKey||'').substring(0,7);
+        if(ym)upd['archive/'+ym+'/'+b.id]=b;
+      });
+      await db.ref('/').update(upd);
       btn.disabled=false;btn.textContent=old;
-      alert('Готово! '+n+' записей добавлено в архив 🗂\n(в таблице всё осталось на месте)');
+      alert('✅ Успешно синхронизировано '+data.length+' записей в архив за «'+selText+'»!\n(В активной таблице всё осталось на месте)');
     }catch(e){btn.disabled=false;btn.textContent=old;alert('Ошибка: '+(e.message||e))}
   });
   document.getElementById('tgsSave').addEventListener('click',function(){

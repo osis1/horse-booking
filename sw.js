@@ -1,5 +1,5 @@
 // sw.js — Service Worker для офлайн-доступа конного клуба
-const CACHE_NAME = 'courage-club-v1';
+const CACHE_NAME = 'courage-club-v5';
 const ASSETS_TO_CACHE = [
   './',
   './index.html',

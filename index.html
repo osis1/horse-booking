@@ -1016,9 +1016,22 @@ function addX2(ov){var m=ov.querySelector('.modal');if(!m||m.querySelector('.mod
 async function backupDatabase(){
   if(!db)return alert('Нет подключения к базе данных');
   try{
-    var sn=await db.ref('/').once('value');
-    var val=sn.val();
-    if(!val)return alert('База пуста или не удалось получить данные');
+    var [bookingsSn, configSn, archiveSn, archivedSn, tgUsersSn, remindSn] = await Promise.all([
+      db.ref('bookings').once('value'),
+      db.ref('config').once('value'),
+      db.ref('archive').once('value'),
+      db.ref('archived').once('value'),
+      db.ref('tgUsers').once('value'),
+      db.ref('remindSettings').once('value')
+    ]);
+    var val={
+      bookings: bookingsSn.val() || {},
+      config: configSn.val() || {},
+      archive: archiveSn.val() || {},
+      archived: archivedSn.val() || {},
+      tgUsers: tgUsersSn.val() || {},
+      remindSettings: remindSn.val() || {}
+    };
     var d=mskNow();
     var dateStr=dk(d)+'_'+String(d.getHours()).padStart(2,'0')+'-'+String(d.getMinutes()).padStart(2,'0');
     var json=JSON.stringify(val,null,2);
